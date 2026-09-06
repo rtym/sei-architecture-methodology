@@ -65,12 +65,61 @@ not just functionality.
    checklist — for every relevant tactic ask "is it used, where, and what is the risk if not?".
    Then decide whether another iteration is needed and, if so, with which remaining drivers.
 
-## Iteration planning (pragmatic extension)
+## Identifying and selecting design concepts (Step 4, expanded)
 
-ADD 3.0 does not prescribe an up-front plan, but drafting one — grouping drivers into a handful
-of bounded iterations with a stated goal each — makes the end of design visible and keeps scope
-honest. Iteration 1 is usually "establish the overall structure / choose the reference
-architecture". Verify every driver ID is covered by at least one iteration before starting.
+**Identify** candidates three ways, usually in combination:
+- **best-practice catalogs** — patterns, reference architectures, tactic taxonomies, framework
+  docs (`references/architecture-patterns.md`, `references/tactics-catalog.md`); many
+  alternatives, but vetting them costs time;
+- **your own experience** — fast and confident for a familiar system type; risks reusing the
+  same hammer;
+- **peers** — a short brainstorm brings in experience you don't have.
+
+**Select** by putting the candidates in a **pros/cons table** keyed to the iteration's drivers
+and picking one. When the choice is high-stakes or contested, do a deeper analysis:
+- **SWOT** — strengths / weaknesses / opportunities / threats of each candidate;
+- **CBAM** (cost/benefit analysis method) — for each candidate strategy, estimate the utility
+  it adds (via levels of quality-attribute response), its cost, and its time to implement, then
+  rank by ROI. CBAM was designed to run after ATAM but can inform design directly.
+
+Record the choice **and** the discarded alternatives with the reason (ADR-style, citing driver
+IDs).
+
+## Design roadmap — order the early iterations by system type
+
+ADD does not fix an iteration order, but a **roadmap** keeps the start of design from being ad
+hoc:
+
+**Greenfield in a mature domain** (web app, mobile app, enterprise system, …):
+1. **Establish the overall structure** — choose reference architecture(s) + deployment
+   pattern(s) (+ any full-stack framework). Weigh the constraints and the QAs that favour one
+   reference architecture over another.
+2. **Identify structures for the primary functionality** — allocate the architecturally
+   significant use cases to elements (by decomposing the reference-architecture elements); also
+   think about allocating modules to teams.
+3. **Refine the structures for the remaining drivers** — tactics + patterns + frameworks + the
+   basics (modularity, low coupling, high cohesion).
+
+**Greenfield in a novel domain** — no reference architecture to lean on: work from first
+principles, use general-purpose tactics and patterns, and lead with **prototyping** to retire
+the hardest quality-attribute risks.
+
+**Brownfield (existing system)** — maintenance, or refactoring to cut architecture/technical
+debt: Step 1's input is the existing architecture; iterations mostly refine existing structures
+to meet new or violated drivers.
+
+## Iteration planning and the design backlog
+
+Draft an up-front plan — a handful of bounded iterations, each with a one-sentence goal —
+grouped by the roadmap above. Verify **every driver ID** appears in at least one iteration row
+before starting.
+
+Treat the plan as an **architectural (design) backlog** — a living list of pending design
+actions, tracked on a Kanban board (to do / in progress / done). Seed it with one item per
+driver, then add supporting items: a prototype/spike to retire a risk, an interface to define, a
+view to document, a decision to revisit. The backlog answers *how much design is left*, *how
+much is done*, and *are we finished* (finished = every driver `addressed` or consciously
+deferred, and the design purpose met).
 
 ## Outputs
 
@@ -78,6 +127,16 @@ architecture". Verify every driver ID is covered by at least one iteration befor
 - A set of views (C4 / UML), kept in the Architecture document.
 - A design-decision (ADR) log with rationale traceable to drivers.
 - Per-iteration analysis showing which drivers are satisfied.
+
+## Analysis during design
+
+Design and analysis interleave — don't wait for a formal ATAM. Cheap in-iteration checks
+(see `references/design-reviews.md`):
+- **Tactics-based analysis** — walk the attribute's tactic list as a questionnaire.
+- **Reflective questions** — the architect asks themselves the "have I…?" questions for the
+  iteration's drivers before declaring the goal met.
+- **Scenario-based design review** — a short peer review that walks the top scenarios against
+  the current structures.
 
 ## Common mistakes
 

@@ -24,10 +24,14 @@
 | ID | Concern |
 |----|---------|
 
-## Iteration Plan
+## Iteration Plan / design backlog
 
-| Iteration | Goal | Drivers |
-|-----------|------|---------|
+Ordered by the design roadmap for the system type (greenfield mature → overall structure, then
+primary use cases, then refine for QAs; novel → prototype-led; brownfield → refine the existing
+architecture). A living backlog: one row per driver + supporting items (spike, interface, view).
+
+| Iteration | Goal | Drivers | Backlog status (to do / in progress / done) |
+|-----------|------|---------|---------------------------------------------|
 
 <!-- iterations appended below -->
 

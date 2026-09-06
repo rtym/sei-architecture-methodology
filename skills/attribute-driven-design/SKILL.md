@@ -276,12 +276,24 @@ Announce each step in one line, then write its result to the session file.
 
 End with a one-line summary of the most architecturally significant drivers.
 
-### Iteration Plan (pragmatic addition — not in ADD 3.0, but useful)
+### Iteration Plan / design backlog (pragmatic addition)
 
-Group drivers into N iterations, each with a bounded goal. Iteration 1 is typically "establish
-overall structure / reference architecture". **Coverage check (mandatory):** list every driver ID
-from Step 1 and confirm each appears in ≥ 1 iteration row before presenting. Present, wait for
-review, write the agreed plan into `## Iteration Plan`.
+Group drivers into N iterations, each with a bounded goal, ordered by the **design roadmap** for
+the system type (`references/add-method.md` → *Design roadmap*):
+- **greenfield, mature domain**: iter 1 = establish overall structure (reference architecture +
+  deployment pattern); iter 2 = structures for the primary use cases; later iters = refine for
+  the remaining quality-attribute drivers;
+- **greenfield, novel domain**: lead with prototypes to retire the hardest QA risks;
+- **brownfield**: start from the existing architecture; iterations refine it to meet the new or
+  violated drivers.
+
+Keep the plan as a living **design backlog** (a Kanban list): one item per driver, plus
+supporting items (a spike/prototype, an interface to define, a view to document). "Done" = every
+driver `addressed` or consciously deferred and the design purpose met.
+
+**Coverage check (mandatory):** list every driver ID from Step 1 and confirm each appears in ≥ 1
+iteration / backlog item before presenting. Present, wait for review, write the agreed plan into
+`## Iteration Plan`.
 
 ### Step 2 — Establish the iteration goal by selecting drivers
 
@@ -296,12 +308,13 @@ iteration. **State the choice and why. Wait for confirmation.**
 
 ### Step 4 — Choose design concept(s)
 
-Choose from the **design concept catalog** (coarse → fine): reference architectures ·
-deployment patterns · architectural & design patterns · **tactics** · externally developed
-components. The per-attribute tactic lists are in `references/tactics-catalog.md`; the patterns
-(with their principal tradeoff) are in `references/architecture-patterns.md`. Evaluate 2–4
-candidates per driver cluster in a pros/cons table; every rationale cites ≥ 1 driver ID; record
-the discarded alternatives and why. Name tactics from the catalog so Step 7 and ATAM can
+**Identify** candidates from the **design concept catalog** (coarse → fine): reference
+architectures · deployment patterns · architectural & design patterns · **tactics** ·
+externally developed components — drawing on best-practice catalogs
+(`references/tactics-catalog.md`, `references/architecture-patterns.md`), your own experience,
+and a peer brainstorm. **Select** with a pros/cons table keyed to the iteration's drivers; for a
+high-stakes choice, add a SWOT or CBAM (ROI) analysis. Every rationale cites ≥ 1 driver ID;
+record the discarded alternatives and why. Name tactics from the catalog so Step 7 and ATAM can
 question them with the matching questionnaire. **Present the table and wait for review.**
 
 ### Step 5 — Instantiate elements, allocate responsibilities, define interfaces

@@ -30,7 +30,12 @@ Ask up front which mode fits:
   tradeoff points → risk themes) run in ~half a day by the internal team, no formal report, no
   Phase 2 stakeholder round. Use it as a routine self-check each iteration or before a release.
   Produce the same registers in `atam-report.md`; skip Steps 7–8 and mark the report
-  `Lightweight`.
+  `Lightweight`. Even lighter in-iteration checks (tactics-based analysis, reflective questions,
+  scenario-based design review) are in `references/design-reviews.md`.
+
+After the evaluation, turning risk themes into a **prioritised remediation backlog** is a
+**CBAM** (cost/benefit) exercise: estimate each candidate fix's added utility, cost, and
+schedule, and rank by ROI. See `references/atam-method.md` → *After the analysis — CBAM*.
 
 **Keep prompts short.** Numbered lists. Announce each step in one line. **Draft first**, refine.
 

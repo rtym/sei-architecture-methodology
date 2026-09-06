@@ -77,6 +77,42 @@ stakeholder roster for Phase 2, and the schedule.
    the risks/non-risks/sensitivity/tradeoff registers, and the **risk themes** with their impact
    on business drivers. A written report follows (Phase 3, follow-up).
 
+## Utility tree vs. scenario brainstorming
+
+Two ways to get the prioritised scenarios, deliberately complementary:
+
+| | Utility tree (Step 5) | Scenario brainstorming (Step 7) |
+|---|-----------------------|--------------------------------|
+| Driven by | the architect, top-down | the stakeholder group, bottom-up |
+| Produces | QA → refinement → scenario, each rated `(V, R)` | use-case / growth / exploratory scenarios, vote-ranked |
+| Bias it counters | stakeholders miss architecturally significant needs | the architect's blind spots and assumptions |
+
+Convergence between the two is reassuring; divergence is informative — a highly-voted scenario
+that isn't in the tree is a signal the tree missed something.
+
+## Characterizing an attribute for analysis
+
+Before Step 6, it helps to characterise each attribute under scrutiny in three parts — this is
+the skeleton the tactics-based questionnaire fills in:
+
+- **Stimuli** — the events the architecture must respond to for this attribute (arrival
+  patterns and load for performance; fault types for availability; change categories for
+  modifiability; attack types for security).
+- **Responses** — the observable, measurable outcomes required (latency percentile; recovery
+  time; effort to change; proportion of attacks detected).
+- **Architectural decisions** — the parameters and structures that determine the response
+  (concurrency and queueing for performance; redundancy and failover for availability;
+  encapsulation and binding time for modifiability). These are where sensitivity and tradeoff
+  points live.
+
+## After the analysis — CBAM
+
+ATAM says *where the risks and tradeoffs are*; it does not say *which fix is worth doing*. The
+**Cost/Benefit Analysis Method (CBAM)** is the follow-on: for each candidate architectural
+strategy, estimate the utility it adds (as levels of quality-attribute response), its cost, and
+its schedule, then rank the strategies by return on investment. Run it after ATAM to turn risk
+themes into a prioritised remediation backlog; it can also inform design directly.
+
 ## Definitions worth keeping straight
 
 - **Sensitivity point**: "The response measure of quality attribute Q is sensitive to the value
@@ -110,6 +146,9 @@ round, before a release, or on a smaller system) run a **Lightweight Architectur
   written report and no formal out-brief.
 - **When to escalate to a full ATAM**: the lightweight pass surfaces a systemic risk theme, the
   stakeholders disagree about priorities, or the cost of being wrong is high.
+
+Even lighter in-iteration checks — tactics-based analysis, reflective questions, and a
+scenario-based design review — are described in `references/design-reviews.md`.
 
 ## After ATAM
 
