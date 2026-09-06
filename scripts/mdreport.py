@@ -80,8 +80,11 @@ nav.toc {{ background: #FBFCFE; border: 1px solid {PALETTE['rule']}; border-radi
 nav.toc h2 {{ margin: 0 0 .4em; font-size: 1rem; border: none; }}
 nav.toc ul {{ list-style: none; padding-left: 0; margin: 0; }}
 nav.toc li {{ margin: .2em 0; }}
-nav.toc li.h3 {{ padding-left: 1.2em; font-size: .92rem; }}
-nav.toc li.h4 {{ padding-left: 2.4em; font-size: .88rem; color: {PALETTE['muted']}; }}
+nav.toc li.h1 {{ margin-top: .5em; font-weight: 600; }}
+nav.toc li.h1:first-child {{ margin-top: 0; }}
+nav.toc li.h2 {{ padding-left: 1em; }}
+nav.toc li.h3 {{ padding-left: 2.2em; font-size: .92rem; }}
+nav.toc li.h4 {{ padding-left: 3.4em; font-size: .88rem; color: {PALETTE['muted']}; }}
 @media print {{ .wrap {{ max-width: none; padding: 0; }} nav.toc {{ break-after: page; }} pre, table, figure {{ break-inside: avoid; }} }}
 """
 
@@ -431,12 +434,18 @@ Renderer._plantuml = _plantuml
 # Document assembly
 # --------------------------------------------------------------------------- #
 
-def build_toc(headings) -> str:
+def build_toc(headings, skip_title: str = "") -> str:
     if not headings:
         return ""
     items = []
+    skipped_title = False
     for level, text, slug in headings:
-        if level == 1:
+        # drop the first H1 if it just repeats the report title
+        if level == 1 and not skipped_title and skip_title \
+                and text.strip().lower() == skip_title.strip().lower():
+            skipped_title = True
+            continue
+        if level > 4:
             continue
         cls = f"h{level}"
         items.append(f'<li class="{cls}"><a href="#{slug}">{html.escape(text)}</a></li>')
@@ -453,7 +462,7 @@ def to_html(inputs: list[Path], title: str, subtitle: str, want_toc: bool,
         renderer.source_dir = p.parent
         body_sections.append(renderer.render(p.read_text(encoding="utf-8")))
     body = "\n<hr>\n".join(body_sections)
-    toc = build_toc(renderer.headings) if want_toc else ""
+    toc = build_toc(renderer.headings, skip_title=title) if want_toc else ""
     meta = f"Generated {_today()} · {len(inputs)} source file(s)"
     cover = (f'<header class="cover"><h1>{html.escape(title)}</h1>'
              + (f'<div class="sub">{html.escape(subtitle)}</div>' if subtitle else "")
@@ -474,14 +483,27 @@ def to_md(inputs: list[Path], title: str, subtitle: str, want_toc: bool) -> str:
     parts += [f"> Generated {_today()} · {len(inputs)} source file(s)", ""]
     if want_toc:
         heads = []
+        seen: dict[str, int] = {}
+        in_fence = False
         for p in inputs:
             for line in p.read_text(encoding="utf-8").splitlines():
-                hm = re.match(r"^(#{2,4})\s+(.*?)\s*#*$", line)
-                if hm:
-                    lvl = len(hm.group(1))
-                    txt = hm.group(2).strip()
-                    slug = re.sub(r"[^\w\- ]", "", txt).strip().lower().replace(" ", "-")
-                    heads.append(f'{"  " * (lvl - 2)}- [{txt}](#{slug})')
+                if re.match(r"^\s*(`{3,}|~{3,})", line):
+                    in_fence = not in_fence
+                    continue
+                if in_fence:
+                    continue
+                hm = re.match(r"^(#{1,4})\s+(.*?)\s*#*$", line)
+                if not hm:
+                    continue
+                lvl = len(hm.group(1))
+                txt = hm.group(2).strip()
+                if lvl == 1 and txt.strip().lower() == title.strip().lower():
+                    continue
+                base = re.sub(r"[^\w\- ]", "", txt).strip().lower().replace(" ", "-") or "section"
+                n = seen.get(base, 0)
+                seen[base] = n + 1
+                slug = base if n == 0 else f"{base}-{n}"
+                heads.append(f'{"  " * (lvl - 1)}- [{txt}](#{slug})')
         if heads:
             parts += ["## Contents", "", *heads, ""]
     for p in inputs:

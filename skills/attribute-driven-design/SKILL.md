@@ -18,7 +18,10 @@ Working directory: `architecture/add/` (create it).
 - `architecture/add/<slug>-session.md` — the session log
 - `architecture/add/<slug>-Architecture.md` — the architecture document
 
-Deep reference: `references/add-method.md`. Diagram rules: the `sei-diagrams` skill
+Deep references: `references/add-method.md`, `references/design-concepts.md` (the concept
+catalog + how to identify/select), `references/interfaces.md` (Step 5),
+`references/architecture-in-the-lifecycle.md` (Iteration 0, architecture debt). Diagram rules:
+the `sei-diagrams` skill
 (`skills/sei-diagrams/SKILL.md`) — **all** diagrams in both files follow it.
 
 **Keep prompts and findings short** — a sentence or two. Offer choices as numbered lists.
@@ -320,7 +323,10 @@ question them with the matching questionnaire. **Present the table and wait for 
 ### Step 5 — Instantiate elements, allocate responsibilities, define interfaces
 
 Two tables: **instantiation decisions** (elements created/modified + responsibility) and
-**interfaces** (provided / required / protocol per element). **Present both and wait for review.**
+**interfaces** (provided / required / protocol per element). For each significant interface
+capture the four agreement points from `references/interfaces.md` — scope, interaction style,
+data representation & structure, error model — and apply the design principles (least surprise,
+small interfaces, uniform access, DRY, consistency). **Present both and wait for review.**
 
 ### Step 6 — Sketch views and record design decisions
 

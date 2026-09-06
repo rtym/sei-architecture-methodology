@@ -43,6 +43,9 @@ Full definitions, the sub-characteristic breakdown, the **general-scenario "port
 questionnaire are in `references/quality-attribute-taxonomy.md` (with tactic and pattern lists
 in `references/tactics-catalog.md` and `references/architecture-patterns.md`). Build each
 concrete scenario by choosing values from the portions and making the response measure numeric.
+For a cloud or mobile system, `references/runtime-environments.md` lists the environment-specific
+stimuli worth a scenario (cold start, zone loss, autoscale lag, offline operation, battery,
+OS eviction).
 
 | # | ISO/IEC 25010:2023 characteristic | Sub-characteristics | SEI / BCK term often used |
 |---|-----------------------------------|---------------------|--------------------------|

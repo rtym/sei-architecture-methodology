@@ -31,7 +31,10 @@ Ask up front which mode fits:
   Phase 2 stakeholder round. Use it as a routine self-check each iteration or before a release.
   Produce the same registers in `atam-report.md`; skip Steps 7–8 and mark the report
   `Lightweight`. Even lighter in-iteration checks (tactics-based analysis, reflective questions,
-  scenario-based design review) are in `references/design-reviews.md`.
+  scenario-based design review) are in `references/design-reviews.md`. A complementary
+  code-based analysis — design structure matrix + architecture anti-patterns + debt
+  quantification — is in `references/architecture-in-the-lifecycle.md` → *Architecture debt and
+  hotspots*; run it alongside ATAM when maintenance cost is a concern.
 
 After the evaluation, turning risk themes into a **prioritised remediation backlog** is a
 **CBAM** (cost/benefit) exercise: estimate each candidate fix's added utility, cost, and

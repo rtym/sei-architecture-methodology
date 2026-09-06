@@ -77,8 +77,9 @@ Keep to ≤ ~10 elements; split into sub-views if larger. Legend included or ref
 | From | Relation | To | Properties |
 |------|----------|----|-----------|
 ### 2.3 Element interfaces
-<For significant elements: provided/required interfaces, operations, data, error handling.
-Reference §8 of the ADD Architecture.md if it already exists.>
+<For significant elements: provided/required interfaces, operations, data, error handling —
+the four agreement points (scope · interaction style · data representation & structure · error
+model) from `references/interfaces.md`. Reference §8 of the ADD Architecture.md if it exists.>
 ### 2.4 Element behavior
 <Sequence / state diagrams for behavior not obvious from structure. Via sei-diagrams.>
 

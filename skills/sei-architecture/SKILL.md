@@ -97,9 +97,15 @@ Typical engagements:
   **Markdown, HTML, or both**, then build it with `scripts/build-report.sh <file.md> --format
   <fmt> [--embed-diagrams]`. HTML output is a single self-contained file styled with the SEI
   palette, with a cover page and table of contents.
-- **References**: deeper method notes live in `references/` at the plugin root
-  (`quality-attribute-taxonomy.md`, `qaw-method.md`, `add-method.md`, `atam-method.md`,
-  `views-and-beyond.md`, `architectural-drivers.md`). Read the relevant one when a step needs more depth.
+- **References**: deeper method notes live in `references/` at the plugin root — see
+  `references/README.md` for the index. Core: `architecture-fundamentals.md` (structures,
+  views, the "good architecture" rules of thumb), `architectural-drivers.md`,
+  `quality-attribute-taxonomy.md`, `tactics-catalog.md`, `architecture-patterns.md`,
+  `design-concepts.md`, `qaw-method.md`, `add-method.md`, `atam-method.md`,
+  `design-reviews.md`, `views-and-beyond.md`, `interfaces.md`,
+  `architecture-in-the-lifecycle.md` (debt, Agile, distributed dev),
+  `runtime-environments.md` (virtualization, cloud, mobile). Read the relevant one when a step
+  needs more depth.
 
 ## Source material
 

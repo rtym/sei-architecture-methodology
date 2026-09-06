@@ -16,6 +16,22 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
       and minimal edge crossings — before being embedded.
 - [ ] No TODO / `<placeholder>` / empty table left in a "finished" artifact.
 
+## "Good architecture" rules of thumb (apply to any design or review — see `architecture-fundamentals.md`)
+
+- [ ] Produced by one architect / a small team with a technical lead, connected to the dev team.
+- [ ] Built on a **prioritised list of well-specified quality-attribute scenarios**.
+- [ ] Documented with **views** chosen for the most important stakeholders' concerns.
+- [ ] **Evaluated early** for its ability to deliver the important quality attributes.
+- [ ] Lends itself to **incremental implementation** (a skeletal system grown by increments).
+- [ ] Well-defined **modules** using information hiding + separation of concerns; each with an
+      interface that hides the changeable parts.
+- [ ] Quality attributes achieved with **known patterns and tactics** per attribute.
+- [ ] **No dependency on a specific version** of a commercial product/tool (or it is isolated).
+- [ ] **Data producers separated from data consumers.**
+- [ ] A **small number of simple, uniform component-interaction patterns.**
+- [ ] A **small, explicit set of resource-contention areas**, each with a stated resolution /
+      enforced budget.
+
 ## Architectural drivers (`architecture/drivers/` directory)
 
 - [ ] It is a **directory**: `README.md` + `business-goals/`, `use-cases/`, `constraints/`,
