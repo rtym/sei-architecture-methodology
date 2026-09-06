@@ -16,6 +16,16 @@ usability → Interaction capability.
 
 ## Availability
 
+*Availability = reliability + **recovery** (when the system breaks, it repairs itself); it
+subsumes reliability and robustness.* A **failure** is an externally-visible deviation from
+spec (needs an external observer — "if a failure *could have been observed*, it is a failure
+whether or not it was"). A **fault** (internal or external) is a failure's cause; **errors**
+are the intermediate states between fault and failure. Faults can be **prevented, tolerated,
+removed, or forecast** → "resilient". Steady-state availability ≈ **MTBF / (MTBF + MTTR)**.
+**Scheduled** downtime doesn't count against availability (the system is "not needed" per the
+SLA). Categorise detected faults by **severity** (critical / major / minor) × **service
+impact** (service-affecting / non-service-affecting).
+
 | Part | Possible values |
 |------|-----------------|
 | Source | internal / external: people, hardware, software, physical infrastructure, physical environment |

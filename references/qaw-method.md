@@ -62,12 +62,28 @@ architectural constraints.
 - The prioritised (voted) scenario list (step 7).
 - The refined top scenarios with questions and issues (step 8).
 
+## What the results are used for
+
+A stakeholder-interview / QAW output (a list of architectural drivers + a group-prioritised set
+of QA scenarios) serves five purposes:
+
+1. refine the system and software requirements;
+2. understand and clarify the architectural drivers;
+3. provide the **rationale** for design decisions the architect later makes;
+4. guide the development of prototypes and simulations;
+5. influence the **order** in which the architecture is developed.
+
 ## After the QAW
 
 Refined scenarios feed:
 - the **architectural drivers** register (`<ATTR>QA-n`),
 - **ADD** as iteration drivers,
 - later, **ATAM** — the QAW scenarios seed the utility tree and Phase-2 brainstorming.
+
+The QAW is one structured form of "gathering ASRs by interviewing stakeholders" — see
+`references/architectural-drivers.md` for the other three ways (requirements-doc sniffing, PALM
+business-goal workshop, the architect's own utility tree) and the "play dumb" technique for a
+stakeholder who says *"I don't know what that requirement should be."*
 
 ## Facilitation tips
 

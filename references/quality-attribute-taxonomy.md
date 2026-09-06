@@ -3,6 +3,35 @@
 Use **ISO/IEC 25010** as the classification vocabulary and the **SEI six-part scenario** as the
 form. Every quality attribute scenario names an ISO characteristic and sub-characteristic.
 
+## Why quality attributes drive the architecture
+
+A **quality attribute (QA)** is a *measurable or testable* property that indicates how well the
+system satisfies stakeholder needs *beyond* basic function — the "utility" of the product along
+a dimension of interest.
+
+- **Functionality does not determine architecture.** Given a set of required functions there is
+  no end to the architectures that satisfy them (if function were all that mattered, a single
+  monolithic blob would do). We structure systems into cooperating elements *for the other
+  qualities.* Functionality is achieved by **assigning responsibilities** to elements — which
+  produces the module decomposition; the architect's interest in functionality is how it
+  interacts with and constrains the other qualities.
+- **Three problems** with most QA discussions, and their fixes:
+  1. definitions aren't testable ("the system shall be modifiable" — every system is modifiable
+     w.r.t. *some* changes and not others) → fix: **QA scenarios**;
+  2. endless debate over which attribute an issue "belongs to" (a denial-of-service attack —
+     availability? performance? security? usability? all claim it) → fix: **QA scenarios**;
+  3. each attribute community has its own vocabulary (events / attacks / faults / user input
+     may name the same occurrence) → fix: a **common form** per attribute (the general
+     scenarios below).
+- **Two categories**: *runtime* qualities (availability, performance, usability) and
+  *development-time* qualities (modifiability, testability, deployability).
+- **QAs are never achieved in isolation** — achieving one affects others, often negatively
+  (almost every QA costs performance; portability isolates dependencies behind process /
+  procedure boundaries → overhead). Design is partly the art of the appropriate **tradeoff**.
+- **"Not my problem."** The software architect may not be responsible for *every* QA requirement
+  — a system may meet its security need with barbed wire and guards, not software. Confirm
+  which QAs are actually in the architecture's scope.
+
 ## The six-part scenario (SEI / Bass–Clements–Kazman)
 
 | Part | Definition | Watch for |
@@ -14,8 +43,55 @@ form. Every quality attribute scenario names an ISO characteristic and sub-chara
 | Response | The activity that results from the stimulus | observable behaviour, not an implementation |
 | Response measure | The response quantified so the requirement is testable | a number with a unit and, for time, a percentile |
 
-**General scenario** = attribute-level template (reusable). **Concrete scenario** = filled in for
-this system. Utility trees and QAWs produce concrete scenarios.
+The four core parts (stimulus, source, response, response measure) are the heart; **environment
+and artifact are the two most often overlooked** — knowing all six are there forces the
+architect to consider whether each is relevant. "Environment" can be a runtime *mode* (normal,
+overload, degraded) **or** a non-running state (development, testing, data refresh, battery
+recharge).
+
+**General scenario** = attribute-level, system-independent template (the "portions" menu).
+**Concrete scenario** = filled in for this system. It is far easier for a stakeholder to
+*tailor a general scenario* than to invent one from thin air — so brainstorm concrete scenarios
+by walking the general-scenario portions (`references/quality-attribute-scenarios.md`).
+
+## Achieving quality attributes: tactics and patterns
+
+- A **tactic** is a design decision that influences **one** quality-attribute response — it
+  directly affects the system's response to a stimulus. Per-attribute lists:
+  `references/tactics-catalog.md`.
+- An **architectural pattern** is a proven solution to a recurring design problem, specified by
+  the roles, responsibilities, relationships, and collaboration of its elements. A pattern
+  usually affects **more than one** QA and **bundles several tactics** — so patterns frequently
+  *make* QA tradeoffs. Catalog: `references/architecture-patterns.md`.
+- **Refine tactics to be concrete**: *schedule resources* → SJF / round-robin / fixed-priority;
+  *use an intermediary* → layer / broker / proxy / tier. Application is context-dependent
+  (*manage sampling rate* fits some real-time systems, is wrong for stock trading).
+- **Super-tactics** appear almost everywhere: modifiability's *encapsulate*, *restrict
+  dependencies*, *use an intermediary*, *abstract common services* (in the realisation of
+  nearly every pattern); *schedule resources*; and **monitor** (used for energy efficiency,
+  performance, availability, and safety). A load balancer is an intermediary that does
+  scheduling. A tactic is a design primitive found over and over, across attributes — which is
+  precisely why tactics are worth mastering.
+- **Design and process both matter.** A great security architecture is worthless if staff fall
+  for phishing. QAs also deteriorate over time through well-intentioned local decisions
+  ("death by a thousand cuts" → **architecture debt**); reverse it by **refactoring
+  architectural elements**, not just code (`references/architecture-in-the-lifecycle.md`).
+
+### The tactics-based questionnaire — the four-step procedure
+
+Per tactic question (`references/tactics-catalog.md` supplies the questions per QA):
+
+1. **Supported?** — mark the column `Y` / `N`.
+2. **Design decisions and location** — if `Y`, the specific decisions made to realise the
+   tactic and *where in the architecture / code base* they manifest (for auditing and
+   architecture reconstruction). Note how it's realised — custom code, framework, or externally
+   produced component.
+3. **Risk** — `H` / `M` / `L` for implementing (or *not* implementing) the tactic.
+4. **Rationale** — why the decisions were made (including a decision *not* to use the tactic)
+   and the implications (cost, schedule, evolution).
+
+~30–90 minutes per quality attribute; forces the architect to step back and see the bigger
+picture; reveals decisions taken *and not taken*, and the risks buried in them.
 
 ## ISO/IEC 25010:2023 — product quality model (9 characteristics)
 
