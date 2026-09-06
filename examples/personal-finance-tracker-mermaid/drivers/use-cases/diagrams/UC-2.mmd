@@ -1,0 +1,11 @@
+flowchart LR
+  %% Use case diagram — UC-2 View the monthly dashboard
+  pa(["Registered user"])
+  subgraph sys["System: Personal Finance Tracker"]
+    uc2("UC-2 View the monthly dashboard")
+  end
+  pa --> uc2
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  class pa source
+  class uc2 artifact

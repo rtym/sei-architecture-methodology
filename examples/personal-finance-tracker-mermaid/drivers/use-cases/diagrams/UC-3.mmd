@@ -1,0 +1,15 @@
+flowchart LR
+  %% Use case diagram — UC-3 Import a bank statement (CSV)
+  pa(["Registered user"])
+  bank(["Bank Import API"])
+  subgraph sys["System: Personal Finance Tracker"]
+    uc3("UC-3 Import a bank statement (CSV)")
+    uc3a("UC-3a Categorise transaction")
+  end
+  pa --> uc3
+  bank --> uc3
+  uc3 -. include .-> uc3a
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  class pa,bank source
+  class uc3,uc3a artifact

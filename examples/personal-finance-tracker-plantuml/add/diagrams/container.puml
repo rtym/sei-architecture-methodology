@@ -1,0 +1,19 @@
+@startuml container
+!include ../../../../skills/sei-diagrams/assets/c4/C4_Container.puml
+!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+LAYOUT_TOP_DOWN()
+title Container diagram — Personal Finance Tracker (C4 level 2)
+Person(user, "Registered user", "Mobile browser")
+System_Ext(mail, "Email provider", "SMTP/TLS")
+System_Boundary(sys, "Personal Finance Tracker") {
+  Container(spa, "Web App", "React 18 / TS PWA", "Delivers the UI")
+  Container(api, "API Service", "Node.js 20 / Fastify", "Single write path; enforces tenant scoping")
+  ContainerDb(db, "Primary Database", "PostgreSQL 15 (encrypted)", "System of record; tenant-scoped rows")
+  ContainerDb(cache, "Read Cache", "Redis 7", "Dashboard aggregates; cache-aside, 15-min TTL")
+}
+Rel(user, spa, "Uses over HTTPS", "TLS 1.3")
+Rel(spa, api, "Calls REST API", "JSON")
+Rel(api, db, "Reads / writes tenant-scoped rows", "SQL/TLS")
+Rel(api, cache, "Reads aggregates, invalidates on write", "RESP")
+Rel(api, mail, "Sends verification & alert email", "SMTP")
+@enduml

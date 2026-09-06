@@ -1,0 +1,22 @@
+@startuml component-api
+!include ../../../../skills/sei-diagrams/assets/c4/C4_Component.puml
+!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+LAYOUT_TOP_DOWN()
+title Component diagram — API Service (C4 level 3)
+Container(spa, "Web App", "React 18 / TS", "Sends REST requests")
+ContainerDb(db, "Primary Database", "PostgreSQL 15", "System of record")
+Container_Boundary(api, "API Service") {
+  Component(router, "HTTP Router", "Fastify routes", "Terminates HTTP, maps DTOs")
+  Component(guard, "Tenant Guard", "Middleware", "Forces user_id scoping — the SQA-1 control")
+  Component(txn, "Transaction Service", "TS module", "UC-1 create/edit/delete")
+  Component(dash, "Dashboard Service", "TS module", "UC-2 aggregates + report registry")
+  Component(repo, "Data Access", "Kysely", "Parameterised, tenant-scoped SQL")
+}
+Rel(spa, router, "Sends REST requests", "JSON/HTTPS")
+Rel(router, guard, "Passes authenticated context")
+Rel(guard, txn, "Delegates write commands")
+Rel(guard, dash, "Delegates dashboard queries")
+Rel(txn, repo, "Persists transactions")
+Rel(dash, repo, "Reads aggregates")
+Rel(repo, db, "Executes tenant-scoped SQL", "SQL/TLS")
+@enduml

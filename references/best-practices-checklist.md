@@ -18,8 +18,10 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 
 ## Architectural drivers (`architecture/drivers/` directory)
 
-- [ ] It is a **directory**: `index.md` + `business-goals/`, `use-cases/`, `constraints/`,
-      `quality-attributes/` with **one file per driver**. `index.md` is the only aggregate file.
+- [ ] It is a **directory**: `README.md` + `business-goals/`, `use-cases/`, `constraints/`,
+      `quality-attributes/` with **one file per driver**. The top `README.md` is the aggregate
+      file; each subdirectory has its own small `README.md` index. Every cross-reference is a
+      working **relative Markdown link**; each `README.md` ends with a Navigation footer.
 - [ ] All four kinds present. Every driver file carries `**Status**`.
 - [ ] Each business goal is `<stakeholder> needs <outcome> so that <business value>` with a category.
 - [ ] Each use case has a primary actor, a trigger, and a numbered main success scenario — not a
@@ -32,12 +34,13 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 - [ ] **Each quality attribute is documented as a six-part quality attribute scenario** with a
       **numeric** response measure and an ISO/IEC 25010 classification (characteristic + sub),
       **and its own horizontal (`flowchart LR`) six-part scenario diagram**, verified and embedded.
-- [ ] `quality-attributes/utility-tree.md` exists — the summary of the QA drivers:
-      `Utility → ISO/IEC 25010 characteristic → refinement → <ATTR>QA-n (Imp,Diff)`, with a
-      rendered `mindmap`. Imported from the QAW (its Step 9) when one was run.
-- [ ] `index.md` traceability matrix present; **no orphans** — every BG supported by ≥ 1 UC/QA
+- [ ] `quality-attributes/utility-tree.md` exists — the summary of the QA drivers as a
+      **table** (columns: Quality attribute · Refinement · Leaf scenario · Priority (V, R) ·
+      Status), one leaf per row, `★` on each `(H, H)` leaf, plus a "Reading the tree" note.
+      No diagram. Imported from the QAW (its Step 9) when one was run.
+- [ ] `README.md` traceability matrix present; **no orphans** — every BG supported by ≥ 1 UC/QA
       scenario, every UC/QA scenario/CON traces up to ≥ 1 BG. Gaps reported explicitly.
-- [ ] `index.md` prioritised list leads with the `(H,H)` then `(H,M)` quality scenarios; has a change log.
+- [ ] `README.md` prioritised list leads with the `(H,H)` then `(H,M)` quality scenarios; has a change log.
 
 ## Quality attribute scenarios (`scenarios.md`)
 
@@ -49,11 +52,12 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 
 ## Quality Attribute Workshop (`qaw-report.md`)
 
-- [ ] All eight steps present as sections.
+- [ ] All eight steps present as sections, plus Step 9 (utility tree).
 - [ ] Participant list with roles.
 - [ ] Raw brainstormed scenarios kept **verbatim**; consolidation has a merge map; dissent recorded.
 - [ ] Vote budget stated explicitly as `ceil(0.30 × consolidated count)`.
 - [ ] Refined top scenarios have the six-part form + numeric measure + questions + issues.
+- [ ] Step 9 utility tree is a **table** (one leaf per row, `(V, R)` pair, `★` on (H,H)), not a diagram.
 
 ## ADD 3.0 (`<slug>-session.md` + `<slug>-Architecture.md`)
 
@@ -70,7 +74,8 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 ## ATAM (`atam-report.md`)
 
 - [ ] Business drivers, architecture presentation, and architectural approaches (`AA-n`) recorded.
-- [ ] Utility tree present; leaves carry `(Importance, Difficulty)`; the (H,H)/(H,M) leaves are analysed.
+- [ ] Utility tree present **as a table**; each leaf row carries a `(V, R)` pair (business
+      value, technical risk); the `★` (H,H)/(H,M) leaves are analysed.
 - [ ] Every analysed scenario names the approaches invoked and the analysis questions asked.
 - [ ] Risks, non-risks, sensitivity points, tradeoff points each populated (or explicitly "none found").
 - [ ] Every **non-risk** records the assumption under which it holds.
@@ -81,7 +86,7 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 ## Views and Beyond (`docs/`)
 
 - [ ] All three viewtypes covered: Module, Component-and-Connector, Allocation (extra views allowed).
-- [ ] Standard V&B document layout: roadmap (`index.md`), system overview, view packets,
+- [ ] Standard V&B document layout: roadmap (`README.md`), system overview, view packets,
       mapping between views, rationale, directory.
 - [ ] Every view packet has all five sections (primary presentation, element catalog, context
       diagram, variability guide, rationale). "Variability guide" may say "None." but must exist.

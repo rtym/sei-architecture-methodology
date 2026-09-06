@@ -9,7 +9,7 @@ It packages six activities as separate skills behind one router:
 | Command | Skill | What it does | Output under `architecture/` |
 |---------|-------|--------------|------------------------------|
 | `/sei` | `sei-architecture` | Router — pick or infer the activity you need | — |
-| `/drivers` | `architectural-drivers` | Collect & track the four driver kinds (business goals, use cases, constraints, quality attributes) with a traceability matrix | `architecture/drivers/` package — one file per driver + per-use-case UML diagrams + a utility tree |
+| `/drivers` | `architectural-drivers` | Collect & track the four driver kinds (business goals, use cases, constraints, quality attributes) with a traceability matrix | `architecture/drivers/` package — one file per driver + a `README.md` index per directory + per-use-case UML diagrams + a **tabular** utility tree |
 | `/quality-attributes` | `quality-attributes` | Measurable six-part quality attribute scenarios (ISO/IEC 25010), each drawn as a UML scenario diagram | `quality-attributes/scenarios.md` |
 | `/qaw` | `quality-attribute-workshop` | Facilitate the SEI 8-step Quality Attribute Workshop | `qaw/qaw-report.md` |
 | `/add` | `attribute-driven-design` | Run an ADD 3.0 design session → architecture + C4/UML views + ADR log | `add/<slug>-session.md`, `add/<slug>-Architecture.md` |
@@ -136,6 +136,14 @@ Typical engagements:
 
 ## Examples
 
+A complete worked example — a personal-finance SaaS carried through every activity — ships in
+**both notations**:
+[`examples/personal-finance-tracker-mermaid/`](examples/personal-finance-tracker-mermaid/README.md)
+(every diagram Mermaid) and
+[`examples/personal-finance-tracker-plantuml/`](examples/personal-finance-tracker-plantuml/README.md)
+(every diagram PlantUML / C4-PlantUML). Same prose, drivers, scenarios and decisions; only the
+diagram notation differs.
+
 ### 1. Turn a brief into tracked drivers
 
 ```
@@ -146,10 +154,11 @@ Typical engagements:
 > …
 > Drafted 4 business goals, 3 architecturally-significant use cases, 5 constraints, 6 quality
 > attribute scenarios. Use case diagram for the core actor group below — rendered and verified.
-> Traceability matrix has no orphan drivers. Written to `architecture/drivers/` (one file per driver + `index.md`).
+> Traceability matrix has no orphan drivers. Written to `architecture/drivers/` (one file per
+> driver + a `README.md` index per directory + a tabular utility tree).
 
 See a completed register in
-[`examples/personal-finance-tracker/drivers/`](examples/personal-finance-tracker/drivers/).
+[`examples/personal-finance-tracker-mermaid/drivers/`](examples/personal-finance-tracker-mermaid/drivers/README.md).
 
 ### 2. Measurable quality attribute scenarios, each as a UML diagram
 
@@ -161,7 +170,7 @@ Produces `architecture/quality-attributes/scenarios.md` — every scenario in th
 (source, stimulus, artifact, environment, response, **numeric** response measure), classified
 against ISO/IEC 25010, and drawn as the canonical six-part scenario diagram:
 
-![Six-part quality attribute scenario diagram](examples/personal-finance-tracker/diagrams/scenario-SQA-1.png)
+![Six-part quality attribute scenario diagram](examples/personal-finance-tracker-mermaid/drivers/quality-attributes/diagrams/scenario-SQA-1.png)
 
 ### 3. Design the architecture with ADD 3.0
 
@@ -173,11 +182,11 @@ Walks the seven ADD activities per iteration (review inputs → select drivers �
 choose design concepts → instantiate + interfaces → sketch views → analyse). Writes a session log
 and a companion architecture document with context / container / component / sequence / deployment
 views. Worked output:
-[`examples/personal-finance-tracker/add/`](examples/personal-finance-tracker/add/).
+[`examples/personal-finance-tracker-mermaid/add/`](examples/personal-finance-tracker-mermaid/add/personal-finance-tracker-Architecture.md).
 
 Container view in the house style (SEI palette, one boundary, no crossings):
 
-![Container diagram](examples/personal-finance-tracker/diagrams/container.png)
+![Container diagram](examples/personal-finance-tracker-mermaid/diagrams/container.png)
 
 ### 4. Evaluate an architecture with ATAM
 
@@ -186,8 +195,10 @@ Container view in the house style (SEI palette, one boundary, no crossings):
 ```
 
 Produces `architecture/atam/atam-report.md` — architectural approaches, a quality-attribute
-utility tree, per-scenario analysis, and the **risk / non-risk / sensitivity point / tradeoff
-point** registers consolidated into **risk themes** mapped to the business goals they threaten.
+utility tree (a table, `(V, R)` per leaf), per-scenario analysis, and the **risk / non-risk /
+sensitivity point / tradeoff point** registers consolidated into **risk themes** mapped to the
+business goals they threaten. A **Lightweight Architecture Evaluation** mode runs the same steps
+in half a day with no formal report.
 
 ### 5. Document it — Views and Beyond
 
@@ -212,7 +223,7 @@ legibility checklist — reordering nodes, grouping, or switching to ELK layout 
 minimal. **Use case diagrams use PlantUML** for true UML glyphs (stick-figure actors, ellipse use
 cases, boundary rectangle, dashed `<<include>>` / `<<extend>>`):
 
-![Use case diagram — UC-3](examples/personal-finance-tracker/drivers/use-cases/diagrams/UC-3.png)
+![Use case diagram — UC-3](examples/personal-finance-tracker-plantuml/drivers/use-cases/diagrams/UC-3.png)
 
 ### 7. Build a shareable report (Markdown or HTML, incl. a V&B report)
 
@@ -226,11 +237,11 @@ scripts/build-report.sh --profile vandb architecture/docs/ --format html --embed
   --title "Architecture Description — Acme Platform"
 ```
 
-`--embed-diagrams` renders every ```mermaid block to PNG and inlines it; `--profile vandb` orders
-a `docs/` directory as roadmap → system overview → module → C&C → allocation views → mapping →
-rationale → directory. Output is one self-contained HTML file styled with the SEI palette, with a
-cover page and table of contents. Example:
-[`examples/personal-finance-tracker/reports/architecture-package.html`](examples/personal-finance-tracker/reports/architecture-package.html).
+`--embed-diagrams` renders every ```mermaid **and** ```plantuml block to PNG and inlines it;
+`--profile vandb` orders a `docs/` directory as roadmap → system overview → module → C&C →
+allocation views → mapping → rationale → directory. Output is one self-contained HTML file styled
+with the SEI palette, with a cover page and table of contents. Example:
+[`examples/personal-finance-tracker-mermaid/reports/architecture-package.html`](examples/personal-finance-tracker-mermaid/reports/architecture-package.html).
 
 ---
 
@@ -239,8 +250,9 @@ cover page and table of contents. Example:
 - **Notation**: Mermaid or PlantUML — the ten rules and the render→verify loop are identical for
   both. Sensible defaults: **use case → PlantUML** (real UML glyphs); **context / container /
   component / deployment → Mermaid flowchart-C4** (honours the palette, lays out cleanly, still
-  full C4 semantics — native Mermaid `C4*` is sketch-only); sequence / class / state / scenario /
-  utility-tree → Mermaid.
+  full C4 semantics — native Mermaid `C4*` is sketch-only); sequence / class / state / scenario
+  → Mermaid. Every diagram type also has a PlantUML pattern. The **utility tree is a table**, not
+  a diagram.
 - **Context & container diagrams follow C4 principles** — fixed abstraction level, every element
   typed + technologied + described, explicit system boundary, every relationship a labelled
   directed arrow, ≤ ~10 elements. Enforced by `tests/validate.py`.
@@ -275,14 +287,16 @@ sei-architecture-methodology/
 │   ├── architecture-documentation/
 │   └── sei-diagrams/
 │       ├── assets/                    # palette + theme files (mermaid + plantuml)
+│       │   └── c4/                    #   vendored C4-PlantUML 2.10.0 + sei-c4-palette.puml (offline)
 │       └── scripts/                   # setup.sh, render.sh, render-plantuml.sh
-├── references/                        # deep method notes + best-practices checklist
+├── references/                        # deep method notes + tactics catalog + patterns + checklist
 ├── templates/                         # blank artifact templates (one per driver kind, per report, per view)
 ├── scripts/
-│   ├── mdreport.py                    # dependency-free Markdown → Markdown/HTML report builder (+ --profile vandb)
+│   ├── mdreport.py                    # dependency-free Markdown → Markdown/HTML report builder (mermaid + plantuml embed)
 │   └── build-report.sh
-├── examples/personal-finance-tracker/ # a full worked example, every activity, all diagrams rendered
-│   └── drivers/                       #   business-goals/ use-cases/ constraints/ quality-attributes/ + index.md
+├── examples/
+│   ├── personal-finance-tracker-mermaid/    # the full worked example, every diagram in Mermaid
+│   └── personal-finance-tracker-plantuml/   # the same example, every diagram in PlantUML / C4-PlantUML
 └── tests/
     ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability)
     ├── test_mdreport.py               # mdreport unit tests
@@ -293,15 +307,18 @@ sei-architecture-methodology/
 
 ```
 architecture/drivers/
-├── index.md                          # ID legend · traceability matrix · coverage check · prioritised list · change log
-├── business-goals/BG-<n>.md
-├── use-cases/UC-<n>.md               # + use-cases/diagrams/UC-<n>.puml|.png  (proper UML use case diagram, one per use case)
-├── constraints/CON-<n>.md
+├── README.md                         # ID legend · traceability matrix · coverage check · prioritised list · change log
+├── business-goals/README.md + BG-<n>.md
+├── use-cases/README.md + UC-<n>.md   # + use-cases/diagrams/UC-<n>.puml|.mmd|.png  (proper UML use case diagram, one per use case)
+├── constraints/README.md + CON-<n>.md
 └── quality-attributes/
+    ├── README.md                     # index: links every <ATTR>QA-<n>.md + the utility tree
     ├── <ATTR>QA-<n>.md               # full six-part scenario + its own horizontal scenario diagram
-    ├── utility-tree.md               # the summary of the QA drivers (from the QAW), rendered as a mindmap
+    ├── utility-tree.md               # the summary of the QA drivers as a table (from the QAW); (V, R) per leaf
     └── diagrams/
 ```
+
+Every `README.md` links its files with relative Markdown links and ends with a Navigation footer.
 
 ---
 

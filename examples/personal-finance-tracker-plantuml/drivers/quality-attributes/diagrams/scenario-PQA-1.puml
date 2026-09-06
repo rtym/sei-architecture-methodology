@@ -1,0 +1,17 @@
+@startuml scenario-PQA-1
+!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+left to right direction
+hide stereotype
+title Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour
+rectangle "<b>Source of stimulus</b>\nRegistered user" as SRC #E7E3F3
+rectangle "<b>Stimulus</b>\nLoads the monthly dashboard with 500 concurrent users" as STIM #E7E3F3
+rectangle "<b>Artifact</b>\nDashboard read path" as ART #EDF2F8
+rectangle "<b>Response</b>\nRenders totals, category chart, recent activity and savings-goal progress" as RESP #E4F0E9
+rectangle "<b>Response measure</b>\nFully interactive < 1.5 s at p95" as MEAS #E4F0E9
+rectangle "<b>Environment</b>\nNormal operation" as ENV #F5EEE3
+SRC  --> STIM : generates
+STIM --> ART  : arrives at
+ART  --> RESP : produces
+RESP --> MEAS : measured by
+ENV  ..> ART
+@enduml

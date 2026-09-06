@@ -41,7 +41,7 @@ else
 fi
 
 step "6. mdreport builds HTML + MD from an example"
-src="examples/personal-finance-tracker/drivers/index.md"
+src="examples/personal-finance-tracker-mermaid/drivers/README.md"
 if [ -f "$src" ]; then
   tmp="$(mktemp -d)"
   "$PY" scripts/mdreport.py "$src" --format both --out "$tmp/rep.html" \

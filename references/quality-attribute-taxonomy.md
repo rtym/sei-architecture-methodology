@@ -87,6 +87,34 @@ per test, time to set up a test.
 response = deploy with control, safety, rollback; measure = time to deploy, blast radius,
 rollback time, deployment frequency.
 
+## General scenario "portions" — the menu for each part
+
+A **general scenario** is the attribute-level template: for each of the six parts it lists the
+*range of values* a concrete scenario can pick from. Building a concrete scenario is choosing
+one value (or a few) from each portion and making them specific and measurable.
+
+| Part | Typical portions to choose from |
+|------|--------------------------------|
+| Source | end user · administrator/operator · another system (internal / external, known / unknown) · a timer · a sensor · a developer / a code commit · an attacker · the infrastructure |
+| Stimulus | a request at a given rate/mix · a fault (crash / omission / timing / wrong response) · a change request (to function, platform, capacity, vendor) · an attack (disclose / modify / deny / fabricate) · a deployment · a spike in load |
+| Artifact | the whole system · a specific service / component / connector · a data store · the build pipeline · the deployment infrastructure · a specific interface |
+| Environment | normal operation · peak / overload · degraded mode · startup / shutdown · during deployment · maintenance window · post-incident recovery |
+| Response | serve / process · detect + log + alert · fail over / degrade gracefully / recover · reject + audit · make the change with bounded ripple · scale out |
+| Response measure | latency percentile · throughput (req/s) · availability % / MTBF / MTTR / RPO / RTO · effort (person-days) and elements touched · % of attacks detected / time to breach · task-completion rate / error rate · cost curve vs. load |
+
+Use the per-attribute checklists above to pick sensible portions; then make every chosen value
+concrete and put a **number with a unit** (and, for time, a percentile) on the response measure.
+
+## Tactics and the tactics-based questionnaire
+
+Once an attribute matters, the design levers for it are **tactics** — the per-attribute lists
+are in `references/tactics-catalog.md`, and the patterns that bundle them in
+`references/architecture-patterns.md`. When *analysing* an existing architecture (ATAM Step 6,
+ADD Step 7, or a design review), walk the attribute's **tactics-based questionnaire**: for each
+tactic, ask "is it used? where? how well is it implemented? what is the risk if it is missing or
+weak?" The gaps become risks; the deliberate omissions become non-risks with a stated
+assumption.
+
 ## Sources
 - ISO/IEC 25010:2023 *Systems and software Quality Requirements and Evaluation (SQuaRE) —
   Product quality model*.

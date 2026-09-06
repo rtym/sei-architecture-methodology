@@ -84,6 +84,45 @@ Documentation that spans views or the whole package:
 6. **Directory** — index of elements/relations/design concepts (where each is defined and used),
    glossary, and acronym list.
 
+## Notation — how formal to be
+
+Pick the least formal notation that removes ambiguity for the intended reader:
+
+- **Informal** — boxes and lines with a legend. Fast; fine for a sketch or a rarely-changing
+  view. The risk is that "what a box means" drifts.
+- **Semi-formal** — a defined vocabulary of element and relation types with consistent visual
+  rules: **C4** for structural views, **UML** for behaviour (sequence, state, activity) and for
+  use cases. This is the plugin's default; the `sei-diagrams` skill enforces the visual rules.
+- **Formal** — an architecture description language with defined semantics. Use only when the
+  cost of a misreading is high (safety, contracts) — rare in practice.
+
+State the notation and include or reference a **key/legend** in every view (V&B rule 3).
+
+## Combining views
+
+Two views can be merged into one when they serve overlapping stakeholders and the combined
+picture stays legible — e.g. a **deployment + install** view, or a small system's **module +
+uses** view. A combined view is an *overlay*: it shows the elements of one view annotated with
+information from another (a module box tagged with its runtime component and its node). Combine
+to reduce reader effort; split again the moment the diagram passes ~10 elements or mixes
+abstraction levels.
+
+## Documenting behaviour
+
+Structure diagrams show what the parts are; **behaviour** documentation shows what they do over
+time, and belongs in §2.4 of a view packet (and §6 of the ADD architecture document):
+
+- **Sequence diagram** — the ordered interactions among a fixed set of elements for one
+  scenario (the dashboard read, the failover). Best for showing a path and its branches
+  (`alt` / `opt`).
+- **State machine** — the modes of one element and the events that move it between them
+  (a circuit breaker: closed → open → half-open).
+- **Activity diagram** — a workflow with decisions and parallelism, when control flow (not
+  message passing) is the point.
+
+Every behaviour diagram is followed by a plain-English paragraph that names the scenario, the
+trigger, and the outcome — the diagram supports the prose, it does not replace it.
+
 ## Seven rules for sound documentation
 
 1. Write documentation from the reader's point of view.

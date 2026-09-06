@@ -88,22 +88,24 @@ Take the **top scenarios** (as many as time allows, usually 4–6). For each, pr
 - **issues** / concerns / assumptions surfaced during discussion.
 
 ### Step 9 — Build the quality attribute utility tree
-After refinement, assemble a **proper, correct utility tree** — it is the summary of the
-workshop's quality attributes and becomes the QA summary in the architectural drivers.
+After refinement, assemble the **utility tree as a table** — it is the summary of the workshop's
+quality attributes and becomes the QA summary in the architectural drivers. **It is a table, not
+a diagram.**
 
-`Utility → quality attribute (ISO/IEC 25010 characteristic) → attribute refinement (sub-char) →
-concrete scenario (Importance, Difficulty)`
+One row per leaf scenario, columns *Quality attribute (ISO/IEC 25010 characteristic) ·
+Refinement (concern / sub-characteristic) · Leaf scenario (ID + response measure) · Priority
+(V, R) · Status*.
 
-- Every refined scenario (and every consolidated scenario that survived voting) is a leaf.
-- Each leaf carries the `(Importance, Difficulty)` pair, each `H`/`M`/`L`. Importance comes from
-  the vote ranking + business-goal weight; Difficulty is the architect's estimate.
-- Group leaves under the correct ISO/IEC 25010 characteristic and sub-characteristic.
-- Render it two ways via `sei-diagrams`: an **indented list** and a **Mermaid `mindmap`**
-  (`architecture/qaw/diagrams/utility-tree.png`, visually verified).
+- Every refined scenario (and every consolidated scenario that survived voting) is a leaf row.
+- `(V, R)` = **business value** and **technical risk**, each `H`/`M`/`L`. Business value comes
+  from the vote ranking + business-goal weight; technical risk is the architect's estimate.
+  (`V ≈ Importance`, `R ≈ Difficulty`.) Mark a `(H, H)` leaf `★`.
+- Follow the table with a **"Reading the tree"** note: a QA/refinement with no leaf → look for
+  an unrecorded ASR; the `★` leaves get the most attention.
 - Template: `templates/utility-tree.md`.
 
 Hand this tree to `/drivers` — it populates `architecture/drivers/quality-attributes/utility-tree.md`
-and is referenced from the drivers `index.md`. ATAM step 5 reuses the same structure.
+and is referenced from the drivers `README.md`. ATAM step 5 reuses the same structure.
 
 ## Outputs (all in the report)
 
@@ -115,7 +117,7 @@ and is referenced from the drivers `index.md`. ATAM step 5 reuses the same struc
 6. **Consolidated scenarios** with merge map.
 7. **Prioritised scenarios** — vote table + ranked list.
 8. **Refined scenarios** — six-part form + horizontal scenario diagram + questions + issues.
-9. **Quality attribute utility tree** — indented list + mindmap, every leaf `(Imp, Diff)`.
+9. **Quality attribute utility tree** — a table, one leaf per row, every leaf `(V, R)` + status.
 10. Next steps (feed refined scenarios + utility tree into `/drivers`, then ADD; schedule ATAM).
 
 ## Rules

@@ -1,0 +1,11 @@
+@startuml context
+!include ../../../../skills/sei-diagrams/assets/c4/C4_Context.puml
+!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+LAYOUT_TOP_DOWN()
+title Context — Personal Finance Tracker (C4 level 1)
+Person(user, "Registered user", "Uses a mobile browser")
+System(sys, "Personal Finance Tracker", "Records transactions, shows a monthly dashboard")
+System_Ext(mail, "Email provider", "Transactional email — SMTP/TLS")
+Rel(user, sys, "Records transactions, views the dashboard", "HTTPS")
+Rel(sys, mail, "Sends verification & alert email", "SMTP")
+@enduml

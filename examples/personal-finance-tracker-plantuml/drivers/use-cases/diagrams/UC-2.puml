@@ -1,0 +1,11 @@
+@startuml UC-2
+!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+skinparam actorStyle awesome
+left to right direction
+title Use case — UC-2 View the monthly dashboard
+actor "Registered user" as pa
+rectangle "Personal Finance Tracker" {
+  usecase "UC-2\nView the monthly dashboard" as uc2
+}
+pa --> uc2
+@enduml

@@ -16,8 +16,8 @@ Produce an architecture description following the SEI **Views and Beyond** appro
 al., *Documenting Software Architectures*). The description is a **package of views** plus
 **documentation beyond views** that ties them together.
 
-Output: `architecture/docs/` (create it), one Markdown file per view + supporting docs, and an
-`index.md` roadmap. Deep reference: `references/views-and-beyond.md`. Templates in `templates/`.
+Output: `architecture/docs/` (create it), one Markdown file per view + supporting docs, and a
+`README.md` roadmap. Deep reference: `references/views-and-beyond.md`. Templates in `templates/`.
 Diagrams: the `sei-diagrams` skill (`skills/sei-diagrams/SKILL.md`).
 
 **Keep prompts short.** Numbered lists. **Draft first**, refine.
@@ -98,7 +98,7 @@ The description is a package assembled in this order (this is the standard V&B l
 
 ```
 architecture/docs/
-├── index.md                  # 1. Documentation roadmap  +  2. How the documentation is organised
+├── README.md                 # 1. Documentation roadmap  +  2. How the documentation is organised
 ├── system-overview.md        # 3. System overview
 ├── view-<name>.md            # 4. Views  (one file per view; each is a "view packet", template below)
 │   ...                       #    grouped Module / C&C / Allocation
@@ -108,8 +108,10 @@ architecture/docs/
 └── change-log.md             # revision history of the description itself
 ```
 
-`index.md` also carries the **view selection table** and a scenario-based "where do I look to
-answer X" guide for each stakeholder.
+`README.md` (GitHub renders it on directory browse) also carries the **view selection table**
+and a scenario-based "where do I look to answer X" guide for each stakeholder. Every file
+reference in the package is a working **relative Markdown link**, and `README.md` ends with a
+Navigation footer linking every view packet and the sibling packages.
 
 ## Documentation beyond views
 
@@ -117,8 +119,8 @@ Create these supporting files in `architecture/docs/`:
 
 | File | V&B part | Contents |
 |------|----------|----------|
-| `index.md` | Roadmap + organisation | What documentation exists, how it's organised, how each stakeholder should read it, the view-selection table, and a scenario-based "how to find" guide. |
-| `system-overview.md` | System overview | What the system does, its context, major functional requirements (use cases), and the driving quality attribute scenarios (link to `drivers.md` / `scenarios.md`). |
+| `README.md` | Roadmap + organisation | What documentation exists, how it's organised, how each stakeholder should read it, the view-selection table, and a scenario-based "how to find" guide. |
+| `system-overview.md` | System overview | What the system does, its context, major functional requirements (use cases), and the driving quality attribute scenarios (link to `../drivers/README.md` / `../scenarios.md`). |
 | `mapping-between-views.md` | Mapping between views | Tables mapping elements across views (module → runtime component → deployment node). This is where internal consistency is demonstrated. |
 | `rationale.md` | Rationale | Cross-cutting architecture rationale and the ADR log (`templates/adr.md` per decision). |
 | `directory.md` | Directory | Index, glossary, acronym list. |
@@ -151,8 +153,22 @@ page and a table of contents that follows the V&B section order.
    Present each view packet; refine; write the file.
 4. Write the **beyond-views** files. The `mapping-between-views.md` is mandatory — it is how the
    package proves internal consistency.
-5. Write `index.md` last, once the view set is stable.
-6. Run `python tests/validate.py architecture/docs/*.md` and fix any reported issues.
+5. Write `README.md` last, once the view set is stable; end it with a Navigation footer.
+6. Run `python tests/validate.py architecture/docs/*.md` and fix any reported issues, including
+   broken relative links.
+
+## Notation, combining views, behaviour
+
+Deep guidance in `references/views-and-beyond.md`:
+
+- **Notation** — use the least formal notation that removes ambiguity for the reader: C4 for
+  structure, UML for behaviour and use cases; always with a legend. The `sei-diagrams` skill
+  enforces the visual rules and offers every diagram type in Mermaid **or** PlantUML.
+- **Combining views** — merge two views into one overlay only when they serve overlapping
+  stakeholders and the result stays ≤ ~10 elements at one abstraction level.
+- **Behaviour** — §2.4 of each view packet (and §6 of the ADD architecture doc): sequence for a
+  scenario path, state machine for one element's modes, activity for a workflow. Each behaviour
+  diagram is followed by a plain-English paragraph.
 
 ## The seven rules for sound documentation (apply throughout)
 

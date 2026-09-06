@@ -82,9 +82,21 @@ Dissent / notes: <record any objection to a merge>
 - **Relevant quality attributes (ISO/IEC 25010)**: <characteristic / sub>
 - **Six-part scenario diagram**: 
 
-![CS-<id> six-part scenario](../diagrams/scenario-CS-<id>.png) — visually verified: y/n
+![CS-<id> six-part scenario](diagrams/scenario-CS-<id>.png) — visually verified: y/n
 - **Questions**: <how would the architecture achieve this?>
 - **Issues / assumptions**: 
+
+## Step 9 — Quality attribute utility tree
+
+A **table** (see `templates/utility-tree.md`). Every refined / surviving scenario is a leaf row.
+`(V, R)` = (business value, technical risk), each H/M/L; `★` = (H, H).
+
+| Quality attribute (ISO/IEC 25010) | Refinement (concern) | Leaf scenario (ID — one line + measure) | Priority (V, R) | Status |
+|-----------------------------------|----------------------|----------------------------------------|:---------------:|:------:|
+| <characteristic> | <concern> | <ATTR>QA-<n> — <one line> (<measure>) | (H, M) | open |
+
+_Reading the tree_: a QA / refinement with no leaf → look for an unrecorded ASR; the `★`
+leaves get the most attention; note which leaves are `addressed` vs `open`.
 
 ## Next steps
 

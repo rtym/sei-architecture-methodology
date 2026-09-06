@@ -1,0 +1,35 @@
+' SEI diagrams — C4-PlantUML palette overlay.
+' Include AFTER one of the C4_*.puml files so the C4 element styles use the SEI palette
+' (matches assets/palette.md and assets/mermaid-theme.json). Non-C4 PlantUML uses
+' assets/plantuml-theme.puml instead.
+'
+'   !include <path>/c4/C4_Container.puml
+'   !include <path>/c4/sei-c4-palette.puml
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Helvetica
+skinparam defaultFontColor #1F2933
+skinparam ArrowColor #6B7A8D
+skinparam ArrowFontColor #1F2933
+skinparam wrapWidth 200
+
+' person = lavender · internal system/container/component = calm blue ·
+' datastore = green · external = tan · boundary = grey dashed
+UpdateElementStyle("person",              $bgColor="#E7E3F3", $borderColor="#6B5BA6", $fontColor="#1F2933")
+UpdateElementStyle("external_person",     $bgColor="#F5EEE3", $borderColor="#B07D3B", $fontColor="#1F2933")
+UpdateElementStyle("system",              $bgColor="#EDF2F8", $borderColor="#3E6DA5", $fontColor="#1F2933")
+UpdateElementStyle("external_system",     $bgColor="#F5EEE3", $borderColor="#B07D3B", $fontColor="#1F2933")
+UpdateElementStyle("system_db",           $bgColor="#E4F0E9", $borderColor="#3F7D5C", $fontColor="#1F2933")
+UpdateElementStyle("system_queue",        $bgColor="#E4F0E9", $borderColor="#3F7D5C", $fontColor="#1F2933")
+UpdateElementStyle("container",           $bgColor="#EDF2F8", $borderColor="#3E6DA5", $fontColor="#1F2933")
+UpdateElementStyle("external_container",  $bgColor="#F5EEE3", $borderColor="#B07D3B", $fontColor="#1F2933")
+UpdateElementStyle("container_db",        $bgColor="#E4F0E9", $borderColor="#3F7D5C", $fontColor="#1F2933")
+UpdateElementStyle("container_queue",     $bgColor="#E4F0E9", $borderColor="#3F7D5C", $fontColor="#1F2933")
+UpdateElementStyle("component",           $bgColor="#EDF2F8", $borderColor="#3E6DA5", $fontColor="#1F2933")
+UpdateElementStyle("external_component",  $bgColor="#F5EEE3", $borderColor="#B07D3B", $fontColor="#1F2933")
+UpdateElementStyle("component_db",        $bgColor="#E4F0E9", $borderColor="#3F7D5C", $fontColor="#1F2933")
+UpdateElementStyle("node",                $bgColor="#FBFCFE", $borderColor="#9AA7B4", $fontColor="#1F2933")
+UpdateBoundaryStyle("system",             $borderColor="#9AA7B4", $fontColor="#1F2933")
+UpdateBoundaryStyle("container",          $borderColor="#9AA7B4", $fontColor="#1F2933")
+UpdateBoundaryStyle("enterprise",         $borderColor="#9AA7B4", $fontColor="#1F2933")
+UpdateRelStyle($lineColor="#6B7A8D", $textColor="#1F2933")

@@ -1,0 +1,19 @@
+@startuml sequence-dashboard
+!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+title UC-2 dashboard load — realises PQA-1
+autonumber
+participant "Web App" as U
+participant "API Service" as A
+participant "Read Cache" as C
+participant "Primary Database" as D
+U -> A : GET /dashboard (month)
+A -> C : GET aggregates(user, month)
+alt cache hit
+  C --> A : aggregates
+else cache miss
+  A -> D : SELECT aggregate rows (tenant-scoped)
+  D --> A : rows
+  A -> C : SET aggregates(user, month) TTL 15 min
+end
+A --> U : 200 dashboard JSON
+@enduml

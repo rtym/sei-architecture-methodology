@@ -44,10 +44,17 @@ sensitivity points, tradeoff points, risk themes.
 
 ## Step 5 — Quality attribute utility tree
 
-<indented list + Mermaid mindmap — see templates/utility-tree.md>
+A **table** (see `templates/utility-tree.md`). `(V, R)` = (business value, technical risk);
+`★` = architecturally significant (H, H).
 
+| Quality attribute | Refinement (concern) | Leaf scenario (ID — one line + measure) | Priority (V, R) | Status |
+|-------------------|----------------------|----------------------------------------|:---------------:|:------:|
+| Security | Confidentiality | SQA-1 — 0 cross-tenant reads; 100 % logged | (H, H) `★` | open |
+| Reliability | Availability | AQA-1 — AZ failure recovers < 60 s; ≥ 99.5 %/mo | (H, H) `★` | open |
+| Performance efficiency | Time behaviour | PQA-1 — dashboard < 1.5 s @ p95, 500 concurrent | (H, M) | open |
 
-![Utility tree](diagrams/utility-tree.png) — visually verified: y/n
+_Reading the tree_: a refinement with no leaf → look for an unrecorded ASR; the `★` `(H,H)`
+leaves get the most analysis. The `★` and `(H,M)` leaves are what Step 6 analyses.
 
 ## Step 6 — Analyse architectural approaches (Phase 1 scenarios)
 

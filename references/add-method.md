@@ -30,30 +30,40 @@ not just functionality.
    high-difficulty. The goal is one sentence.
 3. **Choose one or more elements of the system to refine.** Iteration 1 of a greenfield system =
    the whole system. Later = a specific module/service/component produced earlier.
-4. **Choose one or more design concepts that satisfy the selected drivers.** Concept categories:
-   - **Reference architectures** — domain-proven overall structures (e.g. web app 3-tier,
-     microservices, event-driven, pipe-and-filter, service mesh, Lambda/serverless).
-   - **Architectural / design patterns** — layers, ports & adapters, CQRS, saga, broker,
-     publish-subscribe, MVC/MVVM, gateway, sidecar, strangler fig.
-   - **Tactics** — fine-grained techniques per quality attribute: availability (redundancy,
-     health check, failover, rollback, degradation), performance (caching, load balancing,
-     bounded queues, concurrency, data locality), security (authenticate, authorize, encrypt,
-     audit, limit exposure), modifiability (encapsulate, intermediary, restrict dependencies,
-     defer binding), scalability (statelessness, partitioning, elastic pools).
+4. **Choose one or more design concepts that satisfy the selected drivers.** The **design
+   concept catalog** — the menu you choose from, coarse to fine:
+   - **Reference architectures** — domain-proven whole-system structures (web app 3-tier,
+     microservices, event-driven / streaming, pipe-and-filter / batch, serverless, modular
+     monolith). See `references/architecture-patterns.md` (last section).
+   - **Deployment patterns** — blue/green, canary, sidecar, service mesh, feature toggle.
+   - **Architectural & design patterns** — layers, ports & adapters, CQRS, saga, broker,
+     publish–subscribe, gateway, strangler fig, anti-corruption layer, circuit breaker,
+     bulkhead, cache-aside, load balancer. Catalog: `references/architecture-patterns.md`.
+   - **Tactics** — the fine-grained decisions below patterns, one per quality-attribute
+     response. Full per-attribute lists: `references/tactics-catalog.md`.
    - **Externally developed components** — frameworks, middleware, cloud services, SaaS,
-     libraries.
-   Evaluate 2–4 alternatives per driver cluster with pros/cons; record why the chosen one wins
-   and which were discarded, citing driver IDs.
+     libraries; a "buy/adopt vs build" decision with its own tradeoffs (fit, lock-in, control).
+
+   Procedure: for each driver cluster, list 2–4 candidate concepts; put them in a pros/cons
+   table; every row's rationale cites ≥ 1 driver ID; record the choice **and** the discarded
+   alternatives with why. Where a concept is a tactic, name it from the catalog so ATAM can
+   later question it with the matching tactics-based questionnaire.
 5. **Instantiate architectural elements, allocate responsibilities, and define interfaces.**
-   Turn the abstract concept into concrete named elements. For each: its responsibility, and its
-   provided/required interfaces (operations, data, protocol, error semantics).
+   Turn each chosen concept into concrete named elements — the structures the iteration
+   produces (module, C&C, allocation). For each element: a single clear responsibility, and its
+   **provided / required interfaces** — operations, data and their types, protocol, error and
+   exception semantics, and any quality-of-service the interface guarantees. Record instantiation
+   decisions (what was created / split / merged and why) alongside the interface table.
 6. **Sketch views and record design decisions.** Produce/update the views that capture this
-   iteration's decisions (context, container, component, sequence, deployment; module/C&C/
-   allocation for fuller docs). Record decisions in an ADR-style log with rationale tied to
-   drivers.
+   iteration's decisions (context, container, component, sequence, deployment; module / C&C /
+   allocation for fuller docs). "Sketch" is deliberate — enough detail to analyse, not a
+   finished description. Record decisions in an ADR-style log with rationale tied to driver IDs
+   and the alternatives rejected.
 7. **Perform analysis of the current design and review the iteration goal.** For each selected
-   driver: satisfied / partially / not addressed, with notes on risks and assumptions. Decide
-   whether another iteration is needed and, if so, with which remaining drivers.
+   driver: satisfied / partially / not addressed, with notes on risks and assumptions. Use the
+   **tactics-based questionnaire** for each attribute (`references/tactics-catalog.md`) as the
+   checklist — for every relevant tactic ask "is it used, where, and what is the risk if not?".
+   Then decide whether another iteration is needed and, if so, with which remaining drivers.
 
 ## Iteration planning (pragmatic extension)
 

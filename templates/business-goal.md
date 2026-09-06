@@ -13,6 +13,18 @@
 
 <Why this goal matters now; the pressure or opportunity behind it.>
 
+## Business-goal scenario (7 parts) — optional, for an important or contested goal
+
+| Part | Value |
+|------|-------|
+| Goal-source | <who wants it met> |
+| Goal-subject | <whose satisfaction the goal is about> |
+| Goal-object | <the system / organisation / portfolio the goal concerns> |
+| Environment | <market, regulatory, timeframe context in which it applies> |
+| Goal | <the goal, stated concretely> |
+| Goal-measure | <how and by when success is judged> |
+| Pedigree & value | <who set it, confidence, volatility, priority/value> |
+
 ## Supported by
 
 - Use cases: `UC-…`

@@ -1,0 +1,17 @@
+@startuml scenario-UQA-1
+!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+left to right direction
+hide stereotype
+title Quality attribute scenario — UQA-1 — Interaction capability / operability
+rectangle "<b>Source of stimulus</b>\nFirst-time user" as SRC #E7E3F3
+rectangle "<b>Stimulus</b>\nAttempts to record their first transaction" as STIM #E7E3F3
+rectangle "<b>Artifact</b>\nTransaction form" as ART #EDF2F8
+rectangle "<b>Response</b>\nUser completes the entry without consulting help documentation" as RESP #E4F0E9
+rectangle "<b>Response measure</b>\n>= 85 % task-completion rate in a 10-person moderated usability test" as MEAS #E4F0E9
+rectangle "<b>Environment</b>\nNormal operation" as ENV #F5EEE3
+SRC  --> STIM : generates
+STIM --> ART  : arrives at
+ART  --> RESP : produces
+RESP --> MEAS : measured by
+ENV  ..> ART
+@enduml

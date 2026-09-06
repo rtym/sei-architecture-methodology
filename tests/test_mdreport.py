@@ -69,6 +69,13 @@ def main() -> int:
         check("language-mermaid" in html, "html: mermaid kept as source when not embedding")
         check(html.count("<h2") >= 1, "html: section heading")
 
+        # a ```plantuml block falls back to a source block when not embedding
+        puml = "# T\n\n```plantuml\n@startuml\ntitle X\nA --> B\n@enduml\n```\n"
+        p2 = Path(td) / "puml.md"
+        p2.write_text(puml, encoding="utf-8")
+        h2 = mdreport.to_html([p2], "T", "", want_toc=False, embed=False, standalone=True)
+        check("language-plantuml" in h2, "html: plantuml kept as source when not embedding")
+
         md = mdreport.to_md([src], "Title One", "sub", want_toc=True)
         check(md.startswith("# Title One"), "md: title")
         check("## Contents" in md, "md: toc")

@@ -296,10 +296,13 @@ iteration. **State the choice and why. Wait for confirmation.**
 
 ### Step 4 — Choose design concept(s)
 
-Consider: reference architectures · deployment patterns · frameworks & middleware · design
-patterns · tactics (caching, circuit breaker, bulkhead, retry, …) · externally developed
-components. Evaluate 2–4 candidates in a pros/cons table; every rationale cites ≥ 1 driver ID.
-**Present the table and wait for review.**
+Choose from the **design concept catalog** (coarse → fine): reference architectures ·
+deployment patterns · architectural & design patterns · **tactics** · externally developed
+components. The per-attribute tactic lists are in `references/tactics-catalog.md`; the patterns
+(with their principal tradeoff) are in `references/architecture-patterns.md`. Evaluate 2–4
+candidates per driver cluster in a pros/cons table; every rationale cites ≥ 1 driver ID; record
+the discarded alternatives and why. Name tactics from the catalog so Step 7 and ATAM can
+question them with the matching questionnaire. **Present the table and wait for review.**
 
 ### Step 5 — Instantiate elements, allocate responsibilities, define interfaces
 
@@ -324,10 +327,12 @@ writing to `Architecture.md`.**
 
 ### Step 7 — Analyse and review the iteration goal
 
-Analysis table: each selected driver → **yes / partially / no** + notes. State whether the goal
-was achieved and which drivers/concerns remain. Ask whether to run another iteration. Yes →
-Step 2 with remaining drivers. No → set **Status: completed**, print both file paths, and offer
-to run `/architecture-docs` (Views & Beyond) and `/atam` (evaluation).
+Analysis table: each selected driver → **yes / partially / no** + notes. Drive the analysis with
+the **tactics-based questionnaire** for each attribute in play (`references/tactics-catalog.md`):
+for every relevant tactic, is it used, where, and what is the risk if it is not? State whether
+the goal was achieved and which drivers/concerns remain. Ask whether to run another iteration.
+Yes → Step 2 with remaining drivers. No → set **Status: completed**, print both file paths, and
+offer to run `/architecture-docs` (Views & Beyond) and `/atam` (evaluation).
 
 ## Rules
 

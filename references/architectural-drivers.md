@@ -12,16 +12,39 @@ Because a real system has many drivers, the `architectural-drivers` skill stores
 
 ```
 architecture/drivers/
-├── index.md            # ID legend · traceability matrix · coverage check · prioritised list · change log
-├── business-goals/BG-<n>.md
-├── use-cases/UC-<n>.md          (+ use-cases/diagrams/UC-<n>.puml|.png — one UML use case diagram each)
-├── constraints/CON-<n>.md
-└── quality-attributes/<ATTR>QA-<n>.md   (six-part scenario + horizontal scenario diagram)
-    └── utility-tree.md          # the summary of the quality attributes (from the QAW)
+├── README.md           # ID legend · traceability matrix · coverage check · prioritised list · change log
+├── business-goals/README.md + BG-<n>.md
+├── use-cases/README.md + UC-<n>.md   (+ use-cases/diagrams/UC-<n>.puml|.mmd|.png — one UML use case diagram each)
+├── constraints/README.md + CON-<n>.md
+└── quality-attributes/
+    ├── README.md               # index: links every <ATTR>QA-<n>.md + the utility tree
+    ├── <ATTR>QA-<n>.md         (six-part scenario + horizontal scenario diagram)
+    └── utility-tree.md         # the summary of the quality attributes — a TABLE (from the QAW)
 ```
 
-Add a driver = add a file + one row in `index.md`. Never renumber; retire (`Status: retired`),
-don't delete.
+Add a driver = add a file + one row in the top `README.md` + one row in the subdirectory
+`README.md`. Every cross-reference is a relative Markdown link. Never renumber; retire
+(`Status: retired`), don't delete.
+
+## What makes a requirement an ASR
+
+An **architecturally significant requirement** is one worth capturing here because it meets
+**both** tests:
+
+1. **Profound impact on the architecture** — including it leads to a materially different
+   structure than leaving it out.
+2. **High business or mission value** — it matters enough to important stakeholders that the
+   architecture should satisfy it, possibly at the expense of others.
+
+ASRs come from four places, and are recorded in one place (this register) so they can be
+reviewed, cited in decisions, and revisited on change:
+
+- **requirements documents** — read them, colour-code architecturally significant material,
+  chase the rest to a stakeholder;
+- **stakeholder interviews / a QAW** — elicit and prioritise scenarios directly;
+- **the architect's utility tree** — when stakeholders are not available, the architect drafts
+  the QA-related ASRs top-down (Utility → QA → refinement → scenario) and rates each leaf;
+- **derivation from business goals** — each goal implies requirements the architecture must meet.
 
 ## The four kinds
 
@@ -42,6 +65,21 @@ business-goal categories (from *Software Architecture in Practice*, and the PALM
 11. Managing **relationships with stakeholders, suppliers, partners**.
 
 Write each goal as: *`<stakeholder>` needs `<outcome>` so that `<business value>`.*
+
+For an important or contested goal, expand it into a **seven-part business-goal scenario** (the
+structure PALM elicits):
+
+| Part | What it captures |
+|------|------------------|
+| 1. Goal-source | the person / role who wants the goal met |
+| 2. Goal-subject | the stakeholder(s) whose satisfaction the goal is about |
+| 3. Goal-object | the entity the goal is about — the system, the organisation, a portfolio |
+| 4. Environment | the context in which the goal applies (market conditions, regulatory regime, timeframe) |
+| 5. Goal | the goal itself, stated concretely |
+| 6. Goal-measure | how and by when success is judged |
+| 7. Pedigree & value | who set the goal, how confident they are, how volatile it is, and its value/priority |
+
+A goal expressed this way makes the derived ASRs and their priorities defensible.
 
 ### 2. Primary functional requirements — as use cases (`UC-`)
 The behaviour the system must provide **that has architectural impact**. Not every feature — only
@@ -71,7 +109,27 @@ driver.
 ### 4. Quality attributes — as scenarios (`<ATTR>QA-`)
 The measurable qualities. Classified against **ISO/IEC 25010** (see
 `quality-attribute-taxonomy.md`), each expressed as a **six-part scenario** and drawn as a
-six-part UML scenario diagram. Prioritised with an `(Importance, Difficulty)` pair.
+six-part UML scenario diagram. Prioritised with a `(V, R)` pair — **business value** and
+**technical risk**, each `H`/`M`/`L` (`V ≈ Importance`, `R ≈ Difficulty`).
+
+## The utility tree — a table
+
+The utility tree is the summary of all quality-attribute ASRs, kept in
+`quality-attributes/utility-tree.md` **as a table**, not a diagram. Three grouping levels are
+columns:
+
+| Quality attribute (ISO/IEC 25010) | Refinement (concern) | Leaf scenario (ID + response measure) | Priority (V, R) | Status |
+
+- The **root** is "Utility" (overall fitness for purpose).
+- Each leaf is a concrete scenario with an explicit response and a numeric response measure.
+- `(V, R)`: **V** = must-have (`H`) / important-not-fatal (`M`) / nice-to-have (`L`);
+  **R** = keeps-you-up-at-night (`H`) / concerning (`M`) / confident (`L`). Mark `(H, H)` `★`.
+- **Checks after filling it in**: a QA or refinement with no leaf is a prompt to look for an
+  unrecorded ASR (not automatically an error); the `★` leaves get the most design attention,
+  and a large number of them is a signal to question feasibility.
+
+The QAW produces this table at its Step 9; otherwise the architect drafts it. ATAM Step 5 reuses
+it and analyses the `★` / `(H, M)` leaves.
 
 ## Traceability
 

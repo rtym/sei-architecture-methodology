@@ -30,7 +30,10 @@ the calling skill already fixed it. Sensible defaults when they have no preferen
 | **Use case** | **PlantUML `usecase`** | only PlantUML has real UML glyphs — stick-figure actors, ellipse use cases, boundary rectangle, `<<include>>`/`<<extend>>` dependencies |
 | Context / container / component / deployment | **Mermaid flowchart-C4** | honours the SEI palette and lays out cleanly; still full C4 semantics |
 | Sequence / class / state | Mermaid | native support, renders without Java |
-| Quality attribute scenario / utility tree | Mermaid | `flowchart LR` / `mindmap` |
+| Quality attribute scenario | Mermaid `flowchart LR` (PlantUML pattern also provided) | the canonical six-part box-and-arrow |
+
+> The quality-attribute **utility tree is a table, not a diagram** — see
+> `templates/utility-tree.md`. `sei-diagrams` does not render it.
 
 - **Mermaid** — `.mmd` source, `scripts/render.sh` (first run `scripts/setup.sh`). No Java.
 - **PlantUML** — `.puml` source, `scripts/render-plantuml.sh`. Needs Java; the script
@@ -92,8 +95,9 @@ Never present or embed a diagram you have not looked at as a rendered image.
 | Domain / class model | UML class | Mermaid `classDiagram` |
 | Lifecycle / mode logic | UML state | Mermaid `stateDiagram-v2` |
 | **Use case model** | UML use case | **PlantUML `usecase`** (true UML glyphs — default); Mermaid `flowchart LR` fallback |
-| Quality attribute scenario (6-part) | box-and-arrow | Mermaid `flowchart LR` (pattern below) |
-| Utility tree | tree | Mermaid `mindmap` |
+| Quality attribute scenario (6-part) | box-and-arrow | Mermaid `flowchart LR` or the PlantUML pattern (both below) |
+
+> **Utility tree** — not a diagram. It is a Markdown table (`templates/utility-tree.md`).
 
 ### Context & container diagrams follow the C4 model
 
@@ -125,12 +129,20 @@ Both satisfy the principles above — pick per the user's notation choice:
   file (default blue, not the SEI palette) and routes edges poorly (labels collide), so it is
   **not** used for rendered deliverables — only for a throwaway inline sketch. The flowchart-C4
   form below is still C4; only the drawing primitive differs.
-- **C4-PlantUML** — canonical C4 shapes and stereotypes via the
-  [`C4-PlantUML`](https://github.com/plantuml-stdlib/C4-PlantUML) macros
-  (`!include <C4/C4_Context>` etc., `Person()`, `System()`, `Container()`, `Rel()`,
-  `System_Boundary()`). Renders properly with the palette from `assets/plantuml-theme.puml`;
-  needs Java (`scripts/render-plantuml.sh` explains how to install it). Use when the user wants
-  canonical C4 notation.
+- **C4-PlantUML** — canonical C4 shapes and stereotypes via the C4-PlantUML macros
+  (`Person()`, `System()`, `Container()`, `Component()`, `Rel()`, `System_Boundary()`,
+  `Deployment_Node()`). **The C4-PlantUML macro set is vendored** under
+  `assets/c4/` (`C4.puml`, `C4_Context.puml`, `C4_Container.puml`, `C4_Component.puml`,
+  `C4_Deployment.puml`), so it renders **offline** — `!include` it by **relative path**, never
+  `<C4/…>` (which fetches from the network). Follow the C4 include with
+  `!include …/c4/sei-c4-palette.puml` so the C4 elements use the SEI palette (the
+  non-C4 `plantuml-theme.puml` does not restyle C4 macros). Needs Java
+  (`scripts/render-plantuml.sh` explains how to install it). Use when the user wants canonical
+  C4 notation.
+
+The worked example ships in **both notations** — `examples/personal-finance-tracker-mermaid/`
+(every diagram Mermaid) and `examples/personal-finance-tracker-plantuml/` (every diagram
+PlantUML / C4-PlantUML) — as a side-by-side reference.
 
 ### Structural diagram — house style (context / container / component / deployment)
 
@@ -167,12 +179,14 @@ class and sit **outside** the `subgraph` boundary. Put the tech stack on an `<i>
 relationship with an action phrase. For a **deployment** diagram, nest `subgraph`s for
 region → cluster → node and place containers in the leaf `subgraph`.
 
-Same diagram in **C4-PlantUML** (canonical notation; render with `scripts/render-plantuml.sh`):
+Same diagram in **C4-PlantUML** (canonical notation; render with `scripts/render-plantuml.sh`).
+Adjust the `../…` depth so the two includes resolve from the `.puml` file's location:
 
 ```plantuml
-@startuml
-!include <C4/C4_Container>
-!include ../../skills/sei-diagrams/assets/plantuml-theme.puml
+@startuml container
+!include ../../skills/sei-diagrams/assets/c4/C4_Container.puml
+!include ../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+LAYOUT_TOP_DOWN()
 title Container diagram — <System>
 Person(user, "User role", "how they access")
 System_Ext(ext, "External system", "protocol")
@@ -189,6 +203,14 @@ Rel(api, bus, "Publishes events")
 Rel(api, ext, "Sends notifications", "SMTP")
 @enduml
 ```
+
+**Deployment** in C4-PlantUML: `!include …/c4/C4_Deployment.puml`, then nest
+`Deployment_Node(id, "name", "type") { … }` for region → platform → node, with `Container` /
+`ContainerDb` in the leaf nodes.
+
+**Sequence** in PlantUML: `!include …/assets/plantuml-theme.puml`, then `autonumber`, declare
+all `participant`s at the top, `->` for calls and `-->` for returns, `alt` / `group` for
+branches — one message per line, no `;` in message text.
 
 ## Quality attribute scenario diagram
 
@@ -215,6 +237,30 @@ flowchart LR
 Rules for this pattern: exactly the six parts, left-to-right; the `Artifact` node lives **inside**
 the `Environment` subgraph; the ISO/IEC 25010 characteristic goes in the `%%` comment title line;
 use `classDef` names `source`, `artifact`, `response` (defined in the theme) for consistent colour.
+
+Same scenario in **PlantUML** (house pattern): five `rectangle`s left-to-right, plus an
+`Environment` rectangle joined to the `Artifact` by a dashed dependency. Keep it `left to right
+direction`; do **not** add `skinparam linetype ortho` here (it forces the row vertical).
+
+```plantuml
+@startuml scenario-PQA-1
+!include ../../skills/sei-diagrams/assets/plantuml-theme.puml
+left to right direction
+hide stereotype
+title Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour
+rectangle "<b>Source of stimulus</b>\nRegistered user" as SRC #E7E3F3
+rectangle "<b>Stimulus</b>\nLoads the dashboard (500 concurrent users)" as STIM #E7E3F3
+rectangle "<b>Artifact</b>\nDashboard read path" as ART #EDF2F8
+rectangle "<b>Response</b>\nRenders all charts and recent activity" as RESP #E4F0E9
+rectangle "<b>Response measure</b>\nFully interactive < 1.5 s at p95" as MEAS #E4F0E9
+rectangle "<b>Environment</b>\nNormal operation" as ENV #F5EEE3
+SRC  --> STIM : generates
+STIM --> ART  : arrives at
+ART  --> RESP : produces
+RESP --> MEAS : measured by
+ENV  ..> ART
+@enduml
+```
 
 ## Use case diagram
 
@@ -288,7 +334,7 @@ are dashed `<<…>>` dependencies, and there are no avoidable crossings — iter
 
 1. **Title.** Every diagram starts with a title: native `C4*` diagrams use a `title` line right
    after the keyword; `sequenceDiagram` uses `title …` on line 2; `flowchart` / `classDiagram` /
-   `stateDiagram` / `mindmap` put the title in a top `%%` comment.
+   `stateDiagram` put the title in a top `%%` comment; PlantUML uses a `title` line.
 2. **Aliases** are `camelCase` or `snake_case` — never contain spaces (`apiService`, not `api service`).
 3. **Descriptions.** Every element carries a specific role/description — a last string argument in
    native C4, an `<i>…</i>` line in flowchart-C4.

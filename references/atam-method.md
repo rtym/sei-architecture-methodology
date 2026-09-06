@@ -59,7 +59,10 @@ stakeholder roster for Phase 2, and the schedule.
    the evaluation on what matters.
 6. **Analyze architectural approaches.** For each high-priority scenario (typically the (H,H) and
    (H,M) leaves): identify the approaches that affect it, ask probing questions, and document
-   risks, non-risks, sensitivity points and tradeoff points. Record the reasoning.
+   risks, non-risks, sensitivity points and tradeoff points. Record the reasoning. Use the
+   **tactics-based questionnaire** for the relevant quality attribute
+   (`references/tactics-catalog.md`) as the question bank — for each tactic ask whether it is
+   used, where, how well, and what the risk is if it is absent.
 
 ### Phase 2 — Evaluation (add the broader stakeholder group, ~2 days)
 
@@ -88,6 +91,25 @@ stakeholder roster for Phase 2, and the schedule.
 - **Risk theme**: a set of risks with a common root (e.g. "no operational monitoring anywhere",
   "availability depends on several unreplicated singletons"). Themes, not individual risks, drive
   the recommendations.
+
+## Lightweight Architecture Evaluation
+
+A full ATAM is a two-phase, multi-day exercise with external evaluators and a formal report —
+right for a high-risk, high-cost, or contested architecture. For a routine check (each ADD
+round, before a release, or on a smaller system) run a **Lightweight Architecture Evaluation**:
+
+- **Who**: the project's own team — architect, a lead developer, and someone to scribe. No
+  external evaluators, no broad stakeholder group.
+- **How long**: a few hours to half a day.
+- **Steps**: the same *conceptual* flow — present the business drivers, present the
+  architecture, identify architectural approaches, (re)build or reuse the utility tree, analyse
+  the `(H,H)` / `(H,M)` scenarios against the approaches with the tactics-based questionnaires,
+  and record risks / non-risks / sensitivity points / tradeoff points / risk themes. Skip the
+  Phase-2 scenario brainstorming and voting unless something is genuinely unclear.
+- **Output**: the same registers, kept in `atam-report.md` marked `Lightweight`; no separate
+  written report and no formal out-brief.
+- **When to escalate to a full ATAM**: the lightweight pass surfaces a systemic risk theme, the
+  stakeholders disagree about priorities, or the cost of being wrong is high.
 
 ## After ATAM
 

@@ -38,8 +38,11 @@ A scenario without a **numeric response measure** is not finished — push until
 
 Classify every scenario against the **ISO/IEC 25010:2023** product quality model. This is the
 standard taxonomy; the SEI six-part scenario is the *form*, ISO 25010 supplies the *vocabulary*.
-Full definitions, the sub-characteristic breakdown, and a stimulus/response menu per
-characteristic are in `references/quality-attribute-taxonomy.md`.
+Full definitions, the sub-characteristic breakdown, the **general-scenario "portions"** menu
+(the range of values each of the six parts can take), and the per-attribute tactics-based
+questionnaire are in `references/quality-attribute-taxonomy.md` (with tactic and pattern lists
+in `references/tactics-catalog.md` and `references/architecture-patterns.md`). Build each
+concrete scenario by choosing values from the portions and making the response measure numeric.
 
 | # | ISO/IEC 25010:2023 characteristic | Sub-characteristics | SEI / BCK term often used |
 |---|-----------------------------------|---------------------|--------------------------|
@@ -113,10 +116,11 @@ For each `<ATTR>QA-n`:
 
 ### Step 6 — Build the utility tree (optional but recommended)
 
-Organise scenarios into a **utility tree**: `Utility → quality attribute → refinement → scenario
-(Importance, Difficulty)`. This is the same structure ATAM step 5 uses. Template:
-`templates/utility-tree.md`. Render it as an indented list or a Mermaid `mindmap` via the
-`sei-diagrams` skill.
+Organise the scenarios into a **utility tree — a table, not a diagram**: one row per leaf
+scenario with columns *Quality attribute · Refinement (concern) · Leaf scenario (ID + response
+measure) · Priority (V, R) · Status*. `(V, R)` = business value and technical risk, each H/M/L
+(`V ≈ Importance`, `R ≈ Difficulty`); mark a `(H, H)` leaf `★`. This is the same structure ATAM
+step 5 uses. Template: `templates/utility-tree.md`.
 
 ### Step 7 — Prioritised driver list
 
@@ -169,7 +173,13 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ## Utility tree
 
-<indented list: Utility -> QA -> refinement -> <ATTR>QA-n (Imp, Diff)>
+| Quality attribute | Refinement (concern) | Leaf scenario (ID — one line + measure) | Priority (V, R) | Status |
+|-------------------|----------------------|----------------------------------------|:---------------:|:------:|
+| Security | Confidentiality | SQA-1 — 0 cross-tenant reads; 100 % logged | (H, H) `★` | open |
+| Performance efficiency | Time behaviour | PQA-1 — dashboard < 1.5 s @ p95, 500 concurrent | (H, M) | open |
+
+_Reading the tree_: a refinement with no leaf → look for an unrecorded ASR; the `★` `(H,H)`
+leaves get the most attention.
 
 ## Architectural drivers (prioritised)
 

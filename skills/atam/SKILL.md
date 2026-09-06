@@ -16,6 +16,21 @@ attribute goals and reveals how quality attributes **trade off** against one ano
 
 Output file: `architecture/atam/atam-report.md` (create the folder). Update after every step.
 Deep reference: `references/atam-method.md`. Report template: `templates/atam-report.md`.
+Tactic and pattern catalogs for Step 6: `references/tactics-catalog.md`,
+`references/architecture-patterns.md`.
+
+### Full ATAM or a lightweight evaluation?
+
+Ask up front which mode fits:
+
+- **Full ATAM** (this skill's default) — external or cross-team evaluators, two phases, a formal
+  report; for high-risk, high-cost, or contentious architectures.
+- **Lightweight Architecture Evaluation** — the same conceptual steps (business drivers →
+  approaches → utility tree → analyse the `(H,H)`/`(H,M)` scenarios → risks / sensitivity /
+  tradeoff points → risk themes) run in ~half a day by the internal team, no formal report, no
+  Phase 2 stakeholder round. Use it as a routine self-check each iteration or before a release.
+  Produce the same registers in `atam-report.md`; skip Steps 7–8 and mark the report
+  `Lightweight`.
 
 **Keep prompts short.** Numbered lists. Announce each step in one line. **Draft first**, refine.
 
@@ -35,7 +50,7 @@ concrete to analyse, or capture a minimal container + deployment view here.
 | Deliverable | What it is |
 |-------------|------------|
 | **Architectural approaches** | The patterns / tactics / styles the architecture uses |
-| **Utility tree** | Prioritised quality-attribute requirements as scenarios `(Importance, Difficulty)` |
+| **Utility tree** | A table of prioritised quality-attribute scenarios, each leaf `(V, R)` = (business value, technical risk) |
 | **Scenario analysis** | Per scenario: approaches invoked, questions, findings |
 | **Risks** | Decisions that may lead to undesirable consequences given the drivers |
 | **Non-risks** | Decisions that are safe *given the current drivers* (record the assumption) |
@@ -66,16 +81,18 @@ render the diagrams via `sei-diagrams`.
 tactics in use (`AA-1`, `AA-2`, …) — layered, microservices, event-driven, CQRS, circuit breaker,
 replication, cache-aside, bulkhead, etc. Note where each is applied.
 
-**Step 5 — Generate the quality attribute utility tree.** Build:
-`Utility → quality attribute (ISO/IEC 25010) → refinement → scenario`, each leaf scenario tagged
-`(Importance, Difficulty)` H/M/L. Import from `scenarios.md` / QAW if available; otherwise
-generate a first draft from the business drivers and refine. The **high/high** and **high/medium**
-leaves are what Step 6 analyses. Render the tree via `sei-diagrams` (Mermaid `mindmap`) and as an
-indented list. Template: `templates/utility-tree.md`.
+**Step 5 — Generate the quality attribute utility tree.** Build it **as a table** (not a
+diagram): one row per leaf scenario, columns *Quality attribute (ISO/IEC 25010) · Refinement ·
+Leaf scenario (ID + response measure) · Priority (V, R) · Status*. `(V, R)` = business value and
+technical risk, each H/M/L (`V ≈ Importance`, `R ≈ Difficulty`); mark a `(H, H)` leaf `★`.
+Import from `scenarios.md` / QAW if available; otherwise generate a first draft from the
+business drivers and refine. The `★` **high/high** and **high/medium** leaves are what Step 6
+analyses. Template: `templates/utility-tree.md`.
 
 **Step 6 — Analyse the architectural approaches.** For each high-priority utility-tree scenario:
 1. Walk the architecture and identify which approaches (`AA-n`) are invoked to satisfy it.
-2. Ask analysis **questions** about those approaches.
+2. Ask analysis **questions** about those approaches — use the **tactics-based questionnaire**
+   for the relevant quality attribute (`references/tactics-catalog.md`) as the question bank.
 3. Record findings as **risks**, **non-risks**, **sensitivity points** (`S-n`), **tradeoff
    points** (`T-n`). Use the analysis table below.
 
@@ -124,15 +141,16 @@ scenarios from Step 7 that were not already covered.
 - A **tradeoff point** must show ≥ 2 attributes moving in tension — otherwise it is only a
   sensitivity point.
 - Every **risk theme** maps to ≥ 1 business driver.
-- Utility-tree leaves carry an `(Importance, Difficulty)` pair; Step 6 analyses the H/H and H/M leaves.
+- The utility tree is a **table**; each leaf row carries a `(V, R)` = (business value, technical
+  risk) pair; Step 6 analyses the `★` H/H and H/M leaves.
 - The report is written incrementally, section per step.
 - ATAM **evaluates**; it does not redesign. Fixes are recommendations → hand off to `/add`.
 - **Report format**: `atam-report.md` is the working file. For the deliverable, ask the user
   **Markdown, HTML, or both** and build it with
   `scripts/build-report.sh architecture/atam/atam-report.md --format <fmt> --embed-diagrams
   --title "ATAM Evaluation — <system>"`.
-- All diagrams (utility tree, approach diagrams) go through `sei-diagrams` and are visually
-  cross-verified from their rendered PNG before inclusion.
+- Approach diagrams go through `sei-diagrams` and are visually cross-verified from their
+  rendered PNG before inclusion. The utility tree is a table — it has no diagram.
 
 ## Quality gate — cross-check the output before you're done
 

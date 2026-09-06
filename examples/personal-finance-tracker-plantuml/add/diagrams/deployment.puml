@@ -1,0 +1,21 @@
+@startuml deployment
+!include ../../../../skills/sei-diagrams/assets/c4/C4_Deployment.puml
+!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+LAYOUT_TOP_DOWN()
+title Deployment — Personal Finance Tracker (production, eu-west-1, 2 AZs)
+Deployment_Node(cloud, "Managed cloud", "eu-west-1 · 2 availability zones") {
+  Deployment_Node(edge, "CDN + static hosting", "TLS termination") {
+    Container(spa, "Web App bundle", "React 18 build", "Static assets")
+  }
+  Deployment_Node(run, "Container platform", "Autoscaling, multi-AZ") {
+    Container(api, "API Service", "Node.js 20", "2+ replicas across AZs, stateless")
+  }
+  Deployment_Node(data, "Managed data tier", "Multi-AZ") {
+    ContainerDb(db, "PostgreSQL 15", "Primary + standby", "Automated failover")
+    ContainerDb(cache, "Redis 7", "Primary + replica", "Derived data only")
+  }
+}
+Rel(spa, api, "Serves SPA to browser", "HTTPS")
+Rel(api, db, "Reads / writes", "SQL/TLS")
+Rel(api, cache, "Reads / invalidates", "RESP")
+@enduml

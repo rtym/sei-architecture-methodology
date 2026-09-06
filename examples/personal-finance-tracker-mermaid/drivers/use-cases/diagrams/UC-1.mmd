@@ -1,0 +1,13 @@
+flowchart LR
+  %% Use case diagram — UC-1 Record a transaction
+  pa(["Registered user"])
+  subgraph sys["System: Personal Finance Tracker"]
+    uc1("UC-1 Record a transaction")
+    uc1a("UC-1a Categorise transaction")
+  end
+  pa --> uc1
+  uc1 -. include .-> uc1a
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  class pa source
+  class uc1,uc1a artifact

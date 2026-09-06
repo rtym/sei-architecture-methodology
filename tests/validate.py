@@ -389,20 +389,24 @@ def check_drivers_index(path: Path) -> list[str]:
     if BARE_QAS_RE.search(text):
         errs.append("uses deprecated flat 'QAS-<n>' IDs")
     if "raceability" not in text:
-        errs.append("index has no traceability matrix")
+        errs.append("drivers README has no traceability matrix")
     if "overage" not in text:
-        errs.append("index has no coverage check")
+        errs.append("drivers README has no coverage check")
     if "hange log" not in text:
-        errs.append("index has no change log")
-    if "utility tree" not in text.lower():
-        errs.append("index does not reference the quality-attribute utility tree "
-                    "(the summary of QA scenarios in the drivers)")
+        errs.append("drivers README has no change log")
+    if "utility tree" not in text.lower() and "utility-tree" not in text.lower():
+        errs.append("drivers README does not reference the quality-attribute utility tree")
+    # driver files are referenced as relative Markdown links, not bare backtick paths
+    if not re.search(r"\]\((?:\./)?(?:business-goals|use-cases|constraints|quality-attributes)/"
+                     r"[A-Za-z0-9-]+\.md\)", text):
+        errs.append("driver files are not linked as relative Markdown links "
+                    "(use [UC-1](use-cases/UC-1.md), not a backtick path)")
     bgs = set(re.findall(r"\bBG-\d+\b", text))
     ucs = set(re.findall(r"\bUC-\d+\b", text))
     qas = set(re.findall(r"\b[A-Z]{1,4}QA-\d+\b", text))
     cons = set(re.findall(r"\bCON-\d+\b", text))
     if not (bgs and ucs and qas):
-        errs.append("index does not list all of business goals, use cases, and QA scenarios")
+        errs.append("drivers README does not list all of business goals, use cases, and QA scenarios")
     errs += _traceability_orphans(text, bgs, ucs, qas, cons)
     return errs
 
@@ -410,9 +414,11 @@ def check_drivers_index(path: Path) -> list[str]:
 def check_drivers_dir(root: Path) -> list[str]:
     """Cross-file checks over an architecture/drivers/ directory."""
     errs: list[str] = []
-    idx = root / "index.md"
+    idx = root / "README.md"
     if not idx.is_file():
-        errs.append("architecture/drivers/index.md is missing")
+        idx = root / "index.md"        # legacy fallback
+    if not idx.is_file():
+        errs.append("architecture/drivers/README.md is missing")
     kinds = {
         "business-goals": re.compile(r"BG-\d+\.md$"),
         "use-cases": re.compile(r"UC-\d+\.md$"),
@@ -429,20 +435,24 @@ def check_drivers_dir(root: Path) -> list[str]:
             for f in files:
                 if not pat.search(f.name) and f.name not in allowed:
                     errs.append(f"{sub}/{f.name}: name does not match the {sub} id pattern")
+            if not (d / "README.md").is_file():
+                errs.append(f"{sub}/README.md index is missing")
     if not present.get("business-goals"):
         errs.append("no business-goals/BG-*.md files")
     if not present.get("use-cases"):
         errs.append("no use-cases/UC-*.md files")
     if not present.get("quality-attributes"):
         errs.append("no quality-attributes/<ATTR>QA-*.md files")
-    # every id in the index has a file and vice versa
+    if not (root / "quality-attributes" / "utility-tree.md").is_file():
+        errs.append("quality-attributes/utility-tree.md is missing")
+    # every id in the top README has a file and vice versa
     if idx.is_file():
         itext = idx.read_text(encoding="utf-8")
         for sub, files in present.items():
             ids_in_files = {f.stem for f in files}
             for fid in ids_in_files:
                 if fid not in itext:
-                    errs.append(f"{sub}/{fid}.md exists but {fid} is not listed in index.md")
+                    errs.append(f"{sub}/{fid}.md exists but {fid} is not listed in the drivers README")
     return errs
 
 
@@ -479,8 +489,11 @@ def check_qaw(path: Path) -> list[str]:
         errs.append("QAW report should keep raw brainstormed scenarios verbatim (say so)")
     if "utility tree" not in text:
         errs.append("QAW report has no utility tree (build one from the refined scenarios)")
-    elif not re.search(r"\(\s*[hml]\s*,\s*[hml]\s*\)", text):
-        errs.append("QAW utility-tree leaves carry no (Importance, Difficulty) pair")
+    else:
+        if not re.search(r"\(\s*[hml]\s*,\s*[hml]\s*\)", text):
+            errs.append("QAW utility-tree leaves carry no (V, R) pair like (H, M)")
+        if "mindmap" in text:
+            errs.append("QAW utility tree must be a table, not a mindmap")
     return errs
 
 
@@ -493,7 +506,9 @@ def check_atam(path: Path) -> list[str]:
         if kw not in low:
             errs.append(f"ATAM report missing a '{kw}' section")
     if "utility tree" in low and "(h" not in low.replace(" ", ""):
-        errs.append("utility-tree leaves should carry an (Importance, Difficulty) pair")
+        errs.append("utility-tree leaves should carry a (V, R) pair like (H, M)")
+    if "utility tree" in low and "mindmap" in low:
+        errs.append("the utility tree must be a table, not a mindmap")
     for r in _table_rows(text, "Non-risk"):
         # the Non-risks register must fill the "assumption under which it holds" column
         if r and len([c for c in r if c.strip()]) < 3:
@@ -525,21 +540,58 @@ def check_view_packet(path: Path) -> list[str]:
 
 
 def check_utility_tree(path: Path) -> list[str]:
+    """The utility tree is a TABLE, not a diagram (Cervantes & Kazman, tabular form)."""
     errs: list[str] = []
     text = path.read_text(encoding="utf-8")
     low = text.lower()
     if "utility" not in low:
-        errs.append("utility tree has no root 'Utility' node")
+        errs.append("utility tree has no root 'Utility'")
     if not re.search(r"\b[A-Z]{1,4}QA-\d+\b", text):
         errs.append("utility tree has no leaf quality attribute scenarios (<ATTR>QA-n)")
+    # it must be a GFM table
+    if not re.search(r"^\s*\|?[\s:|-]*-{2,}[\s:|-]*\|", text, re.MULTILINE):
+        errs.append("utility tree must be a Markdown table (columns: Quality attribute · "
+                    "Refinement · Leaf scenario · Priority (V, R) · Status)")
+    # a value/importance column and a risk/difficulty column
+    if not re.search(r"\|[^|\n]*\b(priority|business value|value|importance)\b[^|\n]*\|",
+                     text, re.IGNORECASE):
+        errs.append("utility-tree table needs a business-value / (V, R) column")
     if not re.search(r"\(\s*[HML]\s*,\s*[HML]\s*\)", text):
-        errs.append("utility-tree leaves carry no (Importance, Difficulty) pair")
+        errs.append("utility-tree leaves carry no (V, R) pair like (H, M)")
     if "25010" not in text:
-        errs.append("utility tree does not name the ISO/IEC 25010 characteristics")
+        errs.append("utility tree does not reference ISO/IEC 25010")
     if BARE_QAS_RE.search(text):
         errs.append("uses deprecated flat 'QAS-<n>' IDs")
-    for j, blk in enumerate(diagrams_in_markdown(text), 1):
-        errs += check_diagram(blk, f"{path.name} diagram #{j}")
+    if re.search(r"^\s*mindmap\b", text, re.MULTILINE) \
+            or "```mermaid" in text or "```plantuml" in text:
+        errs.append("utility tree must be a table, not a diagram — remove the diagram block")
+    return errs
+
+
+_LINK_RE = re.compile(r"!?\[[^\]]*\]\(\s*(<[^>]+>|[^)\s]+)")
+
+
+def broken_links(path: Path) -> list[str]:
+    """Report relative Markdown links / images whose target file does not exist on disk."""
+    errs: list[str] = []
+    # generated reports are flattened concatenations — their inherited relative links
+    # are not expected to resolve from the reports/ directory.
+    if path.parent.name == "reports":
+        return errs
+    try:
+        text = path.read_text(encoding="utf-8")
+    except Exception:
+        return errs
+    for m in _LINK_RE.finditer(text):
+        target = m.group(1).strip().lstrip("<").rstrip(">")
+        if not target or target.startswith(("http://", "https://", "mailto:", "#", "data:")):
+            continue
+        target = target.split("#", 1)[0].split("?", 1)[0]
+        if not target:
+            continue
+        dest = (path.parent / target).resolve()
+        if not dest.exists():
+            errs.append(f"broken link: {target!r} -> {dest}")
     return errs
 
 
@@ -558,36 +610,40 @@ def check_mmd(path: Path) -> list[str]:
 def validate_file(path: Path) -> list[str] | None:
     name = path.name
     parent = path.parent.name
+
+    def _md(res: list[str]) -> list[str]:
+        return res + broken_links(path)
+
     if name.endswith("-Architecture.md"):
-        return check_architecture(path)
+        return _md(check_architecture(path))
     if name.endswith("-session.md") or re.search(r"-\d{4}-\d{2}-\d{2}\.md$", name):
-        return check_session(path)
+        return _md(check_session(path))
     if name == "drivers.md":
-        return check_drivers(path)
-    if name == "index.md" and parent == "drivers":
-        return check_drivers_index(path)
+        return _md(check_drivers(path))
+    if name in ("README.md", "index.md") and parent == "drivers":
+        return _md(check_drivers_index(path))
     if name == "utility-tree.md":
-        return check_utility_tree(path)
+        return _md(check_utility_tree(path))
     if parent == "business-goals" and re.match(r"BG-\d+\.md$", name):
-        return check_bg_file(path)
+        return _md(check_bg_file(path))
     if parent == "use-cases" and re.match(r"UC-\d+\.md$", name):
-        return check_uc_file(path)
+        return _md(check_uc_file(path))
     if parent == "constraints" and re.match(r"CON-\d+\.md$", name):
-        return check_con_file(path)
+        return _md(check_con_file(path))
     if parent == "quality-attributes" and re.match(r"[A-Z]{1,4}QA-\d+\.md$", name):
-        return check_qa_file(path)
+        return _md(check_qa_file(path))
     if name == "scenarios.md":
-        return check_scenarios(path)
+        return _md(check_scenarios(path))
     if name == "qaw-report.md":
-        return check_qaw(path)
+        return _md(check_qaw(path))
     if name == "atam-report.md":
-        return check_atam(path)
+        return _md(check_atam(path))
     if name.startswith("view-") and name.endswith(".md"):
-        return check_view_packet(path)
+        return _md(check_view_packet(path))
     if name.endswith((".mmd", ".mermaid")):
         return check_mmd(path)
     if name.endswith((".md", ".markdown")):
-        return check_generic_md(path)
+        return _md(check_generic_md(path))
     return None
 
 
@@ -694,7 +750,8 @@ def main(argv: list[str]) -> int:
     files: list[Path] = []
     for p in raw:
         if p.is_dir():
-            if p.name == "drivers" or (p / "index.md").is_file() and (p / "use-cases").is_dir():
+            if p.name == "drivers" or (((p / "README.md").is_file() or (p / "index.md").is_file())
+                                       and (p / "use-cases").is_dir()):
                 errs = check_drivers_dir(p)
                 tag = "PASS" if not errs else "FAIL"
                 print(f"{tag}  {p}/ (drivers directory — cross-file)")

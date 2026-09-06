@@ -162,6 +162,8 @@ class Renderer:
                 code = "\n".join(buf)
                 if lang == "mermaid":
                     html_parts.append(self._mermaid(code))
+                elif lang in ("plantuml", "puml", "uml"):
+                    html_parts.append(self._plantuml(code))
                 else:
                     cls = f' class="language-{lang}"' if lang else ""
                     html_parts.append(f"<pre><code{cls}>{html.escape(code, quote=False)}</code></pre>")
@@ -370,6 +372,59 @@ def _mermaid(self: Renderer, code: str) -> str:
 
 
 Renderer._mermaid = _mermaid
+
+
+def _plantuml(self: Renderer, code: str) -> str:
+    """Render a fenced ```plantuml block to PNG via render-plantuml.sh and inline it."""
+    self._mermaid_n += 1
+    idx = self._mermaid_n
+    title = ""
+    tm = re.search(r"^\s*title\s+(.+)$", code, re.MULTILINE)
+    if tm:
+        title = tm.group(1).strip()
+    if not self.embed:
+        return (f'<figure class="diagram"><pre><code class="language-plantuml">'
+                f"{html.escape(code, quote=False)}</code></pre>"
+                f"<figcaption>Diagram {idx}"
+                f"{' — ' + html.escape(title) if title else ''} "
+                f"(source shown; run with --embed-diagrams to render)</figcaption></figure>")
+    root = Path(__file__).resolve().parent.parent
+    assets = root / "skills" / "sei-diagrams" / "assets"
+    render_sh = root / "skills" / "sei-diagrams" / "scripts" / "render-plantuml.sh"
+
+    # rewrite relative !include paths (…/assets/…​) to absolute so the block renders
+    # from a temp dir independent of where the original .puml lived.
+    def _abs_include(m: re.Match) -> str:
+        tail = m.group(1).replace("\\", "/")
+        j = tail.find("skills/sei-diagrams/assets/")
+        rel = tail[j + len("skills/sei-diagrams/assets/"):] if j >= 0 else tail.split("assets/")[-1]
+        return f"!include {assets / rel}"
+
+    fixed = re.sub(r"!include\s+(\S+)", _abs_include, code)
+    # drop the diagram name from '@startuml <name>' so PlantUML writes <src-stem>.png,
+    # not <name>.png
+    fixed = re.sub(r"(?m)^\s*@startuml\b.*$", "@startuml", fixed, count=1)
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            src = Path(td) / f"diagram-{idx}.puml"
+            src.write_text(fixed, encoding="utf-8")
+            subprocess.run(["bash", str(render_sh), str(src)],
+                           check=True, capture_output=True, text=True, timeout=240)
+            pngs = sorted(Path(td).glob("*.png"))
+            if not pngs:
+                raise FileNotFoundError("plantuml produced no PNG")
+            data = base64.b64encode(pngs[0].read_bytes()).decode("ascii")
+        cap = f"<figcaption>Diagram {idx}{' — ' + html.escape(title) if title else ''}</figcaption>"
+        return (f'<figure class="diagram">'
+                f'<img alt="{html.escape(title) or f"diagram {idx}"}" '
+                f'src="data:image/png;base64,{data}">{cap}</figure>')
+    except Exception as exc:  # fall back to source block
+        return (f'<figure class="diagram"><pre><code class="language-plantuml">'
+                f"{html.escape(code, quote=False)}</code></pre>"
+                f"<figcaption>Diagram {idx} — render failed: {html.escape(str(exc))}</figcaption></figure>")
+
+
+Renderer._plantuml = _plantuml
 
 
 # --------------------------------------------------------------------------- #

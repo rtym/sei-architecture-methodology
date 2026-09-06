@@ -1,0 +1,20 @@
+@startuml overview-core
+!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+skinparam actorStyle awesome
+left to right direction
+title Use case overview — Personal Finance Tracker (core)
+actor "Registered user" as user
+actor "Bank Import API" as bank
+rectangle "Personal Finance Tracker" {
+  usecase "UC-1\nRecord a transaction" as uc1
+  usecase "UC-2\nView the monthly dashboard" as uc2
+  usecase "UC-3\nImport a bank statement" as uc3
+  usecase "Categorise transaction" as cat
+}
+user --> uc1
+user --> uc2
+user --> uc3
+bank --> uc3
+uc1 ..> cat : <<include>>
+uc3 ..> cat : <<include>>
+@enduml
