@@ -9,7 +9,7 @@ It packages six activities as separate skills behind one router:
 | Command | Skill | What it does | Output under `architecture/` |
 |---------|-------|--------------|------------------------------|
 | `/sei` | `sei-architecture` | Router — pick or infer the activity you need | — |
-| `/drivers` | `architectural-drivers` | Collect & track the four driver kinds (business goals, use cases, constraints, quality attributes) with a traceability matrix | `drivers/drivers.md` + use-case diagrams |
+| `/drivers` | `architectural-drivers` | Collect & track the four driver kinds (business goals, use cases, constraints, quality attributes) with a traceability matrix | `architecture/drivers/` package — one file per driver + per-use-case UML diagrams + a utility tree |
 | `/quality-attributes` | `quality-attributes` | Measurable six-part quality attribute scenarios (ISO/IEC 25010), each drawn as a UML scenario diagram | `quality-attributes/scenarios.md` |
 | `/qaw` | `quality-attribute-workshop` | Facilitate the SEI 8-step Quality Attribute Workshop | `qaw/qaw-report.md` |
 | `/add` | `attribute-driven-design` | Run an ADD 3.0 design session → architecture + C4/UML views + ADR log | `add/<slug>-session.md`, `add/<slug>-Architecture.md` |
@@ -28,24 +28,63 @@ Every skill:
 
 ---
 
-## Install
+## Install as a Claude Code plugin
 
-This repository is a Claude Code **plugin**. Options:
+This repository **is** a Claude Code plugin *and* a one-plugin marketplace
+(`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`). Install it into your personal
+Claude Code so the `/sei`, `/drivers`, `/qaw`, `/add`, `/atam`, `/architecture-docs` and
+`/sei-diagram` commands are available in **every** project.
 
-- **Use it in place**: open this folder in Claude Code — the commands and skills are picked up
-  from `.claude/` and `.claude-plugin/plugin.json`.
-- **Install globally**: add it as a plugin (`/plugin`), then the `/sei…` commands are available
-  in any project.
+### From GitHub (recommended)
+
+In any Claude Code session:
+
+```
+/plugin marketplace add rtym/sei-architecture-methodology
+/plugin install sei-architecture-methodology@sei-architecture-methodology
+```
+
+Then restart Claude Code (or run `/plugin` → *Manage* to confirm it's enabled). Update later with:
+
+```
+/plugin marketplace update sei-architecture-methodology
+```
+
+### From a local clone
+
+```bash
+git clone git@github.com:rtym/sei-architecture-methodology.git
+```
+
+```
+/plugin marketplace add ./sei-architecture-methodology
+/plugin install sei-architecture-methodology@sei-architecture-methodology
+```
+
+### Non-interactive / scripted
+
+```bash
+claude plugin marketplace add rtym/sei-architecture-methodology
+claude plugin install sei-architecture-methodology@sei-architecture-methodology
+```
+
+### Use it in place (no install)
+
+Open this folder as your project in Claude Code — the `.claude/commands/*` and the skills are
+picked up directly. Good for hacking on the plugin itself.
 
 ### One-time diagram renderer setup
+
+After the plugin is installed, from the plugin directory run:
 
 ```bash
 bash skills/sei-diagrams/scripts/setup.sh
 ```
 
 Installs `@mermaid-js/mermaid-cli` (+ `@mermaid-js/layout-elk`) locally under the skill and
-downloads a headless Chromium once (~150 MB). Needs Node 18+. PlantUML rendering is optional and
-needs a Java runtime — `scripts/render-plantuml.sh` tells you how to get one.
+downloads a headless Chromium once (~150 MB). Needs Node 18+. **PlantUML** (used for true-UML
+use-case diagrams and canonical C4) needs a Java runtime — `brew install openjdk`;
+`scripts/render-plantuml.sh` auto-detects a keg-only Homebrew JDK.
 
 ---
 
@@ -107,10 +146,10 @@ Typical engagements:
 > …
 > Drafted 4 business goals, 3 architecturally-significant use cases, 5 constraints, 6 quality
 > attribute scenarios. Use case diagram for the core actor group below — rendered and verified.
-> Traceability matrix has no orphan drivers. Written to `architecture/drivers/drivers.md`.
+> Traceability matrix has no orphan drivers. Written to `architecture/drivers/` (one file per driver + `index.md`).
 
 See a completed register in
-[`examples/personal-finance-tracker/drivers.md`](examples/personal-finance-tracker/drivers.md).
+[`examples/personal-finance-tracker/drivers/`](examples/personal-finance-tracker/drivers/).
 
 ### 2. Measurable quality attribute scenarios, each as a UML diagram
 
@@ -168,38 +207,51 @@ rationale).
 /sei-diagram
 ```
 
-Asks whether you want **Mermaid** or **PlantUML**, writes the source, renders it to PNG, then
-opens the PNG and checks it against a correctness + legibility checklist — reordering nodes,
-grouping, or switching to ELK layout until crossings are minimal. Use-case diagram from the
-example:
+Writes the source, renders it to PNG, then opens the PNG and checks it against a correctness +
+legibility checklist — reordering nodes, grouping, or switching to ELK layout until crossings are
+minimal. **Use case diagrams use PlantUML** for true UML glyphs (stick-figure actors, ellipse use
+cases, boundary rectangle, dashed `<<include>>` / `<<extend>>`):
 
-![Use case diagram](examples/personal-finance-tracker/diagrams/usecases-core.png)
+![Use case diagram — UC-3](examples/personal-finance-tracker/drivers/use-cases/diagrams/UC-3.png)
 
-### 7. Build a shareable report (Markdown or HTML)
+### 7. Build a shareable report (Markdown or HTML, incl. a V&B report)
 
 ```bash
+# a single artifact
 scripts/build-report.sh architecture/atam/atam-report.md --format html --embed-diagrams \
   --title "ATAM Evaluation — Acme Platform"
+
+# a full Views-and-Beyond documentation package, ordered per the V&B structure
+scripts/build-report.sh --profile vandb architecture/docs/ --format html --embed-diagrams \
+  --title "Architecture Description — Acme Platform"
 ```
 
-`--embed-diagrams` renders every ```mermaid block to PNG and inlines it, producing one
-self-contained HTML file styled with the SEI palette, with a cover page and table of contents.
-Example:
+`--embed-diagrams` renders every ```mermaid block to PNG and inlines it; `--profile vandb` orders
+a `docs/` directory as roadmap → system overview → module → C&C → allocation views → mapping →
+rationale → directory. Output is one self-contained HTML file styled with the SEI palette, with a
+cover page and table of contents. Example:
 [`examples/personal-finance-tracker/reports/architecture-package.html`](examples/personal-finance-tracker/reports/architecture-package.html).
 
 ---
 
 ## Diagram house style
 
-- **Notation**: you're asked Mermaid (default) or PlantUML; the rules and verification are the same.
-- **Structural diagrams** (context / container / component / deployment) use a **`flowchart` in
-  C4 style** — Mermaid's native `C4*` renderer ignores the theme and routes edges badly, so it's
-  reserved for throwaway inline sketches.
+- **Notation**: Mermaid or PlantUML — the ten rules and the render→verify loop are identical for
+  both. Sensible defaults: **use case → PlantUML** (real UML glyphs); **context / container /
+  component / deployment → Mermaid flowchart-C4** (honours the palette, lays out cleanly, still
+  full C4 semantics — native Mermaid `C4*` is sketch-only); sequence / class / state / scenario /
+  utility-tree → Mermaid.
+- **Context & container diagrams follow C4 principles** — fixed abstraction level, every element
+  typed + technologied + described, explicit system boundary, every relationship a labelled
+  directed arrow, ≤ ~10 elements. Enforced by `tests/validate.py`.
+- **Quality attribute scenario diagram** is the canonical SEI six-part box-and-arrow, **horizontal
+  (`flowchart LR`)** — source → stimulus → (artifact in environment) → response → response measure.
 - **Palette**: one calm, colour-blind-safe palette where colour is *semantic* — internal vs
   external vs datastore vs person vs emphasis. Defined once in
   `skills/sei-diagrams/assets/` (`mermaid-theme.json`, `palette.md`, `plantuml-theme.puml`).
-- **Ten rules** + a **layout playbook** for minimising crossings, and a mandatory
-  **render → `Read` the PNG → verify → iterate** loop. All in `skills/sei-diagrams/SKILL.md`.
+- **Every diagram is rendered to PNG and visually cross-verified** (`Read` the image), then
+  embedded in Markdown as **both** the ```mermaid/```plantuml source **and** a relative
+  `![](diagrams/x.png)` image line so it renders on GitHub and GitLab.
 
 ---
 
@@ -207,31 +259,48 @@ Example:
 
 ```
 sei-architecture-methodology/
-├── .claude-plugin/plugin.json         # plugin manifest (7 skills)
+├── .claude-plugin/
+│   ├── plugin.json                    # plugin manifest (7 skills)
+│   └── marketplace.json               # one-plugin marketplace (for /plugin marketplace add)
 ├── .claude/
 │   ├── settings.json
 │   └── commands/                      # /sei /drivers /quality-attributes /qaw /add /atam /architecture-docs /sei-diagram
 ├── skills/
 │   ├── sei-architecture/              # router
-│   ├── architectural-drivers/
+│   ├── architectural-drivers/        # writes architecture/drivers/ as a directory, one file per driver
 │   ├── quality-attributes/
 │   ├── quality-attribute-workshop/
 │   ├── attribute-driven-design/
 │   ├── atam/
 │   ├── architecture-documentation/
 │   └── sei-diagrams/
-│       ├── assets/                    # palette + theme files
+│       ├── assets/                    # palette + theme files (mermaid + plantuml)
 │       └── scripts/                   # setup.sh, render.sh, render-plantuml.sh
-├── references/                        # deep method notes (drivers, QA taxonomy/ISO 25010, QAW, ADD, ATAM, V&B)
-├── templates/                         # blank artifact templates
+├── references/                        # deep method notes + best-practices checklist
+├── templates/                         # blank artifact templates (one per driver kind, per report, per view)
 ├── scripts/
-│   ├── mdreport.py                    # dependency-free Markdown → Markdown/HTML report builder
+│   ├── mdreport.py                    # dependency-free Markdown → Markdown/HTML report builder (+ --profile vandb)
 │   └── build-report.sh
-├── examples/personal-finance-tracker/ # a full worked example
+├── examples/personal-finance-tracker/ # a full worked example, every activity, all diagrams rendered
+│   └── drivers/                       #   business-goals/ use-cases/ constraints/ quality-attributes/ + index.md
 └── tests/
-    ├── validate.py                    # plugin + artifact validator
+    ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability)
     ├── test_mdreport.py               # mdreport unit tests
     └── run.sh                         # full suite
+```
+
+### The drivers directory
+
+```
+architecture/drivers/
+├── index.md                          # ID legend · traceability matrix · coverage check · prioritised list · change log
+├── business-goals/BG-<n>.md
+├── use-cases/UC-<n>.md               # + use-cases/diagrams/UC-<n>.puml|.png  (proper UML use case diagram, one per use case)
+├── constraints/CON-<n>.md
+└── quality-attributes/
+    ├── <ATTR>QA-<n>.md               # full six-part scenario + its own horizontal scenario diagram
+    ├── utility-tree.md               # the summary of the QA drivers (from the QAW), rendered as a mindmap
+    └── diagrams/
 ```
 
 ---

@@ -1,0 +1,15 @@
+@startuml
+!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+skinparam actorStyle awesome
+left to right direction
+title Use case — UC-3 Import a bank statement (CSV)
+actor "Registered user" as pa
+actor "Bank Import API" as sa
+rectangle "Personal Finance Tracker" {
+  usecase "UC-3\nImport a bank statement (CSV)" as uc3
+  usecase "UC-3a\nCategorise transaction" as uc3a
+}
+pa --> uc3
+sa --> uc3
+uc3 ..> uc3a : <<include>>
+@enduml

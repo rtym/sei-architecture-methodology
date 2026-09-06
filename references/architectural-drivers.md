@@ -5,6 +5,24 @@ shape the architecture. Getting them right is the point of leverage in the whole
 ADD iterations are scoped by them, ATAM analysis targets them, and Views-and-Beyond rationale
 cites them.
 
+## Register layout
+
+Because a real system has many drivers, the `architectural-drivers` skill stores them as a
+**directory**, not one file:
+
+```
+architecture/drivers/
+├── index.md            # ID legend · traceability matrix · coverage check · prioritised list · change log
+├── business-goals/BG-<n>.md
+├── use-cases/UC-<n>.md          (+ use-cases/diagrams/UC-<n>.puml|.png — one UML use case diagram each)
+├── constraints/CON-<n>.md
+└── quality-attributes/<ATTR>QA-<n>.md   (six-part scenario + horizontal scenario diagram)
+    └── utility-tree.md          # the summary of the quality attributes (from the QAW)
+```
+
+Add a driver = add a file + one row in `index.md`. Never renumber; retire (`Status: retired`),
+don't delete.
+
 ## The four kinds
 
 ### 1. Business goals (`BG-`)

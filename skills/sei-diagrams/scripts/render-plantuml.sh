@@ -23,13 +23,22 @@ while [ $# -gt 0 ]; do
 done
 [ "${#TARGETS[@]}" -gt 0 ] || { echo "render-plantuml.sh: no target. Try --help." >&2; exit 2; }
 
+# Find Java: PATH first, then common keg-only / SDK locations.
+if ! command -v java >/dev/null 2>&1; then
+  for jdkbin in \
+    /opt/homebrew/opt/openjdk/bin \
+    /usr/local/opt/openjdk/bin \
+    "$HOME/.sdkman/candidates/java/current/bin" \
+    /Library/Java/JavaVirtualMachines/*/Contents/Home/bin ; do
+    if [ -x "$jdkbin/java" ]; then PATH="$jdkbin:$PATH"; export PATH; break; fi
+  done
+fi
 if ! command -v java >/dev/null 2>&1; then
   cat >&2 <<'MSG'
 ERROR: no Java runtime found — PlantUML cannot run.
 
-  macOS:   brew install --cask temurin        (or: brew install openjdk && \
-           sudo ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk \
-             /Library/Java/JavaVirtualMachines/openjdk.jdk)
+  macOS:   brew install openjdk        (this script auto-detects the keg-only path)
+           or: brew install --cask temurin
   Debian:  sudo apt-get install default-jre
 
 Then re-run this script. Or use Mermaid instead (scripts/render.sh) — it needs no Java.

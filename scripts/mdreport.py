@@ -447,6 +447,45 @@ def _first_h1(path: Path) -> str:
     return path.stem
 
 
+def _vandb_order(md_files: list[Path]) -> list[Path]:
+    """Order a docs/ package per the Views-and-Beyond document structure."""
+    def rank(p: Path) -> tuple:
+        n = p.name.lower()
+        if n in ("index.md", "readme.md", "roadmap.md"):
+            return (0, n)
+        if "system-overview" in n or n == "overview.md":
+            return (1, n)
+        if n.startswith("view-"):
+            if "module" in n:
+                return (2, 0, n)
+            if "cnc" in n or "c&c" in n or "component-and-connector" in n or "connector" in n:
+                return (2, 1, n)
+            if "alloc" in n or "deploy" in n:
+                return (2, 2, n)
+            return (2, 3, n)
+        if "mapping" in n:
+            return (3, n)
+        if "rationale" in n:
+            return (4, n)
+        if "directory" in n or "glossary" in n:
+            return (5, n)
+        if "change" in n:
+            return (6, n)
+        return (7, n)
+    return sorted(md_files, key=rank)
+
+
+def _expand_inputs(inputs: list[Path], profile: str | None) -> list[Path]:
+    files: list[Path] = []
+    for p in inputs:
+        if p.is_dir():
+            found = sorted(f for f in p.glob("*.md"))
+            files += _vandb_order(found) if profile == "vandb" else found
+        else:
+            files.append(p)
+    return files
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="mdreport", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -455,6 +494,8 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path)
     ap.add_argument("--title")
     ap.add_argument("--subtitle", default="")
+    ap.add_argument("--profile", choices=["vandb"],
+                    help="'vandb' orders a docs/ directory per the Views-and-Beyond structure")
     ap.add_argument("--toc", dest="toc", action="store_true", default=True)
     ap.add_argument("--no-toc", dest="toc", action="store_false")
     ap.add_argument("--embed-diagrams", action="store_true")
@@ -462,10 +503,16 @@ def main(argv=None) -> int:
     ap.add_argument("--no-standalone", dest="standalone", action="store_false")
     args = ap.parse_args(argv)
 
+    args.inputs = _expand_inputs(args.inputs, args.profile)
+    if not args.inputs:
+        print("error: no input .md files (a directory with no *.md?)", file=sys.stderr)
+        return 2
     for p in args.inputs:
         if not p.is_file():
             print(f"error: not a file: {p}", file=sys.stderr)
             return 2
+    if args.profile == "vandb" and not args.subtitle:
+        args.subtitle = "Views-and-Beyond architecture description"
 
     title = args.title or _first_h1(args.inputs[0])
     formats = ["md", "html"] if args.format == "both" else [args.format]

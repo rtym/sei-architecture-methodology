@@ -28,18 +28,24 @@ step "4. mdreport converter unit test"
 
 step "5. example artifacts validate"
 if [ -d examples ]; then
+  # drivers/ directories get the cross-file check + every file
+  while IFS= read -r d; do
+    "$PY" tests/validate.py "$d" && ok "$d/" || bad "$d/"
+  done < <(find examples -type d -name drivers)
   while IFS= read -r f; do
+    case "$f" in */drivers/*) continue ;; esac
     "$PY" tests/validate.py "$f" && ok "$f" || bad "$f"
-  done < <(find examples -name '*.md' -o -name '*.mmd')
+  done < <(find examples \( -name '*.md' -o -name '*.mmd' \))
 else
   echo "(no examples/ dir)"
 fi
 
 step "6. mdreport builds HTML + MD from an example"
-if [ -f examples/personal-finance-tracker/drivers.md ]; then
+src="examples/personal-finance-tracker/drivers/index.md"
+if [ -f "$src" ]; then
   tmp="$(mktemp -d)"
-  "$PY" scripts/mdreport.py examples/personal-finance-tracker/drivers.md --format both --out "$tmp/" \
-    && [ -s "$tmp/drivers-report.html" ] && [ -s "$tmp/drivers-report.md" ] \
+  "$PY" scripts/mdreport.py "$src" --format both --out "$tmp/rep.html" \
+    && [ -s "$tmp/rep.html" ] && [ -s "$tmp/rep.md" ] \
     && ok "mdreport example" || bad "mdreport example"
   rm -rf "$tmp"
 fi

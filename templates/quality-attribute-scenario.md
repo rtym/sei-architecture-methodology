@@ -1,4 +1,10 @@
-# Quality Attribute Scenario: <ATTR>QA-<n>
+# <ATTR>QA-<n>: <short title>
+
+- **Status**: open | in design | partially | addressed | retired
+- **Source**: authored here | `../../quality-attributes/scenarios.md` (kept in sync)
+
+The quality attribute is **documented as a six-part quality attribute scenario** and **supported
+by its own six-part scenario diagram** (below).
 
 | Part | Value |
 |------|-------|
@@ -19,7 +25,7 @@
 
 ```mermaid
 flowchart LR
-  %% <ATTR>QA-<n> — <ISO 25010 characteristic / sub>
+  %% Quality attribute scenario — <ATTR>QA-<n> — <ISO 25010 characteristic / sub>  (horizontal)
   src["<b>Source of stimulus</b><br/><source>"]
   stim["<b>Stimulus</b><br/><stimulus>"]
   subgraph env["Environment: <environment>"]

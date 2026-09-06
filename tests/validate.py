@@ -110,6 +110,34 @@ def check_diagram(block: str, label: str) -> list[str]:
         if len(parts) < 3 or not parts[2].strip().strip('"'):
             errs.append(f"{label}: Rel(...) without a label — {m.group(0)[:60]}")
 
+    title_comment = ""
+    tc = re.search(r"^\s*%%\s*(.+)$", block, re.MULTILINE)
+    if tc:
+        title_comment = tc.group(1).lower()
+
+    # Quality attribute scenario diagram must be horizontal (flowchart LR)
+    if "quality attribute scenario" in title_comment or "six-part scenario" in title_comment:
+        if not re.match(r"flowchart\s+LR\b", body[0].strip()):
+            errs.append(f"{label}: quality attribute scenario diagram must be horizontal — 'flowchart LR'")
+        for part in ("source of stimulus", "stimulus", "artifact", "environment", "response"):
+            if part not in block.lower():
+                errs.append(f"{label}: scenario diagram is missing the '{part}' box")
+
+    # Context / Container diagrams must follow C4 principles
+    is_c4_struct = dtype in {"C4Context", "C4Container"} or (
+        dtype.startswith("flowchart") and re.search(r"c4 level\s*[12]|context —|container diagram", title_comment)
+    )
+    if is_c4_struct and dtype.startswith("flowchart"):
+        if "subgraph " not in block:
+            errs.append(f"{label}: C4 context/container diagram needs an explicit system boundary (subgraph)")
+        unlabelled = len(re.findall(r"-->(?!\s*\|)", block))
+        if unlabelled:
+            errs.append(f"{label}: {unlabelled} unlabelled relationship(s) — every C4 edge carries an action label")
+        if leaf_n == 0:
+            n_nodes = len(re.findall(r'^\s*\w+[\[(]', block, re.MULTILINE))
+            if n_nodes > 12:
+                errs.append(f"{label}: {n_nodes} elements — a C4 context/container diagram stays ≤ ~10 (split it)")
+
     return errs
 
 
@@ -141,6 +169,30 @@ def _table_rows(text: str, header_contains: str) -> list[list[str]]:
                 rows.append(cells)
             break
     return rows
+
+
+def _traceability_orphans(text: str, bgs: set, ucs: set, qas: set, cons: set) -> list[str]:
+    errs: list[str] = []
+    tr = text.split("raceability", 1)[-1]
+    tr_rows = _table_rows("x\n" + tr, "Driver") or _table_rows("x\n" + tr, "Supports")
+    if not tr_rows:
+        return errs
+    supported_bgs: set = set()
+    traced_children: set = set()
+    for r in tr_rows:
+        row_ids = set(re.findall(r"\b(BG-\d+|UC-\d+|CON-\d+|[A-Z]{1,4}QA-\d+)\b", " ".join(r)))
+        child = {i for i in row_ids if not i.startswith("BG-")}
+        bg_here = {i for i in row_ids if i.startswith("BG-")}
+        if child and bg_here:
+            traced_children |= child
+            supported_bgs |= bg_here
+    orphan_bgs = bgs - supported_bgs
+    orphan_children = (ucs | qas | cons) - traced_children
+    if orphan_bgs:
+        errs.append(f"business goals with no UC/QA support in the matrix: {', '.join(sorted(orphan_bgs))}")
+    if orphan_children:
+        errs.append(f"drivers not traced to a business goal in the matrix: {', '.join(sorted(orphan_children))}")
+    return errs
 
 
 def check_architecture(path: Path) -> list[str]:
@@ -229,24 +281,168 @@ def check_drivers(path: Path) -> list[str]:
             errs.append(f"QA scenario row has no numeric measure: {joined[:80]!r}")
 
     # best practice: traceability has no orphans
-    tr = text.split("raceability", 1)[-1]
-    tr_rows = _table_rows("x\n" + tr, "Driver") or _table_rows("x\n" + tr, "Supports")
-    if tr_rows:
-        supported_bgs = set()
-        traced_children = set()
-        for r in tr_rows:
-            row_ids = set(re.findall(r"\b(BG-\d+|UC-\d+|CON-\d+|[A-Z]{1,4}QA-\d+)\b", " ".join(r)))
-            child = {i for i in row_ids if not i.startswith("BG-")}
-            bg_here = {i for i in row_ids if i.startswith("BG-")}
-            if child and bg_here:
-                traced_children |= child
-                supported_bgs |= bg_here
-        orphan_bgs = bgs - supported_bgs
-        orphan_children = (ucs | qas | cons) - traced_children
-        if orphan_bgs:
-            errs.append(f"business goals with no UC/QA support in the matrix: {', '.join(sorted(orphan_bgs))}")
-        if orphan_children:
-            errs.append(f"drivers not traced to a business goal in the matrix: {', '.join(sorted(orphan_children))}")
+    errs += _traceability_orphans(text, bgs, ucs, qas, cons)
+    return errs
+
+
+# --------------------------------------------------------------------------- #
+# Split drivers directory: architecture/drivers/{business-goals,use-cases,constraints,quality-attributes}/*.md
+# --------------------------------------------------------------------------- #
+
+SIX_PARTS = ("Source of stimulus", "Stimulus", "Artifact", "Environment", "Response",
+             "Response measure")
+
+
+def _has_diagram(text: str) -> bool:
+    return "```mermaid" in text or "```plantuml" in text or "@startuml" in text
+
+
+def _has_image_line(text: str) -> bool:
+    return bool(re.search(r"^!\[[^\]]*\]\([^)]+\.(png|svg)\)\s*$", text, re.MULTILINE))
+
+
+def check_bg_file(path: Path) -> list[str]:
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    if not re.search(r"\bBG-\d+\b", text):
+        errs.append("no BG-<n> id in the file")
+    low = text.lower()
+    if "need" not in low or "so that" not in low:
+        errs.append("business goal not stated as '<who> needs <what> so that <why>'")
+    if "**status**" not in low and "status:" not in low:
+        errs.append("no Status field")
+    return errs
+
+
+def check_uc_file(path: Path) -> list[str]:
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    low = text.lower()
+    if not re.search(r"\bUC-\d+\b", text):
+        errs.append("no UC-<n> id in the file")
+    for field in ("primary actor", "trigger"):
+        if field not in low:
+            errs.append(f"use case missing '{field}'")
+    if not re.search(r"main success scenario", low):
+        errs.append("use case missing a 'Main success scenario'")
+    if not re.search(r"^\s*1\.\s+\S", text, re.MULTILINE):
+        errs.append("main success scenario is not a numbered list")
+    if "**status**" not in low:
+        errs.append("no Status field")
+    dia = path.parent / "diagrams"
+    src_exists = any((dia / f"{path.stem}{ext}").is_file() for ext in (".puml", ".mmd", ".mermaid"))
+    if not (_has_diagram(text) or src_exists):
+        errs.append("use case has no UML use case diagram (```plantuml/```mermaid block "
+                    "or a diagrams/UC-<n>.puml|.mmd source)")
+    if not _has_image_line(text):
+        errs.append("use case diagram is not embedded as a ![...](diagrams/UC-*.png) image line")
+    for j, blk in enumerate(diagrams_in_markdown(text), 1):
+        errs += check_diagram(blk, f"{path.name} diagram #{j}")
+    return errs
+
+
+def check_con_file(path: Path) -> list[str]:
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    low = text.lower()
+    if not re.search(r"\bCON-\d+\b", text):
+        errs.append("no CON-<n> id in the file")
+    if not re.search(r"business|technical|regulatory", low):
+        errs.append("constraint has no type (business / technical / regulatory)")
+    if "source" not in low:
+        errs.append("constraint has no Source")
+    if "**status**" not in low:
+        errs.append("no Status field")
+    return errs
+
+
+def check_qa_file(path: Path) -> list[str]:
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    if BARE_QAS_RE.search(text):
+        errs.append("uses deprecated flat 'QAS-<n>' id")
+    if not re.search(r"\b[A-Z]{1,4}QA-\d+\b", text):
+        errs.append("no <ATTR>QA-<n> id in the file")
+    for part in SIX_PARTS:
+        if part.lower() not in text.lower():
+            errs.append(f"six-part scenario missing '{part}'")
+    if "25010" not in text:
+        errs.append("no ISO/IEC 25010 classification")
+    # numeric response measure
+    m = re.search(r"Response measure\**\s*\|(.+)", text)
+    if m and not NUM_RE.search(m.group(1)):
+        errs.append("Response measure is not numeric")
+    if "**status**" not in text.lower():
+        errs.append("no Status field")
+    if not _has_diagram(text):
+        errs.append("quality attribute has no six-part scenario diagram")
+    if not _has_image_line(text):
+        errs.append("scenario diagram is not embedded as a ![...](diagrams/scenario-*.png) image line")
+    for j, blk in enumerate(diagrams_in_markdown(text), 1):
+        errs += check_diagram(blk, f"{path.name} diagram #{j}")
+    return errs
+
+
+def check_drivers_index(path: Path) -> list[str]:
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    if BARE_QAS_RE.search(text):
+        errs.append("uses deprecated flat 'QAS-<n>' IDs")
+    if "raceability" not in text:
+        errs.append("index has no traceability matrix")
+    if "overage" not in text:
+        errs.append("index has no coverage check")
+    if "hange log" not in text:
+        errs.append("index has no change log")
+    if "utility tree" not in text.lower():
+        errs.append("index does not reference the quality-attribute utility tree "
+                    "(the summary of QA scenarios in the drivers)")
+    bgs = set(re.findall(r"\bBG-\d+\b", text))
+    ucs = set(re.findall(r"\bUC-\d+\b", text))
+    qas = set(re.findall(r"\b[A-Z]{1,4}QA-\d+\b", text))
+    cons = set(re.findall(r"\bCON-\d+\b", text))
+    if not (bgs and ucs and qas):
+        errs.append("index does not list all of business goals, use cases, and QA scenarios")
+    errs += _traceability_orphans(text, bgs, ucs, qas, cons)
+    return errs
+
+
+def check_drivers_dir(root: Path) -> list[str]:
+    """Cross-file checks over an architecture/drivers/ directory."""
+    errs: list[str] = []
+    idx = root / "index.md"
+    if not idx.is_file():
+        errs.append("architecture/drivers/index.md is missing")
+    kinds = {
+        "business-goals": re.compile(r"BG-\d+\.md$"),
+        "use-cases": re.compile(r"UC-\d+\.md$"),
+        "constraints": re.compile(r"CON-\d+\.md$"),
+        "quality-attributes": re.compile(r"[A-Z]{1,4}QA-\d+\.md$"),
+    }
+    present = {}
+    for sub, pat in kinds.items():
+        d = root / sub
+        files = sorted(f for f in d.glob("*.md")) if d.is_dir() else []
+        present[sub] = [f for f in files if pat.search(f.name)]
+        allowed = {"index.md", "README.md", "utility-tree.md"}
+        if d.is_dir():
+            for f in files:
+                if not pat.search(f.name) and f.name not in allowed:
+                    errs.append(f"{sub}/{f.name}: name does not match the {sub} id pattern")
+    if not present.get("business-goals"):
+        errs.append("no business-goals/BG-*.md files")
+    if not present.get("use-cases"):
+        errs.append("no use-cases/UC-*.md files")
+    if not present.get("quality-attributes"):
+        errs.append("no quality-attributes/<ATTR>QA-*.md files")
+    # every id in the index has a file and vice versa
+    if idx.is_file():
+        itext = idx.read_text(encoding="utf-8")
+        for sub, files in present.items():
+            ids_in_files = {f.stem for f in files}
+            for fid in ids_in_files:
+                if fid not in itext:
+                    errs.append(f"{sub}/{fid}.md exists but {fid} is not listed in index.md")
     return errs
 
 
@@ -281,6 +477,10 @@ def check_qaw(path: Path) -> list[str]:
         errs.append("QAW report does not state the 30%-of-scenarios vote budget")
     if "verbatim" not in text and "raw" not in text:
         errs.append("QAW report should keep raw brainstormed scenarios verbatim (say so)")
+    if "utility tree" not in text:
+        errs.append("QAW report has no utility tree (build one from the refined scenarios)")
+    elif not re.search(r"\(\s*[hml]\s*,\s*[hml]\s*\)", text):
+        errs.append("QAW utility-tree leaves carry no (Importance, Difficulty) pair")
     return errs
 
 
@@ -324,6 +524,25 @@ def check_view_packet(path: Path) -> list[str]:
     return errs
 
 
+def check_utility_tree(path: Path) -> list[str]:
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    low = text.lower()
+    if "utility" not in low:
+        errs.append("utility tree has no root 'Utility' node")
+    if not re.search(r"\b[A-Z]{1,4}QA-\d+\b", text):
+        errs.append("utility tree has no leaf quality attribute scenarios (<ATTR>QA-n)")
+    if not re.search(r"\(\s*[HML]\s*,\s*[HML]\s*\)", text):
+        errs.append("utility-tree leaves carry no (Importance, Difficulty) pair")
+    if "25010" not in text:
+        errs.append("utility tree does not name the ISO/IEC 25010 characteristics")
+    if BARE_QAS_RE.search(text):
+        errs.append("uses deprecated flat 'QAS-<n>' IDs")
+    for j, blk in enumerate(diagrams_in_markdown(text), 1):
+        errs += check_diagram(blk, f"{path.name} diagram #{j}")
+    return errs
+
+
 def check_generic_md(path: Path) -> list[str]:
     errs: list[str] = []
     text = path.read_text(encoding="utf-8")
@@ -338,12 +557,25 @@ def check_mmd(path: Path) -> list[str]:
 
 def validate_file(path: Path) -> list[str] | None:
     name = path.name
+    parent = path.parent.name
     if name.endswith("-Architecture.md"):
         return check_architecture(path)
     if name.endswith("-session.md") or re.search(r"-\d{4}-\d{2}-\d{2}\.md$", name):
         return check_session(path)
     if name == "drivers.md":
         return check_drivers(path)
+    if name == "index.md" and parent == "drivers":
+        return check_drivers_index(path)
+    if name == "utility-tree.md":
+        return check_utility_tree(path)
+    if parent == "business-goals" and re.match(r"BG-\d+\.md$", name):
+        return check_bg_file(path)
+    if parent == "use-cases" and re.match(r"UC-\d+\.md$", name):
+        return check_uc_file(path)
+    if parent == "constraints" and re.match(r"CON-\d+\.md$", name):
+        return check_con_file(path)
+    if parent == "quality-attributes" and re.match(r"[A-Z]{1,4}QA-\d+\.md$", name):
+        return check_qa_file(path)
     if name == "scenarios.md":
         return check_scenarios(path)
     if name == "qaw-report.md":
@@ -442,7 +674,7 @@ def check_self() -> list[str]:
 
 def main(argv: list[str]) -> int:
     do_self = "--self" in argv or not [a for a in argv if not a.startswith("-")]
-    files = [Path(a) for a in argv if not a.startswith("-")]
+    raw = [Path(a) for a in argv if not a.startswith("-")]
 
     total = 0
     if do_self:
@@ -453,10 +685,25 @@ def main(argv: list[str]) -> int:
             print(f"      ✗ {e}")
         total += len(errs)
 
-    if not files and not argv:
+    if not raw and not argv:
         art = Path("architecture")
         if art.is_dir():
-            files = sorted(art.rglob("*.md")) + sorted(art.rglob("*.mmd"))
+            raw = [art]
+
+    # expand directories: cross-file checks for a drivers/ dir, then every *.md / *.mmd under it
+    files: list[Path] = []
+    for p in raw:
+        if p.is_dir():
+            if p.name == "drivers" or (p / "index.md").is_file() and (p / "use-cases").is_dir():
+                errs = check_drivers_dir(p)
+                tag = "PASS" if not errs else "FAIL"
+                print(f"{tag}  {p}/ (drivers directory — cross-file)")
+                for e in errs:
+                    print(f"      ✗ {e}")
+                total += len(errs)
+            files += sorted(p.rglob("*.md")) + sorted(p.rglob("*.mmd"))
+        else:
+            files.append(p)
 
     for f in files:
         if not f.exists():

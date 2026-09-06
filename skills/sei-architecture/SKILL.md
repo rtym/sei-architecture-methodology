@@ -22,7 +22,7 @@ and hands off.
 
 | # | Activity | Skill | Use it to… | Produces |
 |---|----------|-------|------------|----------|
-| 0 | **Architectural drivers** | `architectural-drivers` | Collect & track the four driver kinds — business goals, primary functional requirements (as UML **use cases**), constraints, quality attributes — with a traceability matrix | `architecture/drivers/drivers.md` + use-case diagrams |
+| 0 | **Architectural drivers** | `architectural-drivers` | Collect & track the four driver kinds — business goals, primary functional requirements (as UML **use cases**), constraints, quality attributes — with a traceability matrix | `architecture/drivers/` (one file per driver) + use-case diagrams |
 | 1 | **Quality attributes** | `quality-attributes` | Turn vague "-ilities" into measurable 6-part quality attribute scenarios (ISO/IEC 25010), each drawn as a UML scenario diagram | `architecture/quality-attributes/scenarios.md` |
 | 2 | **Quality Attribute Workshop (QAW)** | `quality-attribute-workshop` | Facilitate the SEI 8-step stakeholder workshop that elicits, consolidates, prioritises and refines scenarios *before* the architecture exists | `architecture/qaw/qaw-report.md` |
 | 3 | **Attribute-Driven Design (ADD 3.0)** | `attribute-driven-design` | Design or evolve the architecture in driver-focused iterations | `architecture/add/<slug>-session.md` + `<slug>-Architecture.md` |

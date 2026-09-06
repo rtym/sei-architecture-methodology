@@ -16,19 +16,28 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
       and minimal edge crossings — before being embedded.
 - [ ] No TODO / `<placeholder>` / empty table left in a "finished" artifact.
 
-## Architectural drivers (`drivers.md`)
+## Architectural drivers (`architecture/drivers/` directory)
 
-- [ ] All four kinds present: business goals, use cases, constraints, quality attribute scenarios.
-- [ ] Each business goal is `<stakeholder> needs <outcome> so that <business value>`.
+- [ ] It is a **directory**: `index.md` + `business-goals/`, `use-cases/`, `constraints/`,
+      `quality-attributes/` with **one file per driver**. `index.md` is the only aggregate file.
+- [ ] All four kinds present. Every driver file carries `**Status**`.
+- [ ] Each business goal is `<stakeholder> needs <outcome> so that <business value>` with a category.
 - [ ] Each use case has a primary actor, a trigger, and a numbered main success scenario — not a
       one-liner; the architecturally significant alternate flows are listed.
-- [ ] At least one UML use case diagram exists and is verified.
+- [ ] **Each use case has its own proper UML use case diagram** — stick-figure actors outside the
+      boundary rectangle, ellipse use cases inside, dashed `<<include>>`/`<<extend>>` — rendered
+      (PlantUML preferred) and visually cross-verified, embedded as `![](diagrams/UC-<n>.png)`.
+      Plus one overview diagram per actor group.
 - [ ] Each constraint has a type (business / technical / regulatory), a source, and hard/negotiable.
-- [ ] Each quality attribute scenario has all six parts and a **numeric** response measure.
-- [ ] Each quality attribute scenario is classified against ISO/IEC 25010 (characteristic + sub).
-- [ ] Traceability matrix present; **no orphans** — every BG supported by ≥ 1 UC/QA scenario,
-      every UC/QA scenario/CON traces up to ≥ 1 BG. Gaps are reported explicitly, not hidden.
-- [ ] Prioritised driver list leads with the `(H,H)` then `(H,M)` quality scenarios.
+- [ ] **Each quality attribute is documented as a six-part quality attribute scenario** with a
+      **numeric** response measure and an ISO/IEC 25010 classification (characteristic + sub),
+      **and its own horizontal (`flowchart LR`) six-part scenario diagram**, verified and embedded.
+- [ ] `quality-attributes/utility-tree.md` exists — the summary of the QA drivers:
+      `Utility → ISO/IEC 25010 characteristic → refinement → <ATTR>QA-n (Imp,Diff)`, with a
+      rendered `mindmap`. Imported from the QAW (its Step 9) when one was run.
+- [ ] `index.md` traceability matrix present; **no orphans** — every BG supported by ≥ 1 UC/QA
+      scenario, every UC/QA scenario/CON traces up to ≥ 1 BG. Gaps reported explicitly.
+- [ ] `index.md` prioritised list leads with the `(H,H)` then `(H,M)` quality scenarios; has a change log.
 
 ## Quality attribute scenarios (`scenarios.md`)
 

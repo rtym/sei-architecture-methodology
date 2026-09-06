@@ -1,4 +1,4 @@
-# Use case: UC-<n> — <goal-phrased name>
+# UC-<n>: <goal-phrased name>
 
 - **Scope**: <system / subsystem>
 - **Level**: user goal | subfunction
@@ -9,6 +9,8 @@
 - **Trigger**: <event that starts it>
 - **Preconditions**: <what must be true before>
 - **Postconditions (minimal guarantee / success guarantee)**: <what is true after>
+- **Priority**: high | medium | low
+- **Status**: open | in design | partially | addressed | retired
 
 ## Main success scenario
 
@@ -30,32 +32,52 @@
 
 `BG-…`, `<ATTR>QA-…`, `CON-…`
 
----
+## Use case diagram
 
-### Use case diagram fragment (Mermaid convention)
+A **proper UML use case diagram for this use case**, drawn with **UML-specific components** —
+stick-figure actors **outside** the system boundary rectangle, ellipse use cases **inside** it,
+solid association lines, dashed `..>` dependencies stereotyped `<<include>>` (always) /
+`<<extend>>` (conditional). Rendered to `diagrams/UC-<n>.png` and visually cross-verified.
 
-```mermaid
-flowchart LR
-  %% Use case diagram — <group>
-  actor1(["<Actor>"])
-  subgraph sys["System: <name>"]
-    uc("UC-<n> <name>")
-  end
-  actor1 --> uc
-  class actor1 source
-  class uc artifact
-```
-
-### Or strict UML (PlantUML)
+**PlantUML (UML notation — default):**
 
 ```plantuml
 @startuml
-!include ../skills/sei-diagrams/assets/plantuml-theme.puml
+!include ../../../skills/sei-diagrams/assets/plantuml-theme.puml
+skinparam actorStyle awesome
 left to right direction
-actor "<Actor>" as actor1
-rectangle "<name>" {
-  usecase "UC-<n> <name>" as uc
+actor "<Primary actor>" as actor1
+actor "<Supporting actor / system>" as supp
+rectangle "<system name>" {
+  usecase "UC-<n>\n<name>" as uc
+  usecase "UC-<n>a\n<included sub-use-case>" as sub
 }
 actor1 --> uc
+supp --> uc
+uc ..> sub : <<include>>
 @enduml
 ```
+
+![UC-<n> — <name>](diagrams/UC-<n>.png)
+
+**Mermaid fallback (approximate shapes — only if no Java):**
+
+```mermaid
+flowchart LR
+  %% Use case diagram — UC-<n> <name>
+  actor1(["<Primary actor>"])
+  supp(["<Supporting actor / system>"])
+  subgraph sys["System: <name>"]
+    uc("UC-<n> <name>")
+    sub("UC-<n>a <included sub-use-case>")
+  end
+  actor1 --> uc
+  supp --> uc
+  uc -. include .-> sub
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  class actor1,supp source
+  class uc,sub artifact
+```
+
+<!-- changed <YYYY-MM-DD>: <what and why> -->

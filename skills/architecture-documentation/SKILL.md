@@ -124,21 +124,22 @@ Create these supporting files in `architecture/docs/`:
 | `directory.md` | Directory | Index, glossary, acronym list. |
 | `change-log.md` | — | Dated list of revisions to the architecture description. |
 
-## Report format
+## Report format — the V&B report
 
 The files above are the working Markdown. For a deliverable, ask the user **Markdown, HTML, or
-both**, then:
+both**, then build **one Views-and-Beyond structured report** with `--profile vandb` — it takes
+the `docs/` directory and orders it as *roadmap → system overview → Module view → C&C view →
+Allocation view → other views → mapping between views → rationale → directory → change log*:
 
 ```bash
-scripts/build-report.sh architecture/docs/index.md architecture/docs/system-overview.md \
-  architecture/docs/view-*.md architecture/docs/mapping-between-views.md \
-  architecture/docs/rationale.md architecture/docs/directory.md \
-  --format html --embed-diagrams --title "Architecture Description — <system>" \
+scripts/build-report.sh --profile vandb architecture/docs/ \
+  --format both --embed-diagrams --title "Architecture Description — <system>" \
   --out architecture/reports/architecture-description.html
 ```
 
 `--embed-diagrams` renders every ```mermaid block to PNG (via the `sei-diagrams` renderer) and
-inlines it, producing one self-contained HTML file with a cover page and table of contents.
+inlines it; the output is one self-contained HTML file styled with the SEI palette, with a cover
+page and a table of contents that follows the V&B section order.
 
 ## Procedure
 

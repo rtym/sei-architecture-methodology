@@ -82,10 +82,28 @@ Take the **top scenarios** (as many as time allows, usually 4–6). For each, pr
 - **business goals** it supports;
 - the **relevant quality attributes**, classified against **ISO/IEC 25010:2023**
   (characteristic + sub-characteristic — see `references/quality-attribute-taxonomy.md`);
-- a **six-part UML scenario diagram** (use the `sei-diagrams` skill's *Quality attribute scenario
-  diagram* pattern), rendered in the report and optionally to PNG;
+- a **six-part UML scenario diagram** — **horizontal `flowchart LR`** (use the `sei-diagrams`
+  skill's *Quality attribute scenario diagram* pattern), rendered to PNG and visually verified;
 - **questions** raised about how the architecture would achieve it;
 - **issues** / concerns / assumptions surfaced during discussion.
+
+### Step 9 — Build the quality attribute utility tree
+After refinement, assemble a **proper, correct utility tree** — it is the summary of the
+workshop's quality attributes and becomes the QA summary in the architectural drivers.
+
+`Utility → quality attribute (ISO/IEC 25010 characteristic) → attribute refinement (sub-char) →
+concrete scenario (Importance, Difficulty)`
+
+- Every refined scenario (and every consolidated scenario that survived voting) is a leaf.
+- Each leaf carries the `(Importance, Difficulty)` pair, each `H`/`M`/`L`. Importance comes from
+  the vote ranking + business-goal weight; Difficulty is the architect's estimate.
+- Group leaves under the correct ISO/IEC 25010 characteristic and sub-characteristic.
+- Render it two ways via `sei-diagrams`: an **indented list** and a **Mermaid `mindmap`**
+  (`architecture/qaw/diagrams/utility-tree.png`, visually verified).
+- Template: `templates/utility-tree.md`.
+
+Hand this tree to `/drivers` — it populates `architecture/drivers/quality-attributes/utility-tree.md`
+and is referenced from the drivers `index.md`. ATAM step 5 reuses the same structure.
 
 ## Outputs (all in the report)
 
@@ -96,8 +114,9 @@ Take the **top scenarios** (as many as time allows, usually 4–6). For each, pr
 5. **Raw brainstormed scenarios** (`S-n`).
 6. **Consolidated scenarios** with merge map.
 7. **Prioritised scenarios** — vote table + ranked list.
-8. **Refined scenarios** — six-part form + questions + issues for the top set.
-9. Next steps (feed refined scenarios into ADD as drivers; schedule ATAM later).
+8. **Refined scenarios** — six-part form + horizontal scenario diagram + questions + issues.
+9. **Quality attribute utility tree** — indented list + mindmap, every leaf `(Imp, Diff)`.
+10. Next steps (feed refined scenarios + utility tree into `/drivers`, then ADD; schedule ATAM).
 
 ## Rules
 

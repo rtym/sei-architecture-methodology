@@ -129,7 +129,54 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 - **Questions**: Does the form need progressive disclosure? Are categories pre-seeded?
 - **Issues / assumptions**: usability test to be run on a clickable prototype before build.
 
+## Step 9 — Quality attribute utility tree
+
+The proper utility tree assembled from the refined + surviving scenarios. It is the summary of the
+workshop's quality attributes and is handed to `/drivers` as the QA summary
+(`../drivers/quality-attributes/utility-tree.md`). ATAM step 5 reuses it.
+
+`Utility → quality attribute (ISO/IEC 25010) → refinement → scenario (Importance, Difficulty)`
+
+- **Utility**
+  - **Security**
+    - Confidentiality → `(H, H)` SQA-1 (from CS-1) — cross-user access rejected and logged
+  - **Reliability**
+    - Availability → `(H, H)` AQA-1 (from CS-3) — survive an AZ loss, recover < 60 s
+  - **Performance efficiency**
+    - Time behaviour → `(H, M)` PQA-1 (from CS-2) — dashboard < 1.5 s @ p95, 500 concurrent
+    - Capacity → `(M, M)` PQA-2 (from CS-6) — 5 000-row import < 30 s, interactive unaffected
+  - **Maintainability**
+    - Modifiability → `(M, M)` MQA-1 (from CS-4) — add a report type in ≤ 1 person-day
+  - **Interaction capability**
+    - Operability → `(M, M)` UQA-1 (from CS-5) — first transaction without help, ≥ 85 %
+
+```mermaid
+mindmap
+  %% QAW utility tree — Personal Finance Tracker (ISO/IEC 25010)
+  root((Utility))
+    sec[Security]
+      secc[Confidentiality]
+        sqa1["SQA-1 (H,H)"]
+    rel[Reliability]
+      rela[Availability]
+        aqa1["AQA-1 (H,H)"]
+    perf[Performance efficiency]
+      perft[Time behaviour]
+        pqa1["PQA-1 (H,M)"]
+      perfc[Capacity]
+        pqa2["PQA-2 (M,M)"]
+    main[Maintainability]
+      mainm[Modifiability]
+        mqa1["MQA-1 (M,M)"]
+    ic[Interaction capability]
+      ico[Operability]
+        uqa1["UQA-1 (M,M)"]
+```
+
+![QAW quality attribute utility tree](diagrams/utility-tree.png)
+
 ## Next steps
 
-- Feed refined scenarios into `architectural-drivers` as `SQA-1`, `UQA-1`, etc., and into `/attribute-driven-design`.
-- Schedule an ATAM once the ADD architecture exists.
+- Feed refined scenarios + the utility tree into `/drivers` (they become `SQA-1`, `AQA-1`, …
+  under `architecture/drivers/quality-attributes/`), then into `/attribute-driven-design`.
+- Schedule an ATAM once the ADD architecture exists — it reuses this utility tree at step 5.

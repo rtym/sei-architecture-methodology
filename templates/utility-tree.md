@@ -32,25 +32,30 @@ Importance = to the business. Difficulty = expected architectural challenge.
 mindmap
   %% Utility tree — <system>
   root((Utility))
-    Performance
-      "Time behaviour"
-        "PQA-1 (H,M)"
-      Capacity
-        "PQA-2 (M,M)"
-    Reliability
-      Availability
-        "AQA-1 (H,H)"
-      Recoverability
-        "RQA-1 (M,M)"
-    Security
-      Confidentiality
-        "SQA-1 (H,H)"
-    Maintainability
-      Modifiability
-        "MQA-1 (M,M)"
+    perf[Performance efficiency]
+      perft[Time behaviour]
+        pqa1["PQA-1 (H,M)"]
+      perfc[Capacity]
+        pqa2["PQA-2 (M,M)"]
+    rel[Reliability]
+      rela[Availability]
+        aqa1["AQA-1 (H,H)"]
+      relr[Recoverability]
+        rqa1["RQA-1 (M,M)"]
+    sec[Security]
+      secc[Confidentiality]
+        sqa1["SQA-1 (H,H)"]
+    main[Maintainability]
+      mainm[Modifiability]
+        mqa1["MQA-1 (M,M)"]
 ```
 
-Rendered: `diagrams/utility-tree.png` · visually verified: yes/no
+Node shape note: `mindmap` treats `id(text)` and bare `(…)` as shape syntax — always give leaves
+an id and bracket form `id["<ATTR>QA-n (Imp,Diff)"]`.
+
+![Quality attribute utility tree](diagrams/utility-tree.png)
+
+_visually verified: yes/no_
 
 ## Analysis targets
 

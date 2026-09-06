@@ -20,20 +20,24 @@ one curated palette. Then render them to PNG.
 - Theme + palette: `assets/mermaid-theme.json`, `assets/palette.md`, `assets/plantuml-theme.puml`.
 - Renderers: `scripts/render.sh` (Mermaid), `scripts/render-plantuml.sh` (PlantUML), `scripts/setup.sh`.
 
-## Notation: ask the user
+## Notation
 
-Both notations are supported for every diagram type below. **Ask which one to use** before
-writing the source (offer it as a two-item numbered list), unless the user or the calling skill
-already stated a preference:
+Two engines, both supported for every diagram type. **Ask the user** which they prefer, unless
+the calling skill already fixed it. Sensible defaults when they have no preference:
 
-1. **Mermaid** *(default / recommended)* — renders with no Java, matches the other SEI skills,
-   `.mmd` source, rendered by `scripts/render.sh`.
-2. **PlantUML** — full UML notation (stick-figure actors, `<<extend>>` arrowheads, proper
-   component/deployment shapes), `.puml` source, rendered by `scripts/render-plantuml.sh`
-   (needs a Java runtime; the script explains how to install one).
+| Diagram | Default notation | Why |
+|---------|------------------|-----|
+| **Use case** | **PlantUML `usecase`** | only PlantUML has real UML glyphs — stick-figure actors, ellipse use cases, boundary rectangle, `<<include>>`/`<<extend>>` dependencies |
+| Context / container / component / deployment | **Mermaid flowchart-C4** | honours the SEI palette and lays out cleanly; still full C4 semantics |
+| Sequence / class / state | Mermaid | native support, renders without Java |
+| Quality attribute scenario / utility tree | Mermaid | `flowchart LR` / `mindmap` |
 
-If the user has no preference, use Mermaid. **The rules and the visual-verification process below
-are identical for both notations** — only the source syntax and the render script differ.
+- **Mermaid** — `.mmd` source, `scripts/render.sh` (first run `scripts/setup.sh`). No Java.
+- **PlantUML** — `.puml` source, `scripts/render-plantuml.sh`. Needs Java; the script
+  auto-detects a keg-only Homebrew JDK and, if there is truly none, prints the one-line install.
+
+**The ten rules and the visual-verification loop are identical for both** — only the source
+syntax and the render script differ.
 
 ## Workflow
 
@@ -87,19 +91,46 @@ Never present or embed a diagram you have not looked at as a rendered image.
 | Runtime flow for a scenario | UML sequence | Mermaid `sequenceDiagram` |
 | Domain / class model | UML class | Mermaid `classDiagram` |
 | Lifecycle / mode logic | UML state | Mermaid `stateDiagram-v2` |
-| **Use case model** | UML use case | Mermaid `flowchart LR` (pattern below) or PlantUML `usecase` |
+| **Use case model** | UML use case | **PlantUML `usecase`** (true UML glyphs — default); Mermaid `flowchart LR` fallback |
 | Quality attribute scenario (6-part) | box-and-arrow | Mermaid `flowchart LR` (pattern below) |
 | Utility tree | tree | Mermaid `mindmap` |
 
-### Why `flowchart` in C4 style and not native `C4Context`/`C4Container`
+### Context & container diagrams follow the C4 model
 
-Mermaid's native `C4*` renderer **ignores the theme file** (diagrams come out in default blue,
-not the SEI palette) and has weak edge routing (labels collide, arrows cross). For any diagram
-that will be **rendered to PNG** or embedded in a document, draw structural diagrams as a
-`flowchart` styled with the semantic `classDef`s — it honours the palette, lays out cleanly, and
-works with ELK. Use native `C4Context`/`C4Container`/`C4Component`/`C4Deployment` only for a
-quick sketch shown inline in chat where PNG polish doesn't matter; the syntax reference for it is
-kept at the end of this file.
+The **Context** (C4 level 1) and **Container** (C4 level 2) diagrams — and Component (L3) and
+Deployment — **must follow C4 principles** regardless of which drawing tool produces them:
+
+1. **Level of abstraction is fixed per diagram.** A context diagram shows *people* + *software
+   systems* only (no containers). A container diagram shows the containers **inside one system**
+   + the people and external systems it talks to (no components). Never mix levels.
+2. **Every element has all four**: a **name**, a **type** (Person / Software System / Container /
+   Component / Data store), a **technology** (for containers/components/stores — a concrete
+   stack), and a **one-line description/responsibility**.
+3. **The system boundary is explicit.** System-owned elements sit inside a labelled boundary;
+   people and external systems sit outside it.
+4. **Every relationship is a directed, labelled arrow** — an action phrase and, where useful, the
+   protocol (`"Reads product data from · JSON/HTTPS"`). No unlabelled lines.
+5. **Internal vs external is visually distinct** (the palette does this: `internal` vs `external`
+   vs `datastore` vs `source`).
+6. **One diagram = one question.** Keep it to ≤ ~10 elements; if a system has more containers,
+   split by concern and add a parent context diagram.
+7. Diagrams are **self-explanatory**: a title, and a legend when notation isn't obvious.
+
+### Notation: flowchart-C4 (house style) or C4-PlantUML
+
+Both satisfy the principles above — pick per the user's notation choice:
+
+- **Flowchart-C4 (default)** — C4 semantics drawn with Mermaid `flowchart` primitives and the
+  semantic `classDef`s. Mermaid's *native* `C4Context`/`C4Container` renderer ignores the theme
+  file (default blue, not the SEI palette) and routes edges poorly (labels collide), so it is
+  **not** used for rendered deliverables — only for a throwaway inline sketch. The flowchart-C4
+  form below is still C4; only the drawing primitive differs.
+- **C4-PlantUML** — canonical C4 shapes and stereotypes via the
+  [`C4-PlantUML`](https://github.com/plantuml-stdlib/C4-PlantUML) macros
+  (`!include <C4/C4_Context>` etc., `Person()`, `System()`, `Container()`, `Rel()`,
+  `System_Boundary()`). Renders properly with the palette from `assets/plantuml-theme.puml`;
+  needs Java (`scripts/render-plantuml.sh` explains how to install it). Use when the user wants
+  canonical C4 notation.
 
 ### Structural diagram — house style (context / container / component / deployment)
 
@@ -136,6 +167,29 @@ class and sit **outside** the `subgraph` boundary. Put the tech stack on an `<i>
 relationship with an action phrase. For a **deployment** diagram, nest `subgraph`s for
 region → cluster → node and place containers in the leaf `subgraph`.
 
+Same diagram in **C4-PlantUML** (canonical notation; render with `scripts/render-plantuml.sh`):
+
+```plantuml
+@startuml
+!include <C4/C4_Container>
+!include ../../skills/sei-diagrams/assets/plantuml-theme.puml
+title Container diagram — <System>
+Person(user, "User role", "how they access")
+System_Ext(ext, "External system", "protocol")
+System_Boundary(sys, "<System name>") {
+  Container(web, "Web App", "React 18 / TS", "Delivers the UI")
+  Container(api, "API Service", "Node.js 20 / Fastify", "Business logic and auth")
+  ContainerDb(db, "Database", "PostgreSQL 15", "Persistent data")
+  ContainerQueue(bus, "Event Bus", "Kafka", "Domain events")
+}
+Rel(user, web, "Uses over HTTPS")
+Rel(web, api, "Calls REST API", "JSON/HTTPS")
+Rel(api, db, "Reads / writes", "SQL/TLS")
+Rel(api, bus, "Publishes events")
+Rel(api, ext, "Sends notifications", "SMTP")
+@enduml
+```
+
 ## Quality attribute scenario diagram
 
 The canonical SEI six-part scenario, drawn so every part is visible. **Use this for every `<ATTR>QA-n`**
@@ -164,60 +218,71 @@ use `classDef` names `source`, `artifact`, `response` (defined in the theme) for
 
 ## Use case diagram
 
-Mermaid has no native UML use-case diagram, so use this **convention** (it renders cleanly and
-survives the palette): actors as stadium nodes `([Actor])` on the left, use cases as rounded
-nodes `(Use case)` inside a `subgraph` that is the system boundary, `<<include>>` / `<<extend>>`
-as dashed labelled edges between use cases. One diagram per actor group or subsystem, ≤ ~10 use
-cases.
+A use case diagram is a **UML diagram** — draw it with the **UML-specific drawing components**:
+**stick-figure actors**, **ellipse (oval) use cases**, a **system boundary rectangle**, solid
+association lines (actor ↔ use case), and dashed `..>` dependency arrows stereotyped
+`<<include>>` / `<<extend>>` (extend points from the extension to the base). Mermaid's `flowchart`
+primitives (stadiums, rounded rectangles) are **not** UML symbols, so:
 
-```mermaid
-flowchart LR
-  %% Use case diagram — Finance Tracker: transaction management (UC-1..UC-4)
-  user(["User"])
-  admin(["Administrator"])
-  bank(["Bank Import API"])
-  subgraph sys["System: Personal Finance Tracker"]
-    uc1("UC-1 Record transaction")
-    uc2("UC-2 Categorise transaction")
-    uc3("UC-3 Import statement")
-    uc4("UC-4 Manage categories")
-  end
-  user --> uc1
-  user --> uc3
-  admin --> uc4
-  uc3 -. include .-> uc2
-  uc1 -. include .-> uc2
-  bank --> uc3
-  class user,admin,bank source
-  class uc1,uc2,uc3,uc4 artifact
-```
+- **Recommended: PlantUML** — it has the real UML glyphs. This is the default for use case diagrams.
+- **Fallback: Mermaid flowchart convention** — only when Java is unavailable and the user accepts
+  approximate shapes. Keep the convention (actors `([ ])` outside the boundary `subgraph`, use
+  cases `( )` inside, `-. include .->` / `-. extend .->` dashed).
 
-If the user picks **PlantUML** (stick figures, ovals, proper `<<extend>>` arrowheads):
+One diagram per **use case** (in its `UC-<n>.md`) plus one **overview** diagram per actor group /
+subsystem (≤ ~10 use cases).
+
+**PlantUML (UML notation — default):**
 
 ```plantuml
 @startuml
-!include ../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include ../../../skills/sei-diagrams/assets/plantuml-theme.puml
+skinparam actorStyle awesome
 left to right direction
-actor "User" as user
-actor "Administrator" as admin
+actor "Registered user" as user
+actor "Bank Import API" as bank
 rectangle "Personal Finance Tracker" {
-  usecase "UC-1 Record transaction" as uc1
-  usecase "UC-2 Categorise transaction" as uc2
-  usecase "UC-3 Import statement" as uc3
-  usecase "UC-4 Manage categories" as uc4
+  usecase "UC-1\nRecord transaction" as uc1
+  usecase "UC-2\nCategorise transaction" as uc2
+  usecase "UC-3\nImport statement" as uc3
 }
 user --> uc1
 user --> uc3
-admin --> uc4
+bank --> uc3
 uc1 ..> uc2 : <<include>>
 uc3 ..> uc2 : <<include>>
 @enduml
 ```
 
-Render the PlantUML variant with `scripts/render-plantuml.sh` (needs Java — the script tells you
-how to install it if missing). **Whichever notation the user chose, the verification is the
-same**: `Read` the rendered PNG and check actors are outside the boundary, use cases inside,
-include/extend dashed, and no avoidable crossings — iterate on the source until it passes.
+Render with `scripts/render-plantuml.sh` (auto-detects a keg-only Homebrew JDK; if truly no Java,
+it prints the one-line install command).
+
+**Mermaid fallback (approximate shapes):**
+
+```mermaid
+flowchart LR
+  %% Use case diagram — Finance Tracker: transaction management (UC-1..UC-3)
+  user(["Registered user"])
+  bank(["Bank Import API"])
+  subgraph sys["System: Personal Finance Tracker"]
+    uc1("UC-1 Record transaction")
+    uc2("UC-2 Categorise transaction")
+    uc3("UC-3 Import statement")
+  end
+  user --> uc1
+  user --> uc3
+  bank --> uc3
+  uc1 -. include .-> uc2
+  uc3 -. include .-> uc2
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  class user,bank source
+  class uc1,uc2,uc3 artifact
+```
+
+**Whichever notation is used, the verification is the same**: `Read` the rendered PNG and check
+actors are outside the boundary, use cases are inside it, associations are solid, include/extend
+are dashed `<<…>>` dependencies, and there are no avoidable crossings — iterate until it passes.
 
 ## The ten diagram rules
 
@@ -289,17 +354,30 @@ document, embed the diagram as **both**:
 2. a standard Markdown image with a **relative path** to the verified PNG:
    `![<diagram title>](diagrams/<name>.png)`.
 
-```markdown
+~~~markdown
 ### Diagram
 
 ```mermaid
 flowchart TB
   %% Container diagram — Acme (C4 level 2)
-  ...
+  user(["Customer<br/><i>browser</i>"])
+  subgraph sys["Acme"]
+    web["Web App<br/><i>React</i>"]
+    api["API<br/><i>Go</i>"]
+    db[("DB<br/><i>PostgreSQL 15</i>")]
+  end
+  user -->|"Uses (HTTPS)"| web
+  web -->|"Calls (gRPC)"| api
+  api -->|"Reads / writes (SQL)"| db
+  classDef source fill:#E7E3F3,stroke:#6B5BA6; classDef internal fill:#EDF2F8,stroke:#3E6DA5;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C;
+  class user source
+  class web,api internal
+  class db datastore
 ```
 
 ![Container diagram — Acme](diagrams/container.png)
-```
+~~~
 
 Rules for the image line:
 - Path is **relative to the `.md` file**, forward slashes, no leading `/`, no `file://`, no
