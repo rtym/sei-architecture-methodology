@@ -41,8 +41,12 @@ standard taxonomy; the SEI six-part scenario is the *form*, ISO 25010 supplies t
 Full definitions, the sub-characteristic breakdown, the **general-scenario "portions"** menu
 (the range of values each of the six parts can take), and the per-attribute tactics-based
 questionnaire are in `references/quality-attribute-taxonomy.md` (with tactic and pattern lists
-in `references/tactics-catalog.md` and `references/architecture-patterns.md`). Build each
-concrete scenario by choosing values from the portions and making the response measure numeric.
+in `references/tactics-catalog.md` and `references/architecture-patterns.md`). The full
+**general-scenario portion tables for all 10 attributes** (availability, deployability, energy
+efficiency, integrability, modifiability, performance, safety, security, testability, usability)
+— the menu of values for each of the six parts, plus a worked concrete example — are in
+`references/quality-attribute-scenarios.md`. Build each concrete scenario by choosing values
+from the portions and making the response measure numeric.
 For a cloud or mobile system, `references/runtime-environments.md` lists the environment-specific
 stimuli worth a scenario (cold start, zone loss, autoscale lag, offline operation, battery,
 OS eviction).

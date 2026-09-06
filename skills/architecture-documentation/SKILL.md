@@ -22,6 +22,33 @@ Diagrams: the `sei-diagrams` skill (`skills/sei-diagrams/SKILL.md`).
 
 **Keep prompts short.** Numbered lists. **Draft first**, refine.
 
+## Guiding rules (full guidance in `references/views-and-beyond.md`)
+
+- **Know your reader.** Documentation serves four uses — education, communication, analysis &
+  construction, forensics — and is both *prescriptive* (constrains open decisions) and
+  *descriptive* (records made ones). Identify the real stakeholders and give each the views they
+  need (PM, developer, tester/integrator, interoperating-system designer, maintainer, end user,
+  analyst, infrastructure support, future architect — see the reference's stakeholder table).
+- **Least-formal-that-removes-ambiguity notation**, always with a key/legend: informal
+  boxes-and-lines → semi-formal (C4 for structure, UML for behaviour) → formal ADL (rare).
+- **Document the relevant views + beyond-views.** All three structural viewtypes must be
+  covered; add **quality views** (security / communications / error-handling / reliability /
+  performance) when a concern is pervasive and spread across structures.
+- **Document behaviour**, not just structure — trace-oriented (use cases, sequence,
+  communication, activity) for a path; comprehensive (state machine) for all paths. Each
+  behaviour diagram gets a plain-English paragraph.
+- **Combine views** only as legible overlays (C&C+C&C; deployment+C&C-with-processes;
+  decomposition+work-assignment/impl/uses/layered).
+- **Record rationale as you design it** — the two-column table (*decision + location* |
+  *rationale + assumptions incl. discarded alternatives*), with extra care and risk notes for
+  decisions that drive a `(H,H)`/`(H,M)` scenario measure.
+- **Traceability** — link each significant decision to the ASR / business goal that led to it;
+  the package is "right" when every ASR is covered by a trace link.
+- **Practical**: short wiki pages over a deep structure; comment-not-edit permissions for most
+  stakeholders; version-control the docs and release ahead of milestones; for dynamic
+  architectures document the invariants + the allowed changes (variability guide) + auto-gen
+  interface docs.
+
 ## Core idea: a view = a viewtype projected for a purpose
 
 A **view** documents the system's elements and relations of one kind, chosen to answer specific
