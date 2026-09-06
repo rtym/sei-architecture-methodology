@@ -1,0 +1,32 @@
+flowchart TB
+  %% Container diagram — Personal Finance Tracker (C4 level 2, flowchart style)
+  user(["Registered user<br/><i>mobile browser</i>"])
+  mail["Email provider<br/><i>external · SMTP/TLS</i>"]
+
+  subgraph sys["Personal Finance Tracker"]
+    direction TB
+    spa["Web App<br/><i>React 18 / TS PWA</i>"]
+    api["API Service<br/><i>Node.js 20 / Fastify</i>"]
+    worker["Import Worker<br/><i>Node.js 20 queue consumer</i>"]
+    db[("Primary Database<br/><i>PostgreSQL 15 · encrypted</i>")]
+    cache[("Read Cache<br/><i>Redis 7</i>")]
+    queue[["Import Queue<br/><i>Redis Streams</i>"]]
+  end
+
+  user -->|"Uses over HTTPS"| spa
+  spa -->|"Calls REST API (JSON)"| api
+  api -->|"Reads / writes tenant rows (SQL/TLS)"| db
+  api -->|"Reads aggregates, invalidates on write"| cache
+  api -->|"Enqueues import jobs"| queue
+  queue -->|"Delivers jobs"| worker
+  worker -->|"Bulk-inserts transactions"| db
+  api -->|"Sends verification & alert email"| mail
+
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef external  fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
+  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  class user source
+  class mail external
+  class spa,api,worker internal
+  class db,cache,queue datastore

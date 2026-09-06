@@ -1,0 +1,80 @@
+' SEI diagrams — PlantUML palette (matches assets/palette.md and mermaid-theme.json)
+' Usage: put  !include ../../skills/sei-diagrams/assets/plantuml-theme.puml  at the top of a .puml
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 14
+skinparam defaultFontColor #1F2933
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #6B7A8D
+skinparam ArrowFontColor #1F2933
+skinparam WrapWidth 220
+
+skinparam rectangle {
+  BackgroundColor #EDF2F8
+  BorderColor #3E6DA5
+  FontColor #1F2933
+}
+skinparam component {
+  BackgroundColor #EDF2F8
+  BorderColor #3E6DA5
+  FontColor #1F2933
+}
+skinparam package {
+  BackgroundColor #FBFCFE
+  BorderColor #9AA7B4
+}
+skinparam node {
+  BackgroundColor #F5EEE3
+  BorderColor #B07D3B
+  FontColor #1F2933
+}
+skinparam database {
+  BackgroundColor #E4F0E9
+  BorderColor #3F7D5C
+  FontColor #1F2933
+}
+skinparam queue {
+  BackgroundColor #E4F0E9
+  BorderColor #3F7D5C
+}
+skinparam actor {
+  BackgroundColor #E7E3F3
+  BorderColor #6B5BA6
+}
+skinparam class {
+  BackgroundColor #EDF2F8
+  BorderColor #3E6DA5
+  AttributeFontColor #1F2933
+  HeaderBackgroundColor #DCE6F2
+}
+skinparam sequence {
+  ParticipantBackgroundColor #EDF2F8
+  ParticipantBorderColor #3E6DA5
+  ActorBackgroundColor #E7E3F3
+  ActorBorderColor #6B5BA6
+  LifeLineBorderColor #9AA7B4
+  LifeLineBackgroundColor #DCE6F2
+  BoxBackgroundColor #FBFCFE
+  BoxBorderColor #9AA7B4
+}
+skinparam state {
+  BackgroundColor #EDF2F8
+  BorderColor #3E6DA5
+  FontColor #1F2933
+}
+skinparam note {
+  BackgroundColor #FBF6EC
+  BorderColor #B07D3B
+}
+
+' Stereotype-driven emphasis:  rectangle "X" <<emphasis>>
+skinparam rectangle<<emphasis>> {
+  BackgroundColor #F6E4E4
+  BorderColor #B04A46
+}
+skinparam rectangle<<external>> {
+  BackgroundColor #F5EEE3
+  BorderColor #B07D3B
+}

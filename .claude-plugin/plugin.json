@@ -1,0 +1,34 @@
+{
+  "name": "sei-architecture-methodology",
+  "version": "1.0.0",
+  "description": "Automates the SEI (Carnegie Mellon Software Engineering Institute) architecture practice end to end: quality attribute scenarios, Quality Attribute Workshop (QAW), Attribute-Driven Design (ADD 3.0), Architecture Tradeoff Analysis Method (ATAM), and Views-and-Beyond documentation. Includes a diagramming skill that renders clean, low-crossing UML / C4 diagrams to PNG with a curated palette.",
+  "author": {
+    "name": "Roman Tymoshuk",
+    "email": "roman@tymoshuk.net"
+  },
+  "keywords": [
+    "architecture",
+    "sei",
+    "carnegie-mellon",
+    "quality-attributes",
+    "qaw",
+    "add",
+    "attribute-driven-design",
+    "atam",
+    "views-and-beyond",
+    "software-architecture",
+    "uml",
+    "c4-model",
+    "diagrams"
+  ],
+  "skills": [
+    "skills/sei-architecture/SKILL.md",
+    "skills/architectural-drivers/SKILL.md",
+    "skills/quality-attributes/SKILL.md",
+    "skills/quality-attribute-workshop/SKILL.md",
+    "skills/attribute-driven-design/SKILL.md",
+    "skills/atam/SKILL.md",
+    "skills/architecture-documentation/SKILL.md",
+    "skills/sei-diagrams/SKILL.md"
+  ]
+}
