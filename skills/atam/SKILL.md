@@ -48,10 +48,17 @@ schedule, and rank by ROI. See `references/atam-method.md` → *After the analys
   package, C4 diagrams, ADRs, or a description).
 - The **business drivers** / context and, if they exist, quality attribute scenarios
   (`architecture/quality-attributes/scenarios.md` or a QAW report).
-- Who the **stakeholders** are (for Phase 2).
+- Who the **stakeholders** are (for Phase 2) — by **name, not just role**.
+- Three framing questions: **who sees the results** (open vs private)? **which stakeholders
+  participate**? **are the business goals captured and prioritised** (if not, budget time for it)?
 
 If the architecture is undocumented, run enough of `/architecture-docs` first to have something
 concrete to analyse, or capture a minimal container + deployment view here.
+
+Roles (full ATAM): team leader · evaluation leader · scenario scribe · e-scribe (also records
+the *issue* that motivated each scenario) · questioner. The **architect must willingly
+participate** — cardinal rule. Stakeholders join **Phase 2 only**. Per-step detail, the
+scenario-analysis template, and the LAE 8-step agenda are in `references/atam-method.md`.
 
 ## Outputs (ATAM's deliverables — all in the report)
 

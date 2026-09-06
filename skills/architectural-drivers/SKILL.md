@@ -116,6 +116,15 @@ Ask for / read: product brief, PRD, vision doc, backlog, SLAs, an existing requi
 org/regulatory context. Create `architecture/drivers/` and its four sub-directories. If a QAW
 report or `scenarios.md` exists, plan to import (not merely link) it.
 
+**Four ways to gather ASRs** (`references/architectural-drivers.md`): (1) *sniff* a requirements
+doc for the architecturally significant categories (usage, time, external elements, networking,
+orchestration, security, data, resources, project management, hardware, flexibility, named
+tech) and their anticipated change; (2) *interview stakeholders* — when they say "I don't know
+what the requirement should be", **play dumb** to bracket a range ("24 h OK? … 1 h? … 5 min?");
+(3) *understand the business goals* — PALM: elicit goals with the 11 categories, write 7-part
+business-goal scenarios, derive the QAs each implies; (4) the architect's *utility tree* when
+sources aren't available.
+
 ### Step 2 — Business goals → `business-goals/BG-<n>.md`
 Draft 3–7 business goals, each as *"<stakeholder> needs <outcome> so that <business value>"*.
 Categories to probe (SEI business-goal categories): growth & market share, financial,

@@ -31,20 +31,97 @@ Add a driver = add a file + one row in the top `README.md` + one row in the subd
 An **architecturally significant requirement** is one worth capturing here because it meets
 **both** tests:
 
-1. **Profound impact on the architecture** — including it leads to a materially different
-   structure than leaving it out.
+1. **Profound impact on the architecture** — the architecture would be *dramatically different*
+   without it. (Not all requirements are equal — features shape structure the least; QA
+   requirements shape it the most.)
 2. **High business or mission value** — it matters enough to important stakeholders that the
    architecture should satisfy it, possibly at the expense of others.
 
-ASRs come from four places, and are recorded in one place (this register) so they can be
-reviewed, cited in decisions, and revisited on change:
+You cannot design a successful architecture if you don't know the ASRs. Identifying them takes
+real work — and the first thing experienced architects do is **talk to the important
+stakeholders.**
 
-- **requirements documents** — read them, colour-code architecturally significant material,
-  chase the rest to a stakeholder;
-- **stakeholder interviews / a QAW** — elicit and prioritise scenarios directly;
-- **the architect's utility tree** — when stakeholders are not available, the architect drafts
-  the QA-related ASRs top-down (Utility → QA → refinement → scenario) and rates each leaf;
-- **derivation from business goals** — each goal implies requirements the architecture must meet.
+## Four ways to gather ASRs
+
+Record what you find in one place (this register) so it can be reviewed, cited in decisions,
+and revisited on change.
+
+### 1. From requirements documents — "don't get your hopes up"
+
+Requirements specs fail an architect two ways: most of their content (features) barely shapes
+the architecture; and much of what *does* shape it (developmental qualities, teaming, business
+goals) isn't in even a good spec. Statements like "the system shall be modular / usable / fast"
+aren't testable — treat them as an **invitation to a conversation** about what the requirement
+really is. **Sniff out** candidate ASRs by looking for these categories (and remember: the
+*anticipated change/evolution* of each is usually ASR too):
+
+| Category | Look for |
+|----------|----------|
+| Usage | user roles vs. system modes; internationalization; language distinctions |
+| Time | timeliness; coordination between elements |
+| External elements | external systems, protocols, sensors/actuators, middleware |
+| Networking | network properties and configurations (incl. their security) |
+| Orchestration | processing steps; information flows |
+| Security properties | user roles, permissions, authentication |
+| Data | persistence; currency (freshness) |
+| Resources | time, concurrency, memory footprint, scheduling, multi-user/-activity, devices, energy, soft resources (buffers, queues), scalability |
+| Project management | teaming, skill sets, training, team coordination |
+| Hardware choices | processors, processor families, processor evolution |
+| Flexibility | portability, calibrations, configurations |
+| Named technologies | mandated commercial packages / stacks |
+
+### 2. By interviewing stakeholders (a QAW is one structured form)
+
+Stakeholders often **don't know** their QA requirements — so the architect helps *set* them
+(collaboration; relish it). Insisting on precise numbers up front yields arbitrary numbers that
+hurt success. Experienced architects know what similar systems exhibited and what's cheap vs.
+prohibitive — and are the only people who can say "I can deliver better than you had in mind —
+useful?".
+
+**When a stakeholder says "I don't know what that requirement should be" — play dumb.**
+"So… 24 hours would be OK?" → *"No!"* → "1 hour?" → *"No!"* → "5 minutes?" → *"No!"* → "10
+seconds?" → *"…I could live with that."* A **range** of acceptable values is enough to choose
+architectural mechanisms — 24 h vs. 10 min vs. 10 s vs. 100 ms means very different approaches.
+
+The QAW is a facilitated, stakeholder-focused method to generate, consolidate, prioritise, and
+refine QA scenarios *before* the architecture is complete (full 8-step method:
+`references/qaw-method.md`). Its results feed five uses: refine requirements · understand /
+clarify the architectural drivers · provide rationale for later design decisions · guide
+prototypes and simulations · influence the order the architecture is developed.
+
+### 3. By understanding the business goals (PALM)
+
+Business goals are the *raison d'être* for the system. Three relationships between a business
+goal and the architecture:
+
+1. **A goal leads to a QA requirement** — every QA requirement traces up to a higher purpose
+   ("differentiate from competitors → unusually fast response time"). Knowing the goal behind a
+   stringent requirement lets you **question it meaningfully** or marshal the resources to meet
+   it.
+2. **A goal affects the architecture *without* inducing a QA requirement** — e.g. an
+   architecture that cleverly avoids needing a database is still "deficient" if the org has an
+   idle, highly-paid database team that needs work; no spec would capture that, yet it shapes
+   the design.
+3. **No influence** — a "reduce cost" goal met by lowering the office thermostat.
+
+Architects usually learn business goals by **osmosis**; systematic capture is better because
+goals imply ASRs that would otherwise surface too late. **PALM** is a workshop with the
+architect + key business stakeholders:
+- **Elicit business goals** — guided by the 11 categories below; express each as a **seven-part
+  business-goal scenario** (see "Business goals" section); consolidate near-alikes; prioritise.
+- **Derive potential QAs** — for each important goal scenario, name a QA and a response-measure
+  value that, if architected in, would help achieve the goal.
+
+The **11 business-goal categories** (use as elicitation prompts): 1 growth & continuity of the
+organisation · 2 meeting financial objectives · 3 meeting personal objectives · 4 responsibility
+to employees · 5 responsibility to society · 6 responsibility to the state · 7 responsibility to
+shareholders · 8 managing market position · 9 improving business processes · 10 managing the
+quality & reputation of products · 11 managing change in the environment over time.
+
+### 4. From the architect's utility tree
+
+When the primary sources aren't available, the architect drafts the QA-related ASRs **top-down**
+(Utility → QA → refinement → scenario) and rates each leaf `(V, R)` — see "The utility tree" below.
 
 ## The four kinds
 

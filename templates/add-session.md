@@ -28,10 +28,13 @@
 
 Ordered by the design roadmap for the system type (greenfield mature → overall structure, then
 primary use cases, then refine for QAs; novel → prototype-led; brownfield → refine the existing
-architecture). A living backlog: one row per driver + supporting items (spike, interface, view).
+architecture). A living backlog: one row per driver + supporting items (prototype/spike,
+reverse-engineering, review findings, concerns discovered while adopting a concept).
 
-| Iteration | Goal | Drivers | Backlog status (to do / in progress / done) |
-|-----------|------|---------|---------------------------------------------|
+| Iteration | Goal | Drivers | Backlog status (Not Yet / Partially / Completely Addressed / Discarded) |
+|-----------|------|---------|-----------------------------------------------------------------------|
+
+"Completely Addressed" criterion for this project: <e.g. analysed, or prototyped and verified>
 
 <!-- iterations appended below -->
 

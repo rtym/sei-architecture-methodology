@@ -290,9 +290,14 @@ the system type (`references/add-method.md` → *Design roadmap*):
 - **brownfield**: start from the existing architecture; iterations refine it to meet the new or
   violated drivers.
 
-Keep the plan as a living **design backlog** (a Kanban list): one item per driver, plus
-supporting items (a spike/prototype, an interface to define, a view to document). "Done" = every
-driver `addressed` or consciously deferred and the design purpose met.
+Keep the plan as a living **design backlog** on a Kanban board with columns **Not Yet Addressed
+· Partially Addressed · Completely Addressed · Discarded**: seed with one item per driver, add
+supporting items (a prototype to retire a QA risk, reverse-engineering, review findings,
+concerns discovered while adopting a concept). Step 2 moves a card to *Partially Addressed*;
+Step 7 moves it to *Completely Addressed* against an explicit criterion (analysed, or prototyped
+and verified). End the round when the highest-priority drivers are *Completely Addressed*.
+Note: **Steps 2 and 3 may be reversed** for greenfield / reference-architecture work (pick an
+element first). Deep reference: `references/add-method.md`.
 
 **Coverage check (mandatory):** list every driver ID from Step 1 and confirm each appears in ≥ 1
 iteration / backlog item before presenting. Present, wait for review, write the agreed plan into
