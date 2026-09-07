@@ -374,10 +374,19 @@ def check_qa_file(path: Path) -> list[str]:
         errs.append("Response measure is not numeric")
     if "**status**" not in text.lower():
         errs.append("no Status field")
-    if not _has_diagram(text):
-        errs.append("quality attribute has no six-part scenario diagram")
+    dia = path.parent / "diagrams"
+    src_exists = any((dia / f"scenario-{path.stem}{ext}").is_file()
+                     for ext in (".puml", ".mmd", ".mermaid"))
+    if not (_has_diagram(text) or src_exists):
+        errs.append("quality attribute has no six-part scenario diagram (```mermaid block or a "
+                    "diagrams/scenario-<ATTR>QA-<n>.puml|.mmd source)")
     if not _has_image_line(text):
         errs.append("scenario diagram is not embedded as a ![...](diagrams/scenario-*.png) image line")
+    puml_src = (dia / f"scenario-{path.stem}.puml").is_file()
+    if puml_src and "```mermaid" not in text and not re.search(
+            r"\]\(\s*(?:\./)?diagrams/scenario-" + re.escape(path.stem) + r"\.puml\s*\)", text):
+        errs.append("PlantUML scenario diagram: no link to the diagrams/scenario-*.puml source "
+                    "(PlantUML is referenced by a source link, not inlined)")
     for j, blk in enumerate(diagrams_in_markdown(text), 1):
         errs += check_diagram(blk, f"{path.name} diagram #{j}")
     return errs

@@ -8,31 +8,14 @@
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-module-decomposition-01
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-skinparam linetype ortho
-title Module decomposition — Personal Finance Tracker API (layered; allowed-to-use is downward)
-rectangle "**edge layer**\nhttp — routing, request/response DTOs" as L1
-rectangle "**admission layer**\nsecurity — auth, tenant guard (SQA-1)" as L2
-rectangle "**domain layer**\ntransactions (UC-1) · categories · reporting (UC-2) · imports (UC-3)" as L3
-rectangle "**infrastructure layer**\npersistence — tenant-scoped repositories · platform — config, logging, audit-log client" as L4
-L1 -down-> L2 : uses
-L2 -down-> L3 : uses
-L3 -down-> L4 : uses
-note right of L3
-  Domain modules must not use one another;
-  a cross-domain need is mediated by reporting
-  reading via persistence.
-end note
-@enduml
-```
+![View: Module decomposition](diagrams/view-module-decomposition-01.png)
+
+Source: [`diagrams/view-module-decomposition-01.puml`](diagrams/view-module-decomposition-01.puml)
+· rendered + visually verified.
 
 > The **allowed-to-use** relation is shown between layers. `platform` is a cross-cutting utility
 > used by every layer above it; those edges are omitted to keep the primary presentation legible
 > (§2.2 lists them). Domain modules must not use one another.
-
-![View: Module decomposition](diagrams/view-module-decomposition-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 

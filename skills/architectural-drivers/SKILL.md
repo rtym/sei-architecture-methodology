@@ -146,8 +146,9 @@ significance, related drivers.
    labelled).
 2. Show the source in the conversation, render to `use-cases/diagrams/UC-<n>.png`, `Read` the PNG
    and visually cross-verify (actors outside, use case inside, include/extend dashed, no
-   avoidable crossings), then embed it in the file as the ```mermaid block **plus**
-   `![UC-<n> — <name>](diagrams/UC-<n>.png)`.
+   avoidable crossings), then embed it per the `sei-diagrams` *Embedding in Markdown* rule
+   (Mermaid → fenced block + `![UC-<n> — <name>](diagrams/UC-<n>.png)`; PlantUML → that image
+   line + a link to `diagrams/UC-<n>.puml`).
 Also produce one **overview** use case diagram per actor group / subsystem
 (`use-cases/diagrams/overview-<group>.png`, ≤ ~10 use cases) and reference it from `README.md`
 and `use-cases/README.md`.
@@ -165,10 +166,11 @@ its own scenario diagram.** One file per scenario from `templates/quality-attrib
 - the **ISO/IEC 25010:2023** characteristic + sub-characteristic;
 - business goal(s) supported; priority pair `(Importance, Difficulty)`;
 - the **six-part scenario diagram** via the `sei-diagrams` skill's *Quality attribute scenario
-  diagram* pattern — a **horizontal `flowchart LR`** — rendered to
+  diagram* pattern (horizontal — Mermaid `flowchart LR` or the PlantUML pattern), rendered to
   `quality-attributes/diagrams/scenario-<ATTR>QA-<n>.png`, `Read` and visually cross-verified,
-  embedded as the ```mermaid block **plus**
-  `![<ATTR>QA-<n> six-part scenario](diagrams/scenario-<ATTR>QA-<n>.png)`.
+  embedded per the *Embedding in Markdown* rule: Mermaid → the fenced block +
+  `![<ATTR>QA-<n> six-part scenario](diagrams/scenario-<ATTR>QA-<n>.png)`; PlantUML → that image
+  line + a link to the `.puml` source.
 
 If `scenarios.md` exists, copy each scenario's six-part detail and diagram into its file here and
 add a `> Source: ../../quality-attributes/scenarios.md` line. If not, this is where the detail lives.

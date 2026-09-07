@@ -8,34 +8,9 @@
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-allocation-deployment-01
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Deployment.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Deployment view — Personal Finance Tracker (eu-west-1, 2 AZs)
-Deployment_Node(cloud, "Managed cloud", "eu-west-1 · 2 availability zones") {
-  Deployment_Node(edge, "CDN + static hosting", "Global edge cache; TLS termination") {
-    Container(spa, "Web App bundle", "React 18 build", "Static assets")
-  }
-  Deployment_Node(platform, "Container platform", "Autoscaling, multi-AZ") {
-    Container(api, "API Service", "Node.js 20", "2+ replicas across AZs")
-    Container(worker, "Import Worker", "Node.js 20", "1+ replica; scales on queue depth")
-  }
-  Deployment_Node(datatier, "Managed data tier", "Multi-AZ") {
-    ContainerDb(db, "PostgreSQL 15", "Primary + standby", "Automated failover 35-70 s (vendor)")
-    ContainerDb(redis, "Redis 7", "Primary + replica", "Cache + streams; derived data")
-  }
-}
-Rel(spa, api, "Served to browser", "HTTPS")
-Rel(api, db, "Reads / writes", "SQL/TLS")
-Rel(api, redis, "Cache + enqueue", "RESP/TLS")
-Rel(worker, redis, "Consume jobs", "RESP/TLS")
-Rel(worker, db, "Bulk insert", "SQL/TLS")
-@enduml
-```
-
 ![View: Deployment](diagrams/view-allocation-deployment-01.png)
+
+Source: [`diagrams/view-allocation-deployment-01.puml`](diagrams/view-allocation-deployment-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 

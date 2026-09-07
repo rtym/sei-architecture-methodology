@@ -144,21 +144,9 @@ Single-tenant-per-user SaaS. One external dependency at launch: a transactional 
 (account verification, security alerts). No payment processing. Runs in mobile browsers; there is
 no native app at launch (`CON-1`).
 
-```plantuml
-@startuml system-overview-01
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Context.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_LEFT_RIGHT()
-title System context — Personal Finance Tracker
-Person(user, "Registered user", "Mobile browser")
-System(sys, "Personal Finance Tracker", "Records transactions; monthly dashboard; CSV import")
-System_Ext(mail, "Email provider", "SMTP/TLS")
-Rel(user, sys, "Records transactions, views the dashboard", "HTTPS")
-Rel(sys, mail, "Sends verification & alert email", "SMTP")
-@enduml
-```
-
 ![System context — Personal Finance Tracker](diagrams/system-overview-01.png)
+
+Source: [`diagrams/system-overview-01.puml`](diagrams/system-overview-01.puml) · rendered + visually verified.
 
 ## Primary functional requirements (use cases)
 
@@ -192,31 +180,14 @@ See [`../scenarios.md`](../scenarios.md) for the six-part detail. The architectu
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-module-decomposition-01
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-skinparam linetype ortho
-title Module decomposition — Personal Finance Tracker API (layered; allowed-to-use is downward)
-rectangle "**edge layer**\nhttp — routing, request/response DTOs" as L1
-rectangle "**admission layer**\nsecurity — auth, tenant guard (SQA-1)" as L2
-rectangle "**domain layer**\ntransactions (UC-1) · categories · reporting (UC-2) · imports (UC-3)" as L3
-rectangle "**infrastructure layer**\npersistence — tenant-scoped repositories · platform — config, logging, audit-log client" as L4
-L1 -down-> L2 : uses
-L2 -down-> L3 : uses
-L3 -down-> L4 : uses
-note right of L3
-  Domain modules must not use one another;
-  a cross-domain need is mediated by reporting
-  reading via persistence.
-end note
-@enduml
-```
+![View: Module decomposition](diagrams/view-module-decomposition-01.png)
+
+Source: [`diagrams/view-module-decomposition-01.puml`](diagrams/view-module-decomposition-01.puml)
+· rendered + visually verified.
 
 > The **allowed-to-use** relation is shown between layers. `platform` is a cross-cutting utility
 > used by every layer above it; those edges are omitted to keep the primary presentation legible
 > (§2.2 lists them). Domain modules must not use one another.
-
-![View: Module decomposition](diagrams/view-module-decomposition-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
@@ -298,32 +269,9 @@ process are outside it; the worker reuses the `imports` and `persistence` module
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-cnc-runtime-01
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Container.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Runtime (C&C) view — Personal Finance Tracker
-Person(user, "Registered user", "Mobile browser")
-System_Boundary(sys, "Personal Finance Tracker") {
-  Container(spa, "Web App", "React 18 / TS PWA", "Stateless; no direct DB access")
-  Container(api, "API Service", "Node.js 20 / Fastify", "Tenant guard + services + Data Access; only writer")
-  Container(worker, "Import Worker", "Node.js 20 queue consumer", "Parses CSV, bulk-inserts; reuses Data Access")
-  ContainerDb(db, "Primary Database", "PostgreSQL 15", "System of record; encrypted at rest")
-  ContainerDb(cache, "Read Cache", "Redis 7", "Cache-aside, 15-min TTL; loss = latency only")
-  ContainerQueue(queue, "Import Queue", "Redis Streams", "At-least-once delivery")
-}
-Rel(user, spa, "HTTPS", "TLS 1.3")
-Rel(spa, api, "REST / JSON")
-Rel(api, db, "Tenant-scoped SQL", "SQL/TLS")
-Rel(api, cache, "Read aggregates / invalidate", "RESP")
-Rel(api, queue, "Enqueue import job", "RESP")
-Rel(queue, worker, "Deliver job")
-Rel(worker, db, "Bulk insert", "SQL/TLS")
-@enduml
-```
-
 ![View: Runtime (C&C)](diagrams/view-cnc-runtime-01.png)
+
+Source: [`diagrams/view-cnc-runtime-01.puml`](diagrams/view-cnc-runtime-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
@@ -397,34 +345,9 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-allocation-deployment-01
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Deployment.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Deployment view — Personal Finance Tracker (eu-west-1, 2 AZs)
-Deployment_Node(cloud, "Managed cloud", "eu-west-1 · 2 availability zones") {
-  Deployment_Node(edge, "CDN + static hosting", "Global edge cache; TLS termination") {
-    Container(spa, "Web App bundle", "React 18 build", "Static assets")
-  }
-  Deployment_Node(platform, "Container platform", "Autoscaling, multi-AZ") {
-    Container(api, "API Service", "Node.js 20", "2+ replicas across AZs")
-    Container(worker, "Import Worker", "Node.js 20", "1+ replica; scales on queue depth")
-  }
-  Deployment_Node(datatier, "Managed data tier", "Multi-AZ") {
-    ContainerDb(db, "PostgreSQL 15", "Primary + standby", "Automated failover 35-70 s (vendor)")
-    ContainerDb(redis, "Redis 7", "Primary + replica", "Cache + streams; derived data")
-  }
-}
-Rel(spa, api, "Served to browser", "HTTPS")
-Rel(api, db, "Reads / writes", "SQL/TLS")
-Rel(api, redis, "Cache + enqueue", "RESP/TLS")
-Rel(worker, redis, "Consume jobs", "RESP/TLS")
-Rel(worker, db, "Bulk insert", "SQL/TLS")
-@enduml
-```
-
 ![View: Deployment](diagrams/view-allocation-deployment-01.png)
+
+Source: [`diagrams/view-allocation-deployment-01.puml`](diagrams/view-allocation-deployment-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
@@ -497,36 +420,9 @@ Outside this view: the user's device/network and the email provider's infrastruc
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-security-01
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-skinparam linetype ortho
-hide stereotype
-title Security view — Personal Finance Tracker (SQA-1 control path)
-
-actor "Registered user\n(authenticated session, JWT)" as user
-rectangle "Authenticated user acting as attacker\nguesses record IDs" as attacker <<emphasis>>
-
-rectangle "Public subnet" as pub {
-  rectangle "CDN + TLS termination\nTLS 1.3" as cdn
-}
-rectangle "Private subnet — trust boundary" as priv {
-  rectangle "Tenant Guard\nsecurity module — injects user_id scoping (SQA-1)" as guard <<emphasis>>
-  rectangle "Data Access\nparameterised, tenant-scoped SQL" as da
-  database "Append-only audit log\nevery denied access, tamper-evident" as audit
-  database "Primary Database\nPostgreSQL 15 · encrypted at rest (CON-4)" as db
-}
-
-user     --> cdn   : HTTPS (TLS 1.3)
-attacker --> cdn   : HTTPS (TLS 1.3)
-cdn      --> guard : Private Link
-guard    --> da    : Scoped request
-guard    --> audit : Writes denied-access event
-da       --> db    : WHERE user_id = $me (SQL/TLS)
-@enduml
-```
-
 ![Security view — Personal Finance Tracker](diagrams/view-security-01.png)
+
+Source: [`diagrams/view-security-01.puml`](diagrams/view-security-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 

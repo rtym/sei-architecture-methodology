@@ -8,32 +8,9 @@
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-cnc-runtime-01
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Container.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Runtime (C&C) view — Personal Finance Tracker
-Person(user, "Registered user", "Mobile browser")
-System_Boundary(sys, "Personal Finance Tracker") {
-  Container(spa, "Web App", "React 18 / TS PWA", "Stateless; no direct DB access")
-  Container(api, "API Service", "Node.js 20 / Fastify", "Tenant guard + services + Data Access; only writer")
-  Container(worker, "Import Worker", "Node.js 20 queue consumer", "Parses CSV, bulk-inserts; reuses Data Access")
-  ContainerDb(db, "Primary Database", "PostgreSQL 15", "System of record; encrypted at rest")
-  ContainerDb(cache, "Read Cache", "Redis 7", "Cache-aside, 15-min TTL; loss = latency only")
-  ContainerQueue(queue, "Import Queue", "Redis Streams", "At-least-once delivery")
-}
-Rel(user, spa, "HTTPS", "TLS 1.3")
-Rel(spa, api, "REST / JSON")
-Rel(api, db, "Tenant-scoped SQL", "SQL/TLS")
-Rel(api, cache, "Read aggregates / invalidate", "RESP")
-Rel(api, queue, "Enqueue import job", "RESP")
-Rel(queue, worker, "Deliver job")
-Rel(worker, db, "Bulk insert", "SQL/TLS")
-@enduml
-```
-
 ![View: Runtime (C&C)](diagrams/view-cnc-runtime-01.png)
+
+Source: [`diagrams/view-cnc-runtime-01.puml`](diagrams/view-cnc-runtime-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 

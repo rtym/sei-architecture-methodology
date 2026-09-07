@@ -33,22 +33,9 @@ Native PlantUML `usecase` notation (this is the PlantUML tree): stick-figure act
 boundary rectangle, ellipse use cases inside, dashed `<<include>>` dependency. Source:
 [`diagrams/UC-2.puml`](diagrams/UC-2.puml) · rendered + visually verified.
 
-```plantuml
-@startuml UC-2
-!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-skinparam actorStyle awesome
-left to right direction
-title Use case — UC-2 View the monthly dashboard
-actor "Registered user" as pa
-rectangle "Personal Finance Tracker" {
-  usecase "UC-2
-View the monthly dashboard" as uc2
-}
-pa --> uc2
-@enduml
-```
-
 ![UC-2 — View the monthly dashboard](diagrams/UC-2.png)
+
+Source: [`diagrams/UC-2.puml`](diagrams/UC-2.puml) · rendered + visually verified.
 
 ---
 

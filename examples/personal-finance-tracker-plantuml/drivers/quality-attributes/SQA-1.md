@@ -25,33 +25,9 @@ six-part scenario diagram**.
 
 Drawn with the house PlantUML pattern (this is the PlantUML tree): five boxes left-to-right — source of stimulus → stimulus → artifact → response → response measure — with the environment attached to the artifact.
 
-```plantuml
-@startuml scenario-SQA-1
-!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-left to right direction
-hide stereotype
-title Quality attribute scenario — SQA-1 — Security / confidentiality
-rectangle "<b>Source of stimulus</b>
-Authenticated user acting as an attacker" as SRC #E7E3F3
-rectangle "<b>Stimulus</b>
-Requests another user's transactions by guessing record IDs" as STIM #E7E3F3
-rectangle "<b>Artifact</b>
-API layer and data store" as ART #EDF2F8
-rectangle "<b>Response</b>
-Request is rejected; the attempt is written to an append-only audit log and alerted" as RESP #E4F0E9
-rectangle "<b>Response measure</b>
-0 successful cross-user reads; 100 % of attempts logged; alert < 1 min" as MEAS #E4F0E9
-rectangle "<b>Environment</b>
-Normal operation" as ENV #F5EEE3
-SRC  --> STIM : generates
-STIM --> ART  : arrives at
-ART  --> RESP : produces
-RESP --> MEAS : measured by
-ENV  ..> ART
-@enduml
-```
-
 ![SQA-1 six-part scenario](diagrams/scenario-SQA-1.png)
+
+Source: [`diagrams/scenario-SQA-1.puml`](diagrams/scenario-SQA-1.puml) · rendered + visually verified.
 
 ## Notes / assumptions
 

@@ -39,8 +39,8 @@ Mermaid `flowchart` fallback (this is the Mermaid tree). Source:
 ```mermaid
 flowchart LR
   %% Use case diagram — UC-3 Import a bank statement (CSV)
-  pa(["Registered user"])
-  bank(["Bank Import API"])
+  pa(["fa:fa-user Registered user"])
+  bank["&laquo;system&raquo;<br/>Bank Import API"]
   subgraph sys["System: Personal Finance Tracker"]
     uc3("UC-3 Import a bank statement (CSV)")
     uc3a("UC-3a Categorise transaction")
@@ -49,8 +49,10 @@ flowchart LR
   bank --> uc3
   uc3 -. include .-> uc3a
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  class pa,bank source
+  class pa source
+  class bank external
   class uc3,uc3a artifact
 ```
 

@@ -65,8 +65,8 @@ uc ..> sub : <<include>>
 ```mermaid
 flowchart LR
   %% Use case diagram — UC-<n> <name>
-  actor1(["<Primary actor>"])
-  supp(["<Supporting actor / system>"])
+  actor1(["fa:fa-user <Primary actor>"])
+  supp["&laquo;system&raquo;<br/><Supporting actor / system>"]
   subgraph sys["System: <name>"]
     uc("UC-<n> <name>")
     sub("UC-<n>a <included sub-use-case>")
@@ -75,9 +75,14 @@ flowchart LR
   supp --> uc
   uc -. include .-> sub
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  class actor1,supp source
+  class actor1 source
+  class supp external
   class uc,sub artifact
 ```
+
+For a human primary actor use `fa:fa-user` (a person glyph); for a system/API supporting actor
+use the `«system»` rectangle.
 
 <!-- changed <YYYY-MM-DD>: <what and why> -->

@@ -12,21 +12,9 @@ Single-tenant-per-user SaaS. One external dependency at launch: a transactional 
 (account verification, security alerts). No payment processing. Runs in mobile browsers; there is
 no native app at launch (`CON-1`).
 
-```plantuml
-@startuml system-overview-01
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Context.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_LEFT_RIGHT()
-title System context — Personal Finance Tracker
-Person(user, "Registered user", "Mobile browser")
-System(sys, "Personal Finance Tracker", "Records transactions; monthly dashboard; CSV import")
-System_Ext(mail, "Email provider", "SMTP/TLS")
-Rel(user, sys, "Records transactions, views the dashboard", "HTTPS")
-Rel(sys, mail, "Sends verification & alert email", "SMTP")
-@enduml
-```
-
 ![System context — Personal Finance Tracker](diagrams/system-overview-01.png)
+
+Source: [`diagrams/system-overview-01.puml`](diagrams/system-overview-01.puml) · rendered + visually verified.
 
 ## Primary functional requirements (use cases)
 

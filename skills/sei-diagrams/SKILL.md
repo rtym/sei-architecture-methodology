@@ -272,8 +272,10 @@ primitives (stadiums, rounded rectangles) are **not** UML symbols, so:
 
 - **Recommended: PlantUML** — it has the real UML glyphs. This is the default for use case diagrams.
 - **Fallback: Mermaid flowchart convention** — only when Java is unavailable and the user accepts
-  approximate shapes. Keep the convention (actors `([ ])` outside the boundary `subgraph`, use
-  cases `( )` inside, `-. include .->` / `-. extend .->` dashed).
+  approximate shapes. Keep the convention: **human actors** as a stadium node with a
+  **`fa:fa-user` person icon** in the label (`([fa:fa-user Registered user])`), **system actors**
+  as a `«system»` rectangle, both **outside** the boundary `subgraph`; use cases `( )` inside;
+  `-. include .->` / `-. extend .->` dashed.
 
 One diagram per **use case** (in its `UC-<n>.md`) plus one **overview** diagram per actor group /
 subsystem (≤ ~10 use cases).
@@ -303,13 +305,14 @@ uc3 ..> uc2 : <<include>>
 Render with `scripts/render-plantuml.sh` (auto-detects a keg-only Homebrew JDK; if truly no Java,
 it prints the one-line install command).
 
-**Mermaid fallback (approximate shapes):**
+**Mermaid fallback (approximate shapes — human actor gets a `fa:fa-user` person icon, system
+actor gets a `«system»` box):**
 
 ```mermaid
 flowchart LR
   %% Use case diagram — Finance Tracker: transaction management (UC-1..UC-3)
-  user(["Registered user"])
-  bank(["Bank Import API"])
+  user(["fa:fa-user Registered user"])
+  bank["&laquo;system&raquo;<br/>Bank Import API"]
   subgraph sys["System: Personal Finance Tracker"]
     uc1("UC-1 Record transaction")
     uc2("UC-2 Categorise transaction")
@@ -321,8 +324,10 @@ flowchart LR
   uc1 -. include .-> uc2
   uc3 -. include .-> uc2
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  class user,bank source
+  class user source
+  class bank external
   class uc1,uc2,uc3 artifact
 ```
 
@@ -391,14 +396,14 @@ When one or more diagrams are added or changed in a session:
 
 ## Embedding in Markdown (GitHub / GitLab friendly)
 
-Store the diagram's `.mmd`/`.puml` source and its rendered `.png` in a `diagrams/` sub-folder
-**next to the Markdown file** that references them (e.g. `architecture/add/diagrams/`). In the
-document, embed the diagram as **both**:
+Always keep the diagram **source** (`.mmd` / `.puml`) and its verified `.png` in a `diagrams/`
+sub-folder **next to the Markdown file** that uses them. How the document references the diagram
+depends on the notation:
 
-1. the fenced ```mermaid source block (GitHub and GitLab render this natively; it is also the
-   editable source of truth), and
-2. a standard Markdown image with a **relative path** to the verified PNG:
-   `![<diagram title>](diagrams/<name>.png)`.
+### Mermaid — inline the fenced block + the image line
+
+GitHub and GitLab render a fenced ```mermaid block natively, so embed **both**: the fenced
+source block (the editable source of truth) **and** a relative image line to the verified PNG.
 
 ~~~markdown
 ### Diagram
@@ -409,29 +414,46 @@ flowchart TB
   user(["Customer<br/><i>browser</i>"])
   subgraph sys["Acme"]
     web["Web App<br/><i>React</i>"]
-    api["API<br/><i>Go</i>"]
     db[("DB<br/><i>PostgreSQL 15</i>")]
   end
   user -->|"Uses (HTTPS)"| web
-  web -->|"Calls (gRPC)"| api
-  api -->|"Reads / writes (SQL)"| db
+  web -->|"Reads / writes (SQL)"| db
   classDef source fill:#E7E3F3,stroke:#6B5BA6; classDef internal fill:#EDF2F8,stroke:#3E6DA5;
   classDef datastore fill:#E4F0E9,stroke:#3F7D5C;
   class user source
-  class web,api internal
+  class web internal
   class db datastore
 ```
 
 ![Container diagram — Acme](diagrams/container.png)
 ~~~
 
-Rules for the image line:
+### PlantUML — the image line + a link to the source (do **not** paste the source)
+
+GitHub / GitLab do **not** render a fenced ```plantuml block, so pasting the `@startuml … @enduml`
+into the Markdown adds noise without any benefit. Instead reference it:
+
+~~~markdown
+### Diagram
+
+![Container diagram — Acme](diagrams/container.png)
+
+Source: [`diagrams/container.puml`](diagrams/container.puml) · rendered + visually verified.
+~~~
+
+The `.puml` file in `diagrams/` is the editable, diffable, re-renderable source; the document
+carries the PNG and a link to it.
+
+### Rules for the image line (both notations)
+
 - Path is **relative to the `.md` file**, forward slashes, no leading `/`, no `file://`, no
   absolute paths — this is what makes it render on GitHub and GitLab.
 - Alt text = the diagram title.
 - The PNG must be the one you visually verified; re-render and the file (same path) updates in place.
-- If a document must stay diagram-free in the body, still add the `![]()` line — never replace a
-  diagram with a bare "see `diagrams/x.png`" text reference.
+- Never replace a diagram with a bare "see `diagrams/x.png`" text reference — always the `![]()`
+  image line (plus, for PlantUML, the source link).
+- `scripts/build-report.sh --embed-diagrams` base64-inlines both the fenced Mermaid blocks
+  **and** the referenced PNGs, so a report stays self-contained regardless of notation.
 
 ## Rendering
 
@@ -470,8 +492,9 @@ it at the top of each `.puml`.
 - Keep the `.mmd` / `.puml` source **and** the rendered `.png` in a `diagrams/` sub-folder next to
   the Markdown that uses them, so diagrams are re-renderable, diff-able, and the relative image
   path resolves on GitHub / GitLab.
-- Embed every diagram in Markdown as the ```mermaid source block **plus** a
-  `![title](diagrams/<name>.png)` image line with a repo-relative path (see *Embedding in Markdown*).
+- Embed every diagram in Markdown per the **Embedding in Markdown** section: Mermaid = the
+  ```mermaid fenced block **plus** a `![title](diagrams/<name>.png)` image line; PlantUML = the
+  image line **plus** a link to the `.puml` source (no pasted `@startuml` block).
 - Re-render **and re-verify** the PNG whenever the source changes; never hand-edit a PNG.
 - `python tests/validate.py` checks every `.mmd` file and every fenced mermaid block against the
   rules — run it and fix reported issues.

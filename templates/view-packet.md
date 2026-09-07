@@ -7,7 +7,7 @@
 
 ## 1. Primary presentation
 
-<The main diagram — via the `sei-diagrams` skill: a ```mermaid block, then the image line below.
+<The main diagram — via the `sei-diagrams` skill. Mermaid: a ```mermaid block then the image line below. PlantUML: the image line + a `Source: [diagrams/view-<name>.puml](...)` link (no inlined ```plantuml block).
 ≤ ~10 elements; split into sub-views if larger. Include or reference a legend.>
 
 ![View: <name>](diagrams/view-<name>.png)

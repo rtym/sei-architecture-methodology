@@ -8,8 +8,10 @@
 > Companion document produced by `/attribute-driven-design`. For a full Views-and-Beyond
 > description, run `/architecture-docs`; this document is the ADD working architecture.
 
-<!-- Every diagram appears as BOTH a ```mermaid block AND, immediately after it, a
-     ![title](diagrams/<name>.png) line pointing at the verified render in ./diagrams/ .
+<!-- Mermaid: every diagram appears as BOTH a ```mermaid block AND, immediately after it,
+     a ![title](diagrams/<name>.png) line pointing at the verified render in ./diagrams/ .
+     PlantUML: the ![title](diagrams/<name>.png) line + a Source: link to diagrams/<name>.puml
+     (no inlined ```plantuml block — GitHub does not render it).
      The relative, forward-slash, no-leading-slash path renders on GitHub and GitLab. -->
 
 _Example of the diagram + image pattern used throughout this document:_

@@ -343,8 +343,8 @@ diagram review** protocol from the `sei-diagrams` skill:
 4. Every sequence diagram gets a plain-English description paragraph immediately below it.
 5. Render each diagram to `architecture/add/diagrams/<name>.png`, `Read` it and visually
    cross-verify (correctness + minimal crossings), then embed it in `Architecture.md` as the
-   ```mermaid source block **plus** a `![<title>](diagrams/<name>.png)` image line (relative
-   path — renders on GitHub / GitLab).
+   diagram per the `sei-diagrams` *Embedding in Markdown* rule (Mermaid → fenced block + image
+   line; PlantUML → image line + a link to the `.puml` source), relative paths.
 
 Record significant decisions in §9. **Present diagrams + decisions table; wait for review before
 writing to `Architecture.md`.**

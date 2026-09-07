@@ -15,21 +15,9 @@ Drivers: [`../drivers/README.md`](../drivers/README.md).
 
 ### Diagram
 
-```plantuml
-@startuml context
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Context.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Context — Personal Finance Tracker (C4 level 1)
-Person(user, "Registered user", "Uses a mobile browser")
-System(sys, "Personal Finance Tracker", "Records transactions, shows a monthly dashboard")
-System_Ext(mail, "Email provider", "Transactional email — SMTP/TLS")
-Rel(user, sys, "Records transactions, views the dashboard", "HTTPS")
-Rel(sys, mail, "Sends verification & alert email", "SMTP")
-@enduml
-```
-
 ![Context — Personal Finance Tracker](diagrams/context.png)
+
+Source: [`diagrams/context.puml`](diagrams/context.puml) · rendered + visually verified.
 
 ### Description
 
@@ -64,29 +52,9 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 
 ### Diagram
 
-```plantuml
-@startuml container
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Container.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Container diagram — Personal Finance Tracker (C4 level 2)
-Person(user, "Registered user", "Mobile browser")
-System_Ext(mail, "Email provider", "SMTP/TLS")
-System_Boundary(sys, "Personal Finance Tracker") {
-  Container(spa, "Web App", "React 18 / TS PWA", "Delivers the UI")
-  Container(api, "API Service", "Node.js 20 / Fastify", "Single write path; enforces tenant scoping")
-  ContainerDb(db, "Primary Database", "PostgreSQL 15 (encrypted)", "System of record; tenant-scoped rows")
-  ContainerDb(cache, "Read Cache", "Redis 7", "Dashboard aggregates; cache-aside, 15-min TTL")
-}
-Rel(user, spa, "Uses over HTTPS", "TLS 1.3")
-Rel(spa, api, "Calls REST API", "JSON")
-Rel(api, db, "Reads / writes tenant-scoped rows", "SQL/TLS")
-Rel(api, cache, "Reads aggregates, invalidates on write", "RESP")
-Rel(api, mail, "Sends verification & alert email", "SMTP")
-@enduml
-```
-
 ![Container diagram — Personal Finance Tracker](diagrams/container.png)
+
+Source: [`diagrams/container.puml`](diagrams/container.puml) · rendered + visually verified.
 
 ### Description
 
@@ -100,32 +68,9 @@ record, so its loss degrades latency but not correctness (AQA-1).
 
 #### Diagram
 
-```plantuml
-@startuml component-api
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Component.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Component diagram — API Service (C4 level 3)
-Container(spa, "Web App", "React 18 / TS", "Sends REST requests")
-ContainerDb(db, "Primary Database", "PostgreSQL 15", "System of record")
-Container_Boundary(api, "API Service") {
-  Component(router, "HTTP Router", "Fastify routes", "Terminates HTTP, maps DTOs")
-  Component(guard, "Tenant Guard", "Middleware", "Forces user_id scoping — the SQA-1 control")
-  Component(txn, "Transaction Service", "TS module", "UC-1 create/edit/delete")
-  Component(dash, "Dashboard Service", "TS module", "UC-2 aggregates + report registry")
-  Component(repo, "Data Access", "Kysely", "Parameterised, tenant-scoped SQL")
-}
-Rel(spa, router, "Sends REST requests", "JSON/HTTPS")
-Rel(router, guard, "Passes authenticated context")
-Rel(guard, txn, "Delegates write commands")
-Rel(guard, dash, "Delegates dashboard queries")
-Rel(txn, repo, "Persists transactions")
-Rel(dash, repo, "Reads aggregates")
-Rel(repo, db, "Executes tenant-scoped SQL", "SQL/TLS")
-@enduml
-```
-
 ![Component diagram — API Service](diagrams/component-api.png)
+
+Source: [`diagrams/component-api.puml`](diagrams/component-api.puml) · rendered + visually verified.
 
 #### Description
 
@@ -134,29 +79,9 @@ Every request passes through the Tenant Guard before any service runs, so cross-
 
 ## 6. Sequence diagrams
 
-```plantuml
-@startuml sequence-dashboard
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-title UC-2 dashboard load — realises PQA-1
-autonumber
-participant "Web App" as U
-participant "API Service" as A
-participant "Read Cache" as C
-participant "Primary Database" as D
-U -> A : GET /dashboard (month)
-A -> C : GET aggregates(user, month)
-alt cache hit
-  C --> A : aggregates
-else cache miss
-  A -> D : SELECT aggregate rows (tenant-scoped)
-  D --> A : rows
-  A -> C : SET aggregates(user, month) TTL 15 min
-end
-A --> U : 200 dashboard JSON
-@enduml
-```
-
 ![UC-2 dashboard load — realises PQA-1](diagrams/sequence-dashboard.png)
+
+Source: [`diagrams/sequence-dashboard.puml`](diagrams/sequence-dashboard.puml) · rendered + visually verified.
 
 On a cache hit the database is not touched, which is the common path and keeps p95 under the
 1.5 s budget (PQA-1). On a miss the API recomputes from tenant-scoped rows and repopulates the
@@ -166,31 +91,9 @@ cache; a stale cache is bounded by the 15-minute TTL.
 
 ### Diagram
 
-```plantuml
-@startuml deployment
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Deployment.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
-LAYOUT_TOP_DOWN()
-title Deployment — Personal Finance Tracker (production, eu-west-1, 2 AZs)
-Deployment_Node(cloud, "Managed cloud", "eu-west-1 · 2 availability zones") {
-  Deployment_Node(edge, "CDN + static hosting", "TLS termination") {
-    Container(spa, "Web App bundle", "React 18 build", "Static assets")
-  }
-  Deployment_Node(run, "Container platform", "Autoscaling, multi-AZ") {
-    Container(api, "API Service", "Node.js 20", "2+ replicas across AZs, stateless")
-  }
-  Deployment_Node(data, "Managed data tier", "Multi-AZ") {
-    ContainerDb(db, "PostgreSQL 15", "Primary + standby", "Automated failover")
-    ContainerDb(cache, "Redis 7", "Primary + replica", "Derived data only")
-  }
-}
-Rel(spa, api, "Serves SPA to browser", "HTTPS")
-Rel(api, db, "Reads / writes", "SQL/TLS")
-Rel(api, cache, "Reads / invalidates", "RESP")
-@enduml
-```
-
 ![Deployment — Personal Finance Tracker](diagrams/deployment.png)
+
+Source: [`diagrams/deployment.puml`](diagrams/deployment.puml) · rendered + visually verified.
 
 ### Description
 

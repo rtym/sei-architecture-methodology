@@ -35,7 +35,7 @@ Mermaid `flowchart` fallback (this is the Mermaid tree). Source:
 ```mermaid
 flowchart LR
   %% Use case diagram — UC-2 View the monthly dashboard
-  pa(["Registered user"])
+  pa(["fa:fa-user Registered user"])
   subgraph sys["System: Personal Finance Tracker"]
     uc2("UC-2 View the monthly dashboard")
   end

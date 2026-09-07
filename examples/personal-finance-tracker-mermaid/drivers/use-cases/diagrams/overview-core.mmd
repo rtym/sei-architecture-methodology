@@ -1,7 +1,7 @@
 flowchart LR
   %% Use case overview — Personal Finance Tracker (core)
-  user(["Registered user"])
-  bank(["Bank Import API"])
+  user(["fa:fa-user Registered user"])
+  bank["&laquo;system&raquo;<br/>Bank Import API"]
   subgraph sys["System: Personal Finance Tracker"]
     uc1("UC-1 Record a transaction")
     uc2("UC-2 View the monthly dashboard")
@@ -15,6 +15,8 @@ flowchart LR
   uc1 -. include .-> cat
   uc3 -. include .-> cat
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  class user,bank source
+  class user source
+  class bank external
   class uc1,uc2,uc3,cat artifact

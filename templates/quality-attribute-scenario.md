@@ -47,6 +47,11 @@ flowchart LR
 
 Rendered from the block above · visually verified: yes/no · relative path renders on GitHub / GitLab
 
+> **If drawn in PlantUML**: drop the ```mermaid block above; keep the `![]()` image line and add
+> `Source: [diagrams/scenario-<ATTR>QA-<n>.puml](diagrams/scenario-<ATTR>QA-<n>.puml)`.
+> GitHub does not render a ```plantuml block, so it is not inlined (see the `sei-diagrams`
+> skill's *Embedding in Markdown* section).
+
 ## Notes / assumptions
 
 <open questions, tactics likely needed, links to related scenarios>

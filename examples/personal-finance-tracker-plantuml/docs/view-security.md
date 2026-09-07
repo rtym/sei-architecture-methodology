@@ -8,36 +8,9 @@
 
 ## 1. Primary presentation
 
-```plantuml
-@startuml view-security-01
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-skinparam linetype ortho
-hide stereotype
-title Security view — Personal Finance Tracker (SQA-1 control path)
-
-actor "Registered user\n(authenticated session, JWT)" as user
-rectangle "Authenticated user acting as attacker\nguesses record IDs" as attacker <<emphasis>>
-
-rectangle "Public subnet" as pub {
-  rectangle "CDN + TLS termination\nTLS 1.3" as cdn
-}
-rectangle "Private subnet — trust boundary" as priv {
-  rectangle "Tenant Guard\nsecurity module — injects user_id scoping (SQA-1)" as guard <<emphasis>>
-  rectangle "Data Access\nparameterised, tenant-scoped SQL" as da
-  database "Append-only audit log\nevery denied access, tamper-evident" as audit
-  database "Primary Database\nPostgreSQL 15 · encrypted at rest (CON-4)" as db
-}
-
-user     --> cdn   : HTTPS (TLS 1.3)
-attacker --> cdn   : HTTPS (TLS 1.3)
-cdn      --> guard : Private Link
-guard    --> da    : Scoped request
-guard    --> audit : Writes denied-access event
-da       --> db    : WHERE user_id = $me (SQL/TLS)
-@enduml
-```
-
 ![Security view — Personal Finance Tracker](diagrams/view-security-01.png)
+
+Source: [`diagrams/view-security-01.puml`](diagrams/view-security-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 

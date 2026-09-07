@@ -163,10 +163,18 @@ class Renderer:
                     i += 1
                 i += 1  # closing fence
                 code = "\n".join(buf)
-                if lang == "mermaid":
-                    html_parts.append(self._mermaid(code))
-                elif lang in ("plantuml", "puml", "uml"):
-                    html_parts.append(self._plantuml(code))
+                if lang in ("mermaid", "plantuml", "puml", "uml"):
+                    html_parts.append(self._mermaid(code) if lang == "mermaid"
+                                      else self._plantuml(code))
+                    # when embedding, a bare "![...](...)" line right after the fenced
+                    # diagram is the same picture — drop it so it isn't shown twice
+                    # (and so its relative <img src> can't 404 in a standalone report).
+                    if self.embed:
+                        j = i
+                        while j < n and not lines[j].strip():
+                            j += 1
+                        if j < n and re.match(r"^\s*!\[[^\]]*\]\([^)]+\)\s*$", lines[j]):
+                            i = j + 1
                 else:
                     cls = f' class="language-{lang}"' if lang else ""
                     html_parts.append(f"<pre><code{cls}>{html.escape(code, quote=False)}</code></pre>")
@@ -454,13 +462,39 @@ def build_toc(headings, skip_title: str = "") -> str:
     return '<nav class="toc"><h2>Contents</h2><ul>' + "".join(items) + "</ul></nav>"
 
 
+_MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+         ".gif": "image/gif", ".svg": "image/svg+xml", ".webp": "image/webp"}
+
+
+def _inline_local_images(section_html: str, base: Path) -> str:
+    """Base64-embed <img src="relative/local.png"> so a report is self-contained
+    (a relative <img src> would 404 when the HTML is opened outside the source tree)."""
+    def repl(m: re.Match) -> str:
+        pre, src, post = m.group(1), m.group(2), m.group(3)
+        if src.startswith(("http://", "https://", "data:", "//")):
+            return m.group(0)
+        f = (base / src.split("#", 1)[0].split("?", 1)[0]).resolve()
+        mime = _MIME.get(f.suffix.lower())
+        if not mime or not f.is_file():
+            return m.group(0)
+        try:
+            data = base64.b64encode(f.read_bytes()).decode("ascii")
+        except Exception:
+            return m.group(0)
+        return f'<img {pre}src="data:{mime};base64,{data}"{post}>'
+    return re.sub(r'<img ([^>]*?)src="([^"]+)"([^>]*?)>', repl, section_html)
+
+
 def to_html(inputs: list[Path], title: str, subtitle: str, want_toc: bool,
             embed: bool, standalone: bool) -> str:
     renderer = Renderer(embed_diagrams=embed, source_dir=inputs[0].parent)
     body_sections = []
     for p in inputs:
         renderer.source_dir = p.parent
-        body_sections.append(renderer.render(p.read_text(encoding="utf-8")))
+        section = renderer.render(p.read_text(encoding="utf-8"))
+        if embed:
+            section = _inline_local_images(section, p.parent)
+        body_sections.append(section)
     body = "\n<hr>\n".join(body_sections)
     toc = build_toc(renderer.headings, skip_title=title) if want_toc else ""
     meta = f"Generated {_today()} · {len(inputs)} source file(s)"

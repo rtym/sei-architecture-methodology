@@ -25,33 +25,9 @@ six-part scenario diagram**.
 
 Drawn with the house PlantUML pattern (this is the PlantUML tree): five boxes left-to-right — source of stimulus → stimulus → artifact → response → response measure — with the environment attached to the artifact.
 
-```plantuml
-@startuml scenario-UQA-1
-!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
-left to right direction
-hide stereotype
-title Quality attribute scenario — UQA-1 — Interaction capability / operability
-rectangle "<b>Source of stimulus</b>
-First-time user" as SRC #E7E3F3
-rectangle "<b>Stimulus</b>
-Attempts to record their first transaction" as STIM #E7E3F3
-rectangle "<b>Artifact</b>
-Transaction form" as ART #EDF2F8
-rectangle "<b>Response</b>
-User completes the entry without consulting help documentation" as RESP #E4F0E9
-rectangle "<b>Response measure</b>
->= 85 % task-completion rate in a 10-person moderated usability test" as MEAS #E4F0E9
-rectangle "<b>Environment</b>
-Normal operation" as ENV #F5EEE3
-SRC  --> STIM : generates
-STIM --> ART  : arrives at
-ART  --> RESP : produces
-RESP --> MEAS : measured by
-ENV  ..> ART
-@enduml
-```
-
 ![UQA-1 six-part scenario](diagrams/scenario-UQA-1.png)
+
+Source: [`diagrams/scenario-UQA-1.puml`](diagrams/scenario-UQA-1.puml) · rendered + visually verified.
 
 ## Notes / assumptions
 
