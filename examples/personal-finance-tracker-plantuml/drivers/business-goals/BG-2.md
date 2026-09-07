@@ -7,6 +7,18 @@
 - **Priority**: high
 - **Status**: open
 
+## Business-goal scenario (7 parts)
+
+| Part | Value |
+|------|-------|
+| Goal-source | Founder / Head of Compliance |
+| Goal-subject | the founding team and the enterprise sales function |
+| Goal-object | the Personal Finance Tracker product and the company's audit posture |
+| Environment | early-stage B2B2C SaaS entering enterprise sales; SOC 2 is table stakes for an employer-benefit deal; ~12-month runway |
+| Goal | pass a SOC 2 Type II audit (Security + Confidentiality trust-services criteria) |
+| Goal-measure | a clean (no-exception) SOC 2 Type II report covering a ≥ 6-month observation window, delivered before the first enterprise contract is signed |
+| Pedigree & value | set by the founder; high confidence it is required; low volatility; value **high** — a blocked audit blocks the entire employer channel |
+
 ## Context
 
 Early-stage SaaS; this goal is one of the four the architecture must serve. See

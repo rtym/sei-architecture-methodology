@@ -68,35 +68,50 @@ are what Step 6 analyses.
 
 ## Step 6 — Analyse architectural approaches (Phase 1 scenarios)
 
-### SQA-1 — Cross-user access attempt rejected and logged (H, H)
-- **Attribute / refinement**: Security / confidentiality + accountability
-- **Approaches invoked**: AA-2 (tenant-guard choke point), AA-1 (layering keeps data access behind one module)
-- **Analysis questions & answers**:
-  - Q: Can any code path reach the database without passing the tenant guard? A: Only the import
-    worker, which shares the Data Access module but not the guard — flagged.
-  - Q: Is the audit log tamper-evident? A: Not yet; append-only store not decided — flagged.
+### SQA-1 — Cross-user access attempt rejected and logged  (V=H, R=H)
 
-| Finding | Type | Element / decision | Affected attribute(s) | Note |
-|---------|------|--------------------|-----------------------|------|
-| R-1 | Risk | Import worker bypasses the tenant-guard middleware | Security | worker builds its own DB calls via Data Access; a bug could cross tenants |
-| R-2 | Risk | Audit log has no tamper-evidence decision | Security / accountability | SOC 2 (BG-2) auditors expect this |
-| N-1 | Non-risk | All interactive traffic passes one guard | Security | holds while no service calls Data Access directly except via the guard |
-| S-1 | Sensitivity point | Placement of the tenant-scoping check (one middleware vs per-query) | Security | one place → auditable; per-query → easy to miss one |
+Scenario analysis in the ATAM template (Fig. 21.1 shape).
 
-### AQA-1 — Survive a single-AZ failure, recover < 60 s (H, H)
-- **Attribute / refinement**: Reliability / availability + recoverability
-- **Approaches invoked**: AA-4 (stateless replicas + managed failover), AA-3 (cache is not a system of record)
-- **Analysis questions & answers**:
-  - Q: What is the measured failover time of the managed PostgreSQL tier? A: Vendor states 35–70 s; not yet tested — flagged.
-  - Q: Does a cache-tier loss affect correctness? A: No; only latency (cache-aside recomputes).
+- **Attribute(s)**: Security / confidentiality + accountability
+- **Environment · Stimulus · Response**: normal operation · an authenticated user requests
+  another user's transactions by guessing record IDs · request rejected, attempt written to an
+  append-only audit log and alerted (0 cross-user reads; 100 % logged; alert < 1 min)
+- **Approaches invoked**: AA-2 (tenant-guard choke point), AA-1 (layering keeps Data Access behind one module)
 
-| Finding | Type | Element / decision | Affected attribute(s) | Note |
-|---------|------|--------------------|-----------------------|------|
-| R-3 | Risk | Managed DB failover time not measured against the < 60 s target | Availability | upper bound of vendor range exceeds the target |
-| R-4 | Risk | No runbook / automation for a bad-deploy rollback | Availability / recoverability | recovery time depends on manual steps by a one-person team |
-| N-2 | Non-risk | Redis read-cache loss degrades latency only | Availability | holds while the cache stays strictly derived data |
-| S-2 | Sensitivity point | Redis TTL (15 min) | Performance / correctness | higher TTL → better latency, staler aggregates |
-| T-1 | Tradeoff point | Redis TTL | Performance ↑ vs. dashboard data freshness ↓ | see S-2 |
+| Architectural decision | Sensitivity | Trade-off | Risk | Nonrisk |
+|------------------------|-------------|----------|------|----------|
+| Single tenant-guard middleware (vs. per-endpoint checks) | S-1 | | | |
+| Import worker builds its own Data Access calls, bypassing the guard | | | R-1 | |
+| Audit-log store — tamper-evidence not yet decided | | | R-2 | |
+| All *interactive* traffic passes exactly one guard | | | | N-1 |
+
+**Reasoning.** S-1: placing the `user_id` scoping in one middleware makes SQA-1 auditable in a
+single place; per-query scoping is functionally equivalent but easy to miss on a new endpoint.
+R-1: the import worker shares the Data Access module but not the guard, so a bug there could
+cross tenants — endangers SQA-1 / BG-2. R-2: SOC 2 auditors expect an append-only,
+tamper-evident audit trail. N-1 holds only while no service reaches Data Access except via the
+guard (assumption stated).
+
+### AQA-1 — Survive a single-AZ failure, recover < 60 s  (V=H, R=H)
+
+- **Attribute(s)**: Reliability / availability + recoverability
+- **Environment · Stimulus · Response**: production · a single availability zone fails · traffic
+  shifts to the healthy AZ and the data tier fails over automatically (≥ 99.5 %/mo; recovery
+  < 60 s; RPO < 5 min)
+- **Approaches invoked**: AA-4 (stateless replicas + managed primary/standby failover), AA-3 (the cache is not a system of record)
+
+| Architectural decision | Sensitivity | Trade-off | Risk | Nonrisk |
+|------------------------|-------------|----------|------|----------|
+| Managed PostgreSQL primary/standby, automated failover (vendor: 35–70 s, unmeasured) | | | R-3 | |
+| No runbook / automation for a bad-deploy rollback | | | R-4 | |
+| Redis read cache holds strictly derived data | | | | N-2 |
+| Redis aggregate TTL = 15 min | S-2 | T-1 | | |
+
+**Reasoning.** R-3: the vendor's upper bound (70 s) exceeds the 60 s target and it has not been
+game-day-tested — endangers AQA-1. R-4: recovery time for a bad deploy depends on manual steps
+by a one-person team. N-2 holds while the cache stays strictly derived (assumption). S-2 / T-1:
+a higher TTL improves dashboard latency (PQA-1) but worsens data freshness — a performance ↔
+correctness tradeoff.
 
 ## Step 7 — Brainstorm and prioritise scenarios (Phase 2)
 
@@ -168,10 +183,20 @@ AA-1 modular monolith · AA-2 security choke point · AA-3 cache-aside · AA-4 s
 | RT-2 Unproven recovery | R-3, R-4 | BG-1, BG-4 | Game-day test of DB failover; write and automate a rollback runbook before launch |
 | RT-3 Growth head-room on the data tier | R-5, R-6 | BG-1, BG-2 | ADD iteration 3: add a read-replica + repository read/write split; introduce a region seam in the data model |
 
+### CBAM — ranked remediation backlog
+
+Turn the risk themes into a prioritised backlog by rough ROI (utility gained ÷ cost).
+
+| # | Action (risk theme) | Utility gained | Cost | ROI |
+|---|--------------------|----------------|------|-----|
+| 1 | Route the import worker through the tenant guard + choose an append-only audit store (RT-1) | High — closes the SQA-1 / BG-2 gap; unblocks SOC 2 | ~1 ADD iteration (1b) | **highest** |
+| 2 | Game-day the managed-DB failover; write + automate a rollback runbook (RT-2) | High — proves AQA-1; removes a launch blocker | ~2 person-days | high |
+| 3 | Read-replica + repository read/write split; region seam in the data model (RT-3) | Medium — head-room for BG-1 growth and future data-residency | ~1 ADD iteration (3) | medium — defer until growth signal |
+
 ### Recommendations / next steps
 - Run `/add` iteration 1b for RT-1 and iteration 3 for RT-3.
 - Schedule a DB failover game-day; add a rollback runbook (RT-2).
-- Re-run this ATAM after the risk themes are addressed.
+- Re-run this ATAM after the risk themes are addressed. A full ATAM is not needed each time — a **Lightweight Architecture Evaluation** (steps 3–8, internal team, ~half a day, no report) each ADD round or before a release keeps the registers current.
 
 ---
 

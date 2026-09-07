@@ -1,6 +1,6 @@
 # Personal Finance Tracker — Architecture Package
 
-> Generated 2026-09-06 · 2 source file(s)
+> Generated 2026-09-07 · 2 source file(s)
 
 ## Contents
 
@@ -35,6 +35,7 @@
     - [Description](#description-3)
   - [8. Interfaces and events](#8-interfaces-and-events)
     - [Interfaces](#interfaces)
+    - [`POST /transactions` — full interface spec (the four agreement points)](#post-transactions--full-interface-spec-the-four-agreement-points)
     - [Events](#events)
   - [9. Design decisions](#9-design-decisions)
 
@@ -363,6 +364,17 @@ the data tier uses managed primary/standby with automated failover — together 
 | API Service | `POST /transactions` | REST / HTTPS | Create a transaction (UC-1) |
 | API Service | `GET /dashboard?month=` | REST / HTTPS | Monthly aggregates + recent activity (UC-2) |
 | Data Access | `query(userId, spec)` | in-process | Always injects `WHERE user_id = $userId` |
+
+### `POST /transactions` — full interface spec (the four agreement points)
+
+The one interface `UC-1` and `SQA-1` both run through, specified per `references/interfaces.md`:
+
+| Agreement point | Specification |
+|-----------------|---------------|
+| **Scope** | available to the Web App only, via the CDN + Tenant Guard; not exposed to any other actor. The Tenant Guard is the actor for the Transaction Service. |
+| **Interaction style** | synchronous request/response over REST + HTTPS (TLS 1.3); idempotency key header so a client retry is safe; no long-poll. |
+| **Data representation & structure** | request `{amount: integer (minor units), date: ISO-8601 date, categoryId: uuid, note?: string ≤ 280}`; response `201 {id: uuid, ...echo}`; JSON (matches the SPA's parser; compact; interceptable for debugging). `user_id` is **never** in the body — it is taken from the verified JWT. |
+| **Error model** | `400` field-level validation errors (nothing written) · `401` missing/expired token · `403` cross-tenant attempt (written to the append-only audit log, alert < 1 min — `SQA-1`) · `409` duplicate idempotency key · `503` store unavailable → the client is told "saved, syncing" and the write is queued (`UC-1` 3a). |
 
 ### Events
 

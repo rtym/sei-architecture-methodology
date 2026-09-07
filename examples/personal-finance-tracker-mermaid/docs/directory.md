@@ -19,6 +19,8 @@
 | Derived data | Data that can be recomputed from the system of record; safe to lose |
 | System of record | The authoritative store for a piece of data (here: PostgreSQL) |
 | Six-part scenario | The SEI quality attribute scenario form: source, stimulus, artifact, environment, response, response measure |
+| Quality view | A view formed by extracting the security-relevant parts of the structural views for one concern |
+| Trust boundary | The line between the public subnet (CDN only) and the private subnet (everything else) |
 
 ## Acronyms
 
