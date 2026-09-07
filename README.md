@@ -343,6 +343,16 @@ python path/to/sei-architecture-methodology/tests/validate.py architecture/**/*.
 
 ---
 
+## Deep method notes
+
+`references/` holds the encoded body of knowledge each skill draws on — see
+[`references/README.md`](references/README.md) for the index and
+[`references/glossary.md`](references/glossary.md) for the terminology. It covers architecture
+fundamentals, the quality-attribute taxonomy + per-attribute general scenarios + tactics
+catalog + patterns, ASR elicitation, ADD 3.0, ATAM + Lightweight Architecture Evaluation +
+lightweight design reviews, Views-and-Beyond documentation, interfaces, architecture debt /
+Agile / the architect's role, and runtime environments (virtualization / cloud / mobile).
+
 ## Sources
 
 Encodes the public SEI body of knowledge:

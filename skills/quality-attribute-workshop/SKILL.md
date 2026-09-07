@@ -16,7 +16,10 @@ Facilitate the SEI QAW. The QAW is **system-centric** and **stakeholder-focused*
 represents (or relays for) the stakeholders.
 
 Output file: `architecture/qaw/qaw-report.md` (create the folder). Update it after every step.
-Deep reference: `references/qaw-method.md`. Report template: `templates/qaw-report.md`.
+Deep reference: `references/qaw-method.md` (the QAW is one structured form of "gathering ASRs by
+interviewing stakeholders" — `references/architectural-drivers.md` covers the other three ways
+and the "play dumb" technique for a stakeholder who says *"I don't know what that requirement
+should be"*). Report template: `templates/qaw-report.md`.
 
 **Keep prompts short.** Numbered lists for choices. One step at a time; announce each step in one line.
 

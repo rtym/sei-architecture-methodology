@@ -8,6 +8,7 @@ carries. Nothing here is executable; it is the encoded SEI body of knowledge.
 | File | Covers |
 |------|--------|
 | [`architecture-fundamentals.md`](architecture-fundamentals.md) | what an architecture is (module / C&C / allocation structures, views); why it matters; the process + structural "good architecture" rules of thumb |
+| [`glossary.md`](glossary.md) | every term used across the skills and references, with the file that treats it in depth |
 | [`best-practices-checklist.md`](best-practices-checklist.md) | the quality gate every skill runs against its own output |
 
 ## Drivers and quality attributes
