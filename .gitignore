@@ -5,6 +5,10 @@ skills/sei-diagrams/package-lock.json
 # Artifacts produced by running the skills in a target project
 /architecture/
 
+# Personal Claude Code settings (model pin, local permissions) — not shared,
+# so cloning this repo never overrides a contributor's own model choice
+.claude/settings.local.json
+
 # Rendered output kept next to sources in examples is fine to commit;
 # ad-hoc renders are not
 *.log

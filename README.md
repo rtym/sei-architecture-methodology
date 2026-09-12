@@ -302,8 +302,8 @@ sei-architecture-methodology/
 │   ├── plugin.json                    # plugin manifest (8 skills)
 │   └── marketplace.json               # one-plugin marketplace (for /plugin marketplace add)
 ├── .claude/
-│   ├── settings.json
 │   └── commands/                      # /sei /drivers /quality-attributes /qaw /add /atam /architecture-docs /sei-diagram
+│                                      # (settings.local.json — personal model pin / permissions — is gitignored)
 ├── skills/
 │   ├── sei-architecture/              # router
 │   ├── architectural-drivers/        # writes architecture/drivers/ as a directory, one file per driver
