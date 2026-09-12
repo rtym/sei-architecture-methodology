@@ -672,15 +672,15 @@ def check_self() -> list[str]:
         if key not in data:
             errs.append(f"plugin.json missing '{key}'")
 
-    listed = set(data.get("skills", []))
-    for rel in listed:
-        if not (ROOT / rel).is_file():
-            errs.append(f"plugin.json lists missing skill file: {rel}")
+    listed_dirs = {p[2:] if p.startswith("./") else p for p in data.get("skills", [])}
+    for rel in listed_dirs:
+        if not (ROOT / rel / "SKILL.md").is_file():
+            errs.append(f"plugin.json lists missing skill directory: {rel}")
 
     skill_files = sorted((ROOT / "skills").glob("*/SKILL.md"))
     for sf in skill_files:
-        rel = sf.relative_to(ROOT).as_posix()
-        if rel not in listed:
+        rel = sf.parent.relative_to(ROOT).as_posix()
+        if rel not in listed_dirs:
             errs.append(f"skill not registered in plugin.json: {rel}")
         text = sf.read_text(encoding="utf-8")
         fm = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
