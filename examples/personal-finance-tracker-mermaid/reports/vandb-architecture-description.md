@@ -2,7 +2,7 @@
 
 _Views-and-Beyond architecture description_
 
-> Generated 2026-09-07 · 10 source file(s)
+> Generated 2026-09-12 · 10 source file(s)
 
 ## Contents
 
@@ -82,16 +82,16 @@ renders it on directory browse). Every diagram in this package is Mermaid.
 
 | File | V&B part | Read it to… |
 |------|----------|-------------|
-| [`README.md`](README.md) (this file) | Roadmap + organisation | know what exists and where to look |
-| [`system-overview.md`](system-overview.md) | System overview | understand what the system does and its context |
-| [`view-module-decomposition.md`](view-module-decomposition.md) | Module view (decomposition) | see the code units and who owns what |
-| [`view-cnc-runtime.md`](view-cnc-runtime.md) | Component-and-Connector view (service) | see what runs and how parts interact at runtime |
-| [`view-allocation-deployment.md`](view-allocation-deployment.md) | Allocation view (deployment) | see where each part runs in production |
-| [`view-security.md`](view-security.md) | Quality view (security) | see where confidentiality is enforced and how attempts are logged (SQA-1, BG-2) |
-| [`mapping-between-views.md`](mapping-between-views.md) | Mapping between views | correlate a module ↔ runtime component ↔ node |
-| [`rationale.md`](rationale.md) | Rationale | understand why the big decisions were made (ADR log) |
-| [`directory.md`](directory.md) | Directory | look up a term, an acronym, or where an element is defined |
-| [`change-log.md`](change-log.md) | — | revision history of this description |
+| [`README.md`](../docs/README.md) (this file) | Roadmap + organisation | know what exists and where to look |
+| [`system-overview.md`](../docs/system-overview.md) | System overview | understand what the system does and its context |
+| [`view-module-decomposition.md`](../docs/view-module-decomposition.md) | Module view (decomposition) | see the code units and who owns what |
+| [`view-cnc-runtime.md`](../docs/view-cnc-runtime.md) | Component-and-Connector view (service) | see what runs and how parts interact at runtime |
+| [`view-allocation-deployment.md`](../docs/view-allocation-deployment.md) | Allocation view (deployment) | see where each part runs in production |
+| [`view-security.md`](../docs/view-security.md) | Quality view (security) | see where confidentiality is enforced and how attempts are logged (SQA-1, BG-2) |
+| [`mapping-between-views.md`](../docs/mapping-between-views.md) | Mapping between views | correlate a module ↔ runtime component ↔ node |
+| [`rationale.md`](../docs/rationale.md) | Rationale | understand why the big decisions were made (ADR log) |
+| [`directory.md`](../docs/directory.md) | Directory | look up a term, an acronym, or where an element is defined |
+| [`change-log.md`](../docs/change-log.md) | — | revision history of this description |
 
 Only a stub view set is included in this example (one view per viewtype). A real package adds a
 uses/layered module view, more C&C views, and install / work-assignment allocation views as
@@ -101,19 +101,19 @@ stakeholder concerns require.
 
 | Stakeholder | Concern | View(s) |
 |-------------|---------|---------|
-| New developer | Where does the code live? What can depend on what? | [Module decomposition](view-module-decomposition.md) |
-| Developer / architect | What runs at runtime? How is tenant isolation enforced? | [C&C runtime](view-cnc-runtime.md) |
-| Performance | Where is the dashboard latency budget spent? | [C&C runtime](view-cnc-runtime.md) + sequence diagrams in the ADD [Architecture.md §6](../add/personal-finance-tracker-Architecture.md) |
-| Operations | What is deployed where? How does it survive an AZ loss? | [Allocation deployment](view-allocation-deployment.md) |
-| Security / auditor | Where is the confidentiality control? How are attempts logged? | [Security view](view-security.md) + [C&C runtime](view-cnc-runtime.md) + [`rationale.md`](rationale.md) |
-| Project lead | Who is responsible for which module? | [Module decomposition](view-module-decomposition.md) (owner column) |
+| New developer | Where does the code live? What can depend on what? | [Module decomposition](../docs/view-module-decomposition.md) |
+| Developer / architect | What runs at runtime? How is tenant isolation enforced? | [C&C runtime](../docs/view-cnc-runtime.md) |
+| Performance | Where is the dashboard latency budget spent? | [C&C runtime](../docs/view-cnc-runtime.md) + sequence diagrams in the ADD [Architecture.md §6](../add/personal-finance-tracker-Architecture.md) |
+| Operations | What is deployed where? How does it survive an AZ loss? | [Allocation deployment](../docs/view-allocation-deployment.md) |
+| Security / auditor | Where is the confidentiality control? How are attempts logged? | [Security view](../docs/view-security.md) + [C&C runtime](../docs/view-cnc-runtime.md) + [`rationale.md`](../docs/rationale.md) |
+| Project lead | Who is responsible for which module? | [Module decomposition](../docs/view-module-decomposition.md) (owner column) |
 
 ## Where do I look to answer…
 
-- *"If I change the category logic, what else is affected?"* → [Module decomposition](view-module-decomposition.md) (dependencies).
-- *"How is `SQA-1` (cross-user isolation) achieved?"* → [Security view](view-security.md), then [C&C runtime](view-cnc-runtime.md) §5 rationale + [`rationale.md`](rationale.md) ADR-2.
+- *"If I change the category logic, what else is affected?"* → [Module decomposition](../docs/view-module-decomposition.md) (dependencies).
+- *"How is `SQA-1` (cross-user isolation) achieved?"* → [Security view](../docs/view-security.md), then [C&C runtime](../docs/view-cnc-runtime.md) §5 rationale + [`rationale.md`](../docs/rationale.md) ADR-2.
 - *"What happens on a cache miss?"* → ADD [`Architecture.md`](../add/personal-finance-tracker-Architecture.md) §6.
-- *"What recovers us from an AZ failure?"* → [Allocation deployment](view-allocation-deployment.md) view + [`rationale.md`](rationale.md) ADR-3.
+- *"What recovers us from an AZ failure?"* → [Allocation deployment](../docs/view-allocation-deployment.md) view + [`rationale.md`](../docs/rationale.md) ADR-3.
 
 ## Related artifacts
 
@@ -162,7 +162,7 @@ flowchart LR
   class core internal
 ```
 
-![System context — Personal Finance Tracker](diagrams/system-overview-01.png)
+![System context — Personal Finance Tracker](../docs/diagrams/system-overview-01.png)
 
 ## Primary functional requirements (use cases)
 
@@ -181,7 +181,7 @@ See [`../scenarios.md`](../scenarios.md) for the six-part detail. The architectu
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
 ---
@@ -232,7 +232,7 @@ flowchart TB
 > used by every layer above it; those edges are omitted to keep the primary presentation legible
 > (§2.2 lists them). Domain modules must not use one another.
 
-![View: Module decomposition](diagrams/view-module-decomposition-01.png)
+![View: Module decomposition](../docs/diagrams/view-module-decomposition-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
@@ -290,7 +290,7 @@ process are outside it; the worker reuses the `imports` and `persistence` module
 ## 5. Rationale
 
 - The `security` module is the **single choke point** for tenant scoping so `SQA-1` is enforced
-  structurally and is auditable in one place (see [`rationale.md`](rationale.md) ADR-2). The alternative —
+  structurally and is auditable in one place (see [`rationale.md`](../docs/rationale.md) ADR-2). The alternative —
   per-endpoint checks in `http` — was rejected as too easy to miss.
 - Forbidding domain-to-domain dependencies keeps change impact local, serving `MQA-1`
   (add a report type in ≤ 1 person-day, 0 regressions).
@@ -299,7 +299,7 @@ process are outside it; the worker reuses the `imports` and `persistence` module
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
 ---
@@ -342,7 +342,7 @@ flowchart TB
   class db,cache,queue datastore
 ```
 
-![View: Runtime (C&C)](diagrams/view-cnc-runtime-01.png)
+![View: Runtime (C&C)](../docs/diagrams/view-cnc-runtime-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
@@ -393,15 +393,15 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 ## 5. Rationale
 
 - One API Service process holds the tenant guard so `SQA-1` isolation is enforced on every
-  interactive path in a single auditable place ([`rationale.md`](rationale.md) ADR-2).
+  interactive path in a single auditable place ([`rationale.md`](../docs/rationale.md) ADR-2).
 - Cache-aside with a bounded TTL meets `PQA-1`'s p95 budget while keeping the cache strictly
-  derived, so its failure never threatens `AQA-1` correctness ([`rationale.md`](rationale.md) ADR-1).
+  derived, so its failure never threatens `AQA-1` correctness ([`rationale.md`](../docs/rationale.md) ADR-1).
 - CSV import is pushed to a queue + worker so a large import cannot consume the request threads
   that serve interactive traffic (`PQA-2`).
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
 ---
@@ -443,7 +443,7 @@ flowchart TB
   class db,redis datastore
 ```
 
-![View: Deployment](diagrams/view-allocation-deployment-01.png)
+![View: Deployment](../docs/diagrams/view-allocation-deployment-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
@@ -493,7 +493,7 @@ Outside this view: the user's device/network and the email provider's infrastruc
 
 - Stateless API replicas across two AZs plus a managed primary/standby database with automated
   failover is the cheapest topology that meets `AQA-1` (recover < 60 s, ≥ 99.5 %/mo) on the
-  low-cost managed tiers required by `CON-3` and within `BG-4`'s budget ([`rationale.md`](rationale.md) ADR-3).
+  low-cost managed tiers required by `CON-3` and within `BG-4`'s budget ([`rationale.md`](../docs/rationale.md) ADR-3).
 - Putting only the CDN and load balancer in public subnets shrinks the attack surface for
   `SQA-1` / `CON-4`.
 - The measured failover time is not yet verified against the 60 s target — tracked as ATAM risk
@@ -501,7 +501,7 @@ Outside this view: the user's device/network and the email provider's infrastruc
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
 ---
@@ -547,7 +547,7 @@ flowchart TB
   class audit,db datastore
 ```
 
-![Security view — Personal Finance Tracker](diagrams/view-security-01.png)
+![Security view — Personal Finance Tracker](../docs/diagrams/view-security-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
@@ -611,7 +611,7 @@ the API Service via SMTP — omitted here to keep the control path clear).
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) ·
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) ·
 [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
@@ -657,7 +657,7 @@ between them and so internal consistency is demonstrable.
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
 ---
@@ -731,7 +731,7 @@ runbook yet (`R-4`); single-region only, no data-residency seam (`R-6`).
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
 ---
@@ -742,9 +742,9 @@ runbook yet (`R-4`); single-region only, no data-residency seam (`R-6`).
 
 | Element | Defined in | Also appears in |
 |---------|-----------|-----------------|
-| `security` module / Tenant Guard | `view-module-decomposition.md` §2 | `view-cnc-runtime.md`, [`rationale.md`](rationale.md) ADR-2 |
-| `reporting` module / Dashboard Service | `view-module-decomposition.md` §2 | `view-cnc-runtime.md`, [`rationale.md`](rationale.md) ADR-1 |
-| Read Cache | `view-cnc-runtime.md` §2 | `view-allocation-deployment.md`, [`rationale.md`](rationale.md) ADR-1 |
+| `security` module / Tenant Guard | `view-module-decomposition.md` §2 | `view-cnc-runtime.md`, [`rationale.md`](../docs/rationale.md) ADR-2 |
+| `reporting` module / Dashboard Service | `view-module-decomposition.md` §2 | `view-cnc-runtime.md`, [`rationale.md`](../docs/rationale.md) ADR-1 |
+| Read Cache | `view-cnc-runtime.md` §2 | `view-allocation-deployment.md`, [`rationale.md`](../docs/rationale.md) ADR-1 |
 | Import Queue / Import Worker | `view-cnc-runtime.md` §2 | `view-allocation-deployment.md`, `mapping-between-views.md` |
 | Primary Database | `view-cnc-runtime.md` §2 | `view-allocation-deployment.md`, ADD `Architecture.md` §7 |
 
@@ -781,7 +781,7 @@ runbook yet (`R-4`); single-region only, no data-residency seam (`R-6`).
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md) · [drivers](../drivers/README.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md)
 
 
 ---
@@ -796,5 +796,5 @@ Revision history of this Views-and-Beyond documentation package (not of the syst
 
 ---
 
-**Navigation**: [docs README](README.md) · [example root](../README.md)
+**Navigation**: [docs README](../docs/README.md) · [example root](../README.md)
 

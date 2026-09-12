@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import base64
 import html
+import os
 import re
 import subprocess
 import sys
@@ -466,34 +467,71 @@ _MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
          ".gif": "image/gif", ".svg": "image/svg+xml", ".webp": "image/webp"}
 
 
-def _inline_local_images(section_html: str, base: Path) -> str:
-    """Base64-embed <img src="relative/local.png"> so a report is self-contained
-    (a relative <img src> would 404 when the HTML is opened outside the source tree)."""
+def _rewrite_relative(url: str, base_dir: Path, out_dir: Path) -> str:
+    """Re-relativize a local link/image target that was written relative to
+    base_dir (the source file's own directory) so it still resolves relative
+    to out_dir (where the merged report is written) — merging files from
+    several directories into one report file otherwise leaves cross-references
+    like business-goals/BG-1.md or system-overview.md pointing at paths that
+    don't exist next to the report."""
+    if url.startswith(("http://", "https://", "mailto:", "data:", "//", "#")):
+        return url
+    path_part, has_frag, frag = url.partition("#")
+    query = ""
+    if "?" in path_part:
+        path_part, query = path_part.split("?", 1)
+        query = "?" + query
+    if not path_part:
+        return url
+    try:
+        target = (base_dir / path_part).resolve()
+        rel = os.path.relpath(target, out_dir.resolve())
+    except Exception:
+        return url
+    return rel.replace(os.sep, "/") + query + (("#" + frag) if has_frag else "")
+
+
+def _process_local_images(section_html: str, base: Path, out_dir: Path, embed: bool) -> str:
+    """Base64-embed <img src="relative/local.png"> when --embed-diagrams is on
+    (so the report is self-contained even opened outside the source tree);
+    otherwise re-relativize the src so it still resolves from out_dir."""
     def repl(m: re.Match) -> str:
         pre, src, post = m.group(1), m.group(2), m.group(3)
         if src.startswith(("http://", "https://", "data:", "//")):
             return m.group(0)
-        f = (base / src.split("#", 1)[0].split("?", 1)[0]).resolve()
-        mime = _MIME.get(f.suffix.lower())
-        if not mime or not f.is_file():
-            return m.group(0)
-        try:
-            data = base64.b64encode(f.read_bytes()).decode("ascii")
-        except Exception:
-            return m.group(0)
-        return f'<img {pre}src="data:{mime};base64,{data}"{post}>'
+        if embed:
+            f = (base / src.split("#", 1)[0].split("?", 1)[0]).resolve()
+            mime = _MIME.get(f.suffix.lower())
+            if mime and f.is_file():
+                try:
+                    data = base64.b64encode(f.read_bytes()).decode("ascii")
+                    return f'<img {pre}src="data:{mime};base64,{data}"{post}>'
+                except Exception:
+                    pass
+        return f'<img {pre}src="{_rewrite_relative(src, base, out_dir)}"{post}>'
     return re.sub(r'<img ([^>]*?)src="([^"]+)"([^>]*?)>', repl, section_html)
 
 
+def _process_local_links(section_html: str, base: Path, out_dir: Path) -> str:
+    """Re-relativize <a href="relative/local.md"> the same way as images, so
+    cross-references between merged source files keep resolving from out_dir."""
+    def repl(m: re.Match) -> str:
+        href = m.group(1)
+        if href.startswith(("http://", "https://", "mailto:", "data:", "//", "#")):
+            return m.group(0)
+        return f'<a href="{_rewrite_relative(href, base, out_dir)}">'
+    return re.sub(r'<a href="([^"]+)">', repl, section_html)
+
+
 def to_html(inputs: list[Path], title: str, subtitle: str, want_toc: bool,
-            embed: bool, standalone: bool) -> str:
+            embed: bool, standalone: bool, out_dir: Path) -> str:
     renderer = Renderer(embed_diagrams=embed, source_dir=inputs[0].parent)
     body_sections = []
     for p in inputs:
         renderer.source_dir = p.parent
         section = renderer.render(p.read_text(encoding="utf-8"))
-        if embed:
-            section = _inline_local_images(section, p.parent)
+        section = _process_local_images(section, p.parent, out_dir, embed)
+        section = _process_local_links(section, p.parent, out_dir)
         body_sections.append(section)
     body = "\n<hr>\n".join(body_sections)
     toc = build_toc(renderer.headings, skip_title=title) if want_toc else ""
@@ -510,7 +548,30 @@ def to_html(inputs: list[Path], title: str, subtitle: str, want_toc: bool,
             f"<body>{inner}</body></html>\n")
 
 
-def to_md(inputs: list[Path], title: str, subtitle: str, want_toc: bool) -> str:
+_MD_LINK_RE = re.compile(r'(!?\[[^\]]*\]\()([^)\s]+)((?:\s+"[^"]*")?\))')
+
+
+def _rewrite_md_text(text: str, base_dir: Path, out_dir: Path) -> str:
+    """Re-relativize [text](url) / ![alt](url) targets in raw markdown, the same
+    way _process_local_links/_process_local_images do for the HTML renderer,
+    skipping fenced code blocks so sample content is left untouched."""
+    out = []
+    in_fence = False
+    for line in text.split("\n"):
+        if re.match(r"^\s*(`{3,}|~{3,})", line):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
+        out.append(_MD_LINK_RE.sub(
+            lambda m: m.group(1) + _rewrite_relative(m.group(2), base_dir, out_dir) + m.group(3),
+            line))
+    return "\n".join(out)
+
+
+def to_md(inputs: list[Path], title: str, subtitle: str, want_toc: bool, out_dir: Path) -> str:
     parts = [f"# {title}", ""]
     if subtitle:
         parts += [f"_{subtitle}_", ""]
@@ -533,15 +594,23 @@ def to_md(inputs: list[Path], title: str, subtitle: str, want_toc: bool) -> str:
                 txt = hm.group(2).strip()
                 if lvl == 1 and txt.strip().lower() == title.strip().lower():
                     continue
+                # the heading text itself may embed a [text](url) link (some SEI
+                # driver headings do, e.g. "Business goals — [`business-goals/`](...)")
+                # — re-relativize it the same as any other link so the TOC entry
+                # doesn't carry a path relative to the wrong directory.
+                txt_toc = _MD_LINK_RE.sub(
+                    lambda m: m.group(1) + _rewrite_relative(m.group(2), p.parent, out_dir) + m.group(3),
+                    txt)
                 base = re.sub(r"[^\w\- ]", "", txt).strip().lower().replace(" ", "-") or "section"
                 n = seen.get(base, 0)
                 seen[base] = n + 1
                 slug = base if n == 0 else f"{base}-{n}"
-                heads.append(f'{"  " * (lvl - 1)}- [{txt}](#{slug})')
+                heads.append(f'{"  " * (lvl - 1)}- [{txt_toc}](#{slug})')
         if heads:
             parts += ["## Contents", "", *heads, ""]
     for p in inputs:
-        parts += ["", "---", "", p.read_text(encoding="utf-8").strip(), ""]
+        body = _rewrite_md_text(p.read_text(encoding="utf-8"), p.parent, out_dir)
+        parts += ["", "---", "", body.strip(), ""]
     return "\n".join(parts) + "\n"
 
 
@@ -648,9 +717,9 @@ def main(argv=None) -> int:
         target.parent.mkdir(parents=True, exist_ok=True)
         if fmt == "html":
             content = to_html(args.inputs, title, args.subtitle, args.toc,
-                              args.embed_diagrams, args.standalone)
+                              args.embed_diagrams, args.standalone, target.parent)
         else:
-            content = to_md(args.inputs, title, args.subtitle, args.toc)
+            content = to_md(args.inputs, title, args.subtitle, args.toc, target.parent)
         target.write_text(content, encoding="utf-8")
         written.append(target)
 
