@@ -299,7 +299,7 @@ with the SEI palette, with a cover page and table of contents. Example:
 ```
 sei-architecture-methodology/
 ├── .claude-plugin/
-│   ├── plugin.json                    # plugin manifest (7 skills)
+│   ├── plugin.json                    # plugin manifest (8 skills)
 │   └── marketplace.json               # one-plugin marketplace (for /plugin marketplace add)
 ├── .claude/
 │   ├── settings.json
