@@ -22,13 +22,13 @@
     "diagrams"
   ],
   "skills": [
-    "skills/sei-architecture/SKILL.md",
-    "skills/architectural-drivers/SKILL.md",
-    "skills/quality-attributes/SKILL.md",
-    "skills/quality-attribute-workshop/SKILL.md",
-    "skills/attribute-driven-design/SKILL.md",
-    "skills/atam/SKILL.md",
-    "skills/architecture-documentation/SKILL.md",
-    "skills/sei-diagrams/SKILL.md"
+    "./skills/sei-architecture",
+    "./skills/architectural-drivers",
+    "./skills/quality-attributes",
+    "./skills/quality-attribute-workshop",
+    "./skills/attribute-driven-design",
+    "./skills/atam",
+    "./skills/architecture-documentation",
+    "./skills/sei-diagrams"
   ]
 }
