@@ -1,0 +1,70 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast feedback: everything except the diagram render smoke test.
+  # Needs only Python + bash, so it finishes in seconds.
+  tests:
+    name: test suite (no renderer)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run test suite
+        run: bash tests/run.sh --quick
+
+  # Full suite including the Mermaid render smoke test. Split out because it
+  # pulls a headless Chromium (~150 MB), which is by far the slowest part.
+  render:
+    name: full suite (Mermaid renderer)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # no npm cache: package-lock.json is intentionally gitignored,
+          # so there is no lockfile for setup-node to key a cache on.
+
+      # The Chromium download dominates this job; cache it across runs.
+      - name: Cache puppeteer Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('skills/sei-diagrams/package.json') }}
+          restore-keys: puppeteer-${{ runner.os }}-
+
+      - name: Install the Mermaid renderer
+        run: bash skills/sei-diagrams/scripts/setup.sh
+
+      # tests/run.sh SKIPS the render step (without failing) when mmdc is absent,
+      # so assert it is really there — otherwise this job could pass green while
+      # never having rendered anything.
+      - name: Verify the renderer is installed
+        run: |
+          test -x skills/sei-diagrams/node_modules/.bin/mmdc \
+            || { echo "mmdc missing — the render smoke test would silently skip"; exit 1; }
+
+      - name: Run full test suite
+        run: bash tests/run.sh

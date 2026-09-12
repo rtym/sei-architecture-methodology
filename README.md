@@ -368,6 +368,20 @@ Validate produced artifacts in a target project:
 python path/to/sei-architecture-methodology/tests/validate.py architecture/**/*.md
 ```
 
+### Continuous integration
+
+[`.github/workflows/tests.yml`](.github/workflows/tests.yml) runs on every push to `main`, on
+pull requests, and on manual dispatch, as two jobs:
+
+| Job | What it runs | Needs |
+|-----|--------------|-------|
+| `test suite (no renderer)` | `tests/run.sh --quick` — everything but the render smoke test | Python only; finishes in seconds |
+| `full suite (Mermaid renderer)` | `setup.sh` then the complete `tests/run.sh` | Node 20 + a headless Chromium (cached between runs) |
+
+The split keeps feedback fast: only the second job pays the ~150 MB Chromium download. Because
+`tests/run.sh` *skips* the render step without failing when `mmdc` is absent, the render job
+asserts the binary exists first — otherwise it could report success having rendered nothing.
+
 ---
 
 ## Deep method notes

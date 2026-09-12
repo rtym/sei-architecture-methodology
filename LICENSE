@@ -1,0 +1,37 @@
+# License — TBD
+
+**The license for this project has not been decided yet.**
+
+Until a license is chosen and this file is replaced, the default position under
+copyright law applies: **all rights reserved**. No permission is granted to use,
+copy, modify, or redistribute this work.
+
+If you need to use this project before a license is published here, contact the
+author.
+
+- **Author**: Roman Tymoshuk <roman@tymoshuk.net>
+- **Copyright**: © 2026 Roman Tymoshuk
+
+---
+
+## What goes here eventually
+
+Replace this entire file with the full text of the chosen license, and add the
+matching SPDX identifier as a `"license"` field in `.claude-plugin/plugin.json`
+(for example `"license": "MIT"` or `"license": "Apache-2.0"`).
+
+Candidates worth weighing:
+
+| License | Why you'd pick it |
+|---------|-------------------|
+| **MIT** | Shortest and most permissive; the common default for tooling meant to be widely adopted. |
+| **Apache-2.0** | Same permissiveness as MIT plus an explicit patent grant and a trademark clause — the safer pick if organisations will adopt this. |
+| **CC BY 4.0** | Built for prose/documentation rather than code; worth considering because much of this repo is written method guidance. |
+
+### A note on the source material
+
+This project encodes the **publicly documented** SEI methodology — ADD 3.0, ATAM,
+QAW, and Views-and-Beyond — expressed in original prose. The underlying books and
+SEI technical reports listed under **Sources** in [`README.md`](README.md) remain
+the copyright of their respective authors and publishers; whichever license is
+chosen here applies only to this repository's own text, templates, and code.
