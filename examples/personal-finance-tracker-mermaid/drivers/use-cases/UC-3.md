@@ -25,7 +25,7 @@
 
 ## Architectural significance
 
-- **Drivers exercised**: Bulk write path; `<<include>>`s categorisation; the first candidate for asynchronous processing (PQA-2).
+- **Drivers exercised**: Bulk write path; `<<include>>`s [UC-4](UC-4.md) (categorisation); the first candidate for asynchronous processing (PQA-2).
 
 ## Related drivers
 
@@ -43,17 +43,17 @@ flowchart LR
   bank["&laquo;system&raquo;<br/>Bank Import API"]
   subgraph sys["System: Personal Finance Tracker"]
     uc3("UC-3 Import a bank statement (CSV)")
-    uc3a("UC-3a Categorise transaction")
+    uc4("UC-4 Categorise transaction")
   end
   pa --> uc3
   bank --> uc3
-  uc3 -. include .-> uc3a
+  uc3 -. include .-> uc4
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
   classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   class pa source
   class bank external
-  class uc3,uc3a artifact
+  class uc3,uc4 artifact
 ```
 
 ![UC-3 — Import a bank statement (CSV)](diagrams/UC-3.png)

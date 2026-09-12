@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Marketplace hosting the SEI architecture methodology plugin.",
-    "version": "1.4.0"
+    "version": "1.5.0"
   },
   "plugins": [
     {
       "name": "sei-architecture-methodology",
       "source": "./",
       "description": "Automates the SEI architecture practice: architectural drivers, quality attribute scenarios, QAW, ADD 3.0, ATAM, Views-and-Beyond documentation, and clean UML / C4 diagrams rendered to PNG.",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "keywords": ["architecture", "sei", "quality-attributes", "add", "atam", "c4-model", "uml", "views-and-beyond"]
     }
   ]

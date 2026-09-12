@@ -1,0 +1,15 @@
+flowchart LR
+  %% Use case diagram — UC-4 Categorise transaction
+  pa(["fa:fa-user Registered user"])
+  subgraph sys["System: Personal Finance Tracker"]
+    uc4("UC-4 Categorise transaction")
+  end
+  pa --> uc4
+  note["Included by UC-1 (Record a transaction)<br/>and UC-3 (Import a bank statement)"]
+  uc4 -.- note
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef note      fill:#FBF7EE,stroke:#B07D3B,color:#1F2933,stroke-dasharray: 3 3;
+  class pa source
+  class uc4 artifact
+  class note note

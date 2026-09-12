@@ -1,0 +1,15 @@
+@startuml UC-4
+!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+skinparam actorStyle awesome
+left to right direction
+title Use case — UC-4 Categorise transaction
+actor "Registered user" as pa
+rectangle "Personal Finance Tracker" {
+  usecase "UC-4\nCategorise transaction" as uc4
+}
+pa --> uc4
+note right of uc4
+  Included by UC-1 (Record a transaction)
+  and UC-3 (Import a bank statement)
+end note
+@enduml

@@ -3,7 +3,8 @@
 - **Scope**: Personal Finance Tracker
 - **Level**: user goal
 - **Primary actor**: Registered user
-- **Supporting actors**: Bank Import API
+- **Supporting actors**: Bank Import API (system actor — drawn as a `«system»` rectangle, not a
+  stick figure, in the use case diagram)
 - **Trigger**: The user uploads a CSV file
 - **Preconditions**: The user is authenticated
 - **Postconditions**: the requested change is persisted and the dashboard reflects it
@@ -25,7 +26,7 @@
 
 ## Architectural significance
 
-- **Drivers exercised**: Bulk write path; `<<include>>`s categorisation; the first candidate for asynchronous processing (PQA-2).
+- **Drivers exercised**: Bulk write path; `<<include>>`s [UC-4](UC-4.md) (categorisation); the first candidate for asynchronous processing (PQA-2).
 
 ## Related drivers
 

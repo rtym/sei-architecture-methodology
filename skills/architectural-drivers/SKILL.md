@@ -143,7 +143,11 @@ significance, related drivers.
    diagram* pattern (Mermaid convention, or PlantUML if the user prefers) — the primary actor and
    any supporting actors **outside** the system boundary, the use case **inside**, `<<include>>`
    for always-invoked sub-behaviour and `<<extend>>` for conditional sub-behaviour (dashed,
-   labelled).
+   labelled). A supporting actor that is a **system** (a third-party API, a batch job, another
+   service — not a person or role) is **not** a stick figure: draw it as a `«system»`-stereotyped
+   rectangle instead (`rectangle "<Name>" <<system>>` in PlantUML; the `«system»` box convention
+   in Mermaid) — it is still outside the boundary and still connects to the use case with an
+   ordinary association.
 2. Show the source in the conversation, render to `use-cases/diagrams/UC-<n>.png`, `Read` the PNG
    and visually cross-verify (actors outside, use case inside, include/extend dashed, no
    avoidable crossings), then embed it per the `sei-diagrams` *Embedding in Markdown* rule
@@ -152,6 +156,17 @@ significance, related drivers.
 Also produce one **overview** use case diagram per actor group / subsystem
 (`use-cases/diagrams/overview-<group>.png`, ≤ ~10 use cases) and reference it from `README.md`
 and `use-cases/README.md`.
+
+**Every use case node that appears in any diagram carries exactly one `UC-<n>` code, and that code
+is described in its own `UC-<n>.md`.** This applies to an `<<include>>`/`<<extend>>` target just as
+much as to a top-level use case — never draw an unlabelled bubble, and never let the same shared
+sub-behaviour carry different codes in different diagrams (e.g. `UC-1a` in UC-1's diagram but
+`UC-3a` in UC-3's diagram for the same "categorise transaction" flow). If a sub-behaviour is
+`<<include>>`d by more than one parent use case, give it its own independent top-level code (its
+own `UC-<n>.md`, its own small diagram) rather than a `<parent>a`-style suffix, since a suffix
+implies single-parent ownership it doesn't have; use the `<parent>a` suffix only for a sub-flow
+private to one parent. Every overview diagram must reuse the same codes as the individual `UC-<n>`
+diagrams — an overview is not the place to introduce a fresh, undocumented label.
 
 ### Step 4 — Constraints → `constraints/CON-<n>.md`
 One file per constraint from `templates/constraint.md`: type (business / technical / regulatory),

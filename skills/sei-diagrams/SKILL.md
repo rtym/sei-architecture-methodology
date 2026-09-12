@@ -265,10 +265,10 @@ ENV  ..> ART
 ## Use case diagram
 
 A use case diagram is a **UML diagram** — draw it with the **UML-specific drawing components**:
-**stick-figure actors**, **ellipse (oval) use cases**, a **system boundary rectangle**, solid
-association lines (actor ↔ use case), and dashed `..>` dependency arrows stereotyped
-`<<include>>` / `<<extend>>` (extend points from the extension to the base). Mermaid's `flowchart`
-primitives (stadiums, rounded rectangles) are **not** UML symbols, so:
+**stick-figure actors** for human/role actors, **ellipse (oval) use cases**, a **system boundary
+rectangle**, solid association lines (actor ↔ use case), and dashed `..>` dependency arrows
+stereotyped `<<include>>` / `<<extend>>` (extend points from the extension to the base). Mermaid's
+`flowchart` primitives (stadiums, rounded rectangles) are **not** UML symbols, so:
 
 - **Recommended: PlantUML** — it has the real UML glyphs. This is the default for use case diagrams.
 - **Fallback: Mermaid flowchart convention** — only when Java is unavailable and the user accepts
@@ -276,6 +276,15 @@ primitives (stadiums, rounded rectangles) are **not** UML symbols, so:
   **`fa:fa-user` person icon** in the label (`([fa:fa-user Registered user])`), **system actors**
   as a `«system»` rectangle, both **outside** the boundary `subgraph`; use cases `( )` inside;
   `-. include .->` / `-. extend .->` dashed.
+
+**Systems are not actors — don't draw them as stick figures.** An actor in UML is a *role*, and a
+role played by an external system (a third-party API, a batch job, another service) is still
+drawn distinctly from a human role: give it a `«system»`-stereotyped **rectangle**, not the
+person glyph. In PlantUML that's `rectangle "<Name>" <<system>> as alias` used in place of
+`actor "<Name>" as alias`; the rectangle still participates in ordinary associations
+(`alias --> usecaseAlias`) and sits outside the system boundary exactly like an actor would. In
+the Mermaid fallback it's the `["«system»<br/>Name"]` box already shown above. Reserve the
+stick figure for a human role (or an organizational role played by a person).
 
 One diagram per **use case** (in its `UC-<n>.md`) plus one **overview** diagram per actor group /
 subsystem (≤ ~10 use cases).
@@ -288,7 +297,7 @@ subsystem (≤ ~10 use cases).
 skinparam actorStyle awesome
 left to right direction
 actor "Registered user" as user
-actor "Bank Import API" as bank
+rectangle "Bank Import API" <<system>> as bank
 rectangle "Personal Finance Tracker" {
   usecase "UC-1\nRecord transaction" as uc1
   usecase "UC-2\nCategorise transaction" as uc2

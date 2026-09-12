@@ -25,7 +25,7 @@
 
 ## Architectural significance
 
-- **Drivers exercised**: Dominates write load; sits on the p95 latency path (PQA-1); every modifiability change touches it (MQA-1).
+- **Drivers exercised**: Dominates write load; sits on the p95 latency path (PQA-1); every modifiability change touches it (MQA-1); `<<include>>`s [UC-4](UC-4.md) (categorisation).
 
 ## Related drivers
 
@@ -43,14 +43,14 @@ flowchart LR
   pa(["fa:fa-user Registered user"])
   subgraph sys["System: Personal Finance Tracker"]
     uc1("UC-1 Record a transaction")
-    uc1a("UC-1a Categorise transaction")
+    uc4("UC-4 Categorise transaction")
   end
   pa --> uc1
-  uc1 -. include .-> uc1a
+  uc1 -. include .-> uc4
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   class pa source
-  class uc1,uc1a artifact
+  class uc1,uc4 artifact
 ```
 
 ![UC-1 — Record a transaction](diagrams/UC-1.png)

@@ -6,8 +6,8 @@ title Use case — UC-1 Record a transaction
 actor "Registered user" as pa
 rectangle "Personal Finance Tracker" {
   usecase "UC-1\nRecord a transaction" as uc1
-  usecase "UC-1a\nCategorise transaction" as uc1a
+  usecase "UC-4\nCategorise transaction" as uc4
 }
 pa --> uc1
-uc1 ..> uc1a : <<include>>
+uc1 ..> uc4 : <<include>>
 @enduml

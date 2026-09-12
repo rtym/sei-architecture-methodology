@@ -6,17 +6,17 @@ flowchart LR
     uc1("UC-1 Record a transaction")
     uc2("UC-2 View the monthly dashboard")
     uc3("UC-3 Import a bank statement")
-    cat("Categorise transaction")
+    uc4("UC-4 Categorise transaction")
   end
   user --> uc1
   user --> uc2
   user --> uc3
   bank --> uc3
-  uc1 -. include .-> cat
-  uc3 -. include .-> cat
+  uc1 -. include .-> uc4
+  uc3 -. include .-> uc4
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
   classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   class user source
   class bank external
-  class uc1,uc2,uc3,cat artifact
+  class uc1,uc2,uc3,uc4 artifact

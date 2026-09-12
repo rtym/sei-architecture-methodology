@@ -9,6 +9,7 @@ PlantUML `usecase` — this is the PlantUML tree).
 | [UC-1](UC-1.md) | Record a transaction | Registered user | high | [UC-1](diagrams/UC-1.png) | in design |
 | [UC-2](UC-2.md) | View the monthly dashboard | Registered user | high | [UC-2](diagrams/UC-2.png) | open |
 | [UC-3](UC-3.md) | Import a bank statement (CSV) | Registered user | medium | [UC-3](diagrams/UC-3.png) | open |
+| [UC-4](UC-4.md) | Categorise transaction (included by UC-1, UC-3) | Registered user | high | [UC-4](diagrams/UC-4.png) | in design |
 
 Overview diagram (all core use cases): [overview-core](diagrams/overview-core.png)
 

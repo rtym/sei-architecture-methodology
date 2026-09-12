@@ -35,9 +35,12 @@
 ## Use case diagram
 
 A **proper UML use case diagram for this use case**, drawn with **UML-specific components** —
-stick-figure actors **outside** the system boundary rectangle, ellipse use cases **inside** it,
-solid association lines, dashed `..>` dependencies stereotyped `<<include>>` (always) /
-`<<extend>>` (conditional). Rendered to `diagrams/UC-<n>.png` and visually cross-verified.
+human actors as stick figures and system actors as a `«system»`-stereotyped rectangle, both
+**outside** the system boundary rectangle, ellipse use cases **inside** it, solid association
+lines, dashed `..>` dependencies stereotyped `<<include>>` (always) / `<<extend>>` (conditional).
+A supporting actor that is a system (an external API, service, or batch job — anything without a
+goal of its own) is **not** an `actor`: model it as a `rectangle "<name>" <<system>>` so it reads
+as a system, not a person. Rendered to `diagrams/UC-<n>.png` and visually cross-verified.
 
 **PlantUML (UML notation — default):**
 
@@ -47,7 +50,7 @@ solid association lines, dashed `..>` dependencies stereotyped `<<include>>` (al
 skinparam actorStyle awesome
 left to right direction
 actor "<Primary actor>" as actor1
-actor "<Supporting actor / system>" as supp
+rectangle "<Supporting system>" <<system>> as supp
 rectangle "<system name>" {
   usecase "UC-<n>\n<name>" as uc
   usecase "UC-<n>a\n<included sub-use-case>" as sub
@@ -82,7 +85,14 @@ flowchart LR
   class uc,sub artifact
 ```
 
-For a human primary actor use `fa:fa-user` (a person glyph); for a system/API supporting actor
-use the `«system»` rectangle.
+For a human actor use `fa:fa-user` (a person glyph) in Mermaid / a stick figure (`actor`) in
+PlantUML; for a system/API supporting actor use the `«system»` rectangle in both — never a stick
+figure, since a system is not a person.
+
+The `UC-<n>a` suffix on the included sub-use-case above is only correct when that sub-behaviour is
+private to **this** use case. If it is `<<include>>`d by more than one parent use case, it is not a
+private sub-flow — give it its own top-level `UC-<m>.md` and its own code, and reference that same
+code (never a different per-parent suffix) in every diagram that includes it, including any
+overview diagram.
 
 <!-- changed <YYYY-MM-DD>: <what and why> -->
