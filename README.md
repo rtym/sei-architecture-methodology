@@ -73,6 +73,33 @@ claude plugin install sei-architecture-methodology@sei-architecture-methodology
 Open this folder as your project in Claude Code — the `.claude/commands/*` and the skills are
 picked up directly. Good for hacking on the plugin itself.
 
+### Auto-enable for a team
+
+For a *consuming* project (not this repo) where you want the plugin to load automatically for
+everyone who clones it — no one has to type `/plugin` — commit this to that project's
+`.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "sei": { "source": { "source": "github", "repo": "rtym/sei-architecture-methodology" } }
+  },
+  "enabledPlugins": ["sei-architecture-methodology@sei"]
+}
+```
+
+Anyone who clones that project and trusts the folder gets the marketplace registered and the
+plugin enabled with zero manual steps.
+
+### Discoverability & trust
+
+There is no central, curated Anthropic app-store for plugins — "submitting to a marketplace" is
+just publishing `.claude-plugin/marketplace.json` in a repo. Being public on GitHub doesn't add it
+to any searchable directory: people only find it if you point them at `rtym/sei-architecture-methodology`
+(this README, a docs link, word of mouth). Installing runs the plugin's skills/commands with
+whatever permissions the user's Claude Code session grants — same trust model as running any
+third-party script — and Anthropic doesn't track installs or review the code beforehand.
+
 ### One-time diagram renderer setup
 
 After the plugin is installed, from the plugin directory run:
