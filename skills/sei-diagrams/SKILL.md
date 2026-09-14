@@ -6,7 +6,7 @@ description: >-
   /sei-diagram, asks to draw / render / export a diagram to PNG, or when any other SEI skill needs a
   context / container / component / sequence / deployment / class / state / quality-attribute-
   scenario diagram.
-version: 1.0.0
+version: 1.1.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
@@ -133,9 +133,9 @@ Both satisfy the principles above — pick per the user's notation choice:
   (`Person()`, `System()`, `Container()`, `Component()`, `Rel()`, `System_Boundary()`,
   `Deployment_Node()`). **The C4-PlantUML macro set is vendored** under
   `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/c4/` (`C4.puml`, `C4_Context.puml`, `C4_Container.puml`, `C4_Component.puml`,
-  `C4_Deployment.puml`), so it renders **offline** — `!include` it by **relative path**, never
+  `C4_Deployment.puml`), so it renders **offline** — `!include` it as **`c4/<file>.puml`**, never
   `<C4/…>` (which fetches from the network). Follow the C4 include with
-  `!include …/c4/sei-c4-palette.puml` so the C4 elements use the SEI palette (the
+  `!include c4/sei-c4-palette.puml` so the C4 elements use the SEI palette (the
   non-C4 `plantuml-theme.puml` does not restyle C4 macros). Needs Java
   (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh` explains how to install it). Use when the user wants canonical
   C4 notation.
@@ -180,12 +180,13 @@ relationship with an action phrase. For a **deployment** diagram, nest `subgraph
 region → cluster → node and place containers in the leaf `subgraph`.
 
 Same diagram in **C4-PlantUML** (canonical notation; render with `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh`).
-Adjust the `../…` depth so the two includes resolve from the `.puml` file's location:
+Write the includes exactly as shown — **never** with `../` — the renderer puts the skill's
+`assets/` on PlantUML's include path, so the same two lines resolve from any directory:
 
 ```plantuml
 @startuml container
-!include ../../skills/sei-diagrams/assets/c4/C4_Container.puml
-!include ../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+!include c4/C4_Container.puml
+!include c4/sei-c4-palette.puml
 LAYOUT_TOP_DOWN()
 title Container diagram — <SystemName>
 Person(user, "User role", "how they access")
@@ -204,11 +205,11 @@ Rel(api, ext, "Sends notifications", "SMTP")
 @enduml
 ```
 
-**Deployment** in C4-PlantUML: `!include …/c4/C4_Deployment.puml`, then nest
+**Deployment** in C4-PlantUML: `!include c4/C4_Deployment.puml`, then nest
 `Deployment_Node(id, "name", "type") { … }` for region → platform → node, with `Container` /
 `ContainerDb` in the leaf nodes.
 
-**Sequence** in PlantUML: `!include …/assets/plantuml-theme.puml`, then `autonumber`, declare
+**Sequence** in PlantUML: `!include plantuml-theme.puml`, then `autonumber`, declare
 all `participant`s at the top, `->` for calls and `-->` for returns, `alt` / `group` for
 branches — one message per line, no `;` in message text.
 
@@ -244,7 +245,7 @@ direction`; do **not** add `skinparam linetype ortho` here (it forces the row ve
 
 ```plantuml
 @startuml scenario-PQA-1
-!include ../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 left to right direction
 hide stereotype
 title Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour
@@ -293,7 +294,7 @@ subsystem (≤ ~10 use cases).
 
 ```plantuml
 @startuml
-!include ../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 skinparam actorStyle awesome
 left to right direction
 actor "Registered user" as user
@@ -485,8 +486,14 @@ It also extracts and renders every ```mermaid block from a `.md` file (`<mdname>
 
 **PlantUML** (only if the user needs full UML): `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh
 architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the script prints the
-`brew install openjdk` hint. `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/plantuml-theme.puml` carries the matching palette; `!include`
-it at the top of each `.puml`.
+`brew install openjdk` hint. `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/plantuml-theme.puml` carries the matching palette; put
+`!include plantuml-theme.puml` at the top of each `.puml`.
+
+> **Include paths are never relative to the `.puml` file.** `render-plantuml.sh` exports
+> `PLANTUML_INCLUDE_PATH` pointing at the skill's `assets/`, so `!include plantuml-theme.puml`,
+> `!include c4/C4_Container.puml` and `!include c4/sei-c4-palette.puml` resolve from anywhere —
+> including `architecture/diagrams/` in the user's project, which no number of `../` can walk
+> back to an installed plugin. A `!include` containing `../` is always a bug.
 
 ## Rules
 

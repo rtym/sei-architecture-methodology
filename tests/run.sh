@@ -67,5 +67,68 @@ else
   echo "(skipped: mermaid CLI not installed — run: bash skills/sei-diagrams/scripts/setup.sh)"
 fi
 
+step "8. PlantUML render smoke test (from OUTSIDE the plugin)"
+# This one must run from a directory that is NOT inside the plugin: the documented includes
+# resolve through PLANTUML_INCLUDE_PATH, and a '../'-traversal regression would still pass if
+# we rendered from within this repo (where ../../skills/... happens to exist).
+if [ "$QUICK" = "1" ]; then
+  echo "(skipped: --quick)"
+elif ! command -v java >/dev/null 2>&1 && [ -z "${PLANTUML_JAR:-}" ]; then
+  echo "(skipped: no Java — install a JRE to exercise the PlantUML renderer)"
+elif ! command -v plantuml >/dev/null 2>&1 && [ -z "${PLANTUML_JAR:-}" ]; then
+  echo "(skipped: plantuml not installed — brew install plantuml / apt-get install plantuml)"
+else
+  tmp="$(mktemp -d)"
+  mkdir -p "$tmp/architecture/diagrams"
+
+  # a) the documented C4 include pair resolves and produces a real PNG
+  cat > "$tmp/architecture/diagrams/context.puml" <<'EOF'
+@startuml context
+!include c4/C4_Context.puml
+!include c4/sei-c4-palette.puml
+title Context diagram — Smoke
+Person(user, "User", "web")
+System(sys, "System", "does things")
+Rel(user, sys, "Uses over HTTPS")
+@enduml
+EOF
+  # b) the plain theme include resolves too
+  cat > "$tmp/architecture/diagrams/seq.puml" <<'EOF'
+@startuml seq
+!include plantuml-theme.puml
+title Sequence — Smoke
+autonumber
+participant "Web" as w
+participant "API" as a
+w -> a: Request
+a --> w: Response
+@enduml
+EOF
+  # c) an unresolvable include must FAIL loudly and publish no PNG
+  cat > "$tmp/architecture/diagrams/bad.puml" <<'EOF'
+@startuml bad
+!include ../../skills/sei-diagrams/assets/plantuml-theme.puml
+title Should not render
+@enduml
+EOF
+
+  ( cd "$tmp" && bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" \
+      architecture/diagrams/context.puml architecture/diagrams/seq.puml ) >/dev/null 2>&1 \
+    && [ -s "$tmp/architecture/diagrams/context.png" ] \
+    && [ -s "$tmp/architecture/diagrams/seq.png" ] \
+    && ok "render-plantuml.sh -> PNG from a user project" \
+    || bad "render-plantuml.sh -> PNG from a user project"
+
+  if ( cd "$tmp" && bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" \
+         architecture/diagrams/bad.puml ) >/dev/null 2>&1; then
+    bad "render-plantuml.sh should exit non-zero on an unresolvable !include"
+  elif [ -e "$tmp/architecture/diagrams/bad.png" ]; then
+    bad "render-plantuml.sh published an error image for a failed render"
+  else
+    ok "render-plantuml.sh fails loudly and publishes nothing on a bad !include"
+  fi
+  rm -rf "$tmp"
+fi
+
 printf '\n===============================\n'
 if [ "$fails" -eq 0 ]; then echo "ALL PASS"; exit 0; else echo "$fails FAILURE(S)"; exit 1; fi

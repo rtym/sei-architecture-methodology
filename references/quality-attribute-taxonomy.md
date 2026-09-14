@@ -52,17 +52,17 @@ recharge).
 **General scenario** = attribute-level, system-independent template (the "portions" menu).
 **Concrete scenario** = filled in for this system. It is far easier for a stakeholder to
 *tailor a general scenario* than to invent one from thin air — so brainstorm concrete scenarios
-by walking the general-scenario portions (`references/quality-attribute-scenarios.md`).
+by walking the general-scenario portions (`${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-scenarios.md`).
 
 ## Achieving quality attributes: tactics and patterns
 
 - A **tactic** is a design decision that influences **one** quality-attribute response — it
   directly affects the system's response to a stimulus. Per-attribute lists:
-  `references/tactics-catalog.md`.
+  `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`.
 - An **architectural pattern** is a proven solution to a recurring design problem, specified by
   the roles, responsibilities, relationships, and collaboration of its elements. A pattern
   usually affects **more than one** QA and **bundles several tactics** — so patterns frequently
-  *make* QA tradeoffs. Catalog: `references/architecture-patterns.md`.
+  *make* QA tradeoffs. Catalog: `${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md`.
 - **Refine tactics to be concrete**: *schedule resources* → SJF / round-robin / fixed-priority;
   *use an intermediary* → layer / broker / proxy / tier. Application is context-dependent
   (*manage sampling rate* fits some real-time systems, is wrong for stock trading).
@@ -75,11 +75,11 @@ by walking the general-scenario portions (`references/quality-attribute-scenario
 - **Design and process both matter.** A great security architecture is worthless if staff fall
   for phishing. QAs also deteriorate over time through well-intentioned local decisions
   ("death by a thousand cuts" → **architecture debt**); reverse it by **refactoring
-  architectural elements**, not just code (`references/architecture-in-the-lifecycle.md`).
+  architectural elements**, not just code (`${CLAUDE_PLUGIN_ROOT}/references/architecture-in-the-lifecycle.md`).
 
 ### The tactics-based questionnaire — the four-step procedure
 
-Per tactic question (`references/tactics-catalog.md` supplies the questions per QA):
+Per tactic question (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md` supplies the questions per QA):
 
 1. **Supported?** — mark the column `Y` / `N`.
 2. **Design decisions and location** — if `Y`, the specific decisions made to realise the
@@ -184,8 +184,8 @@ concrete and put a **number with a unit** (and, for time, a percentile) on the r
 ## Tactics and the tactics-based questionnaire
 
 Once an attribute matters, the design levers for it are **tactics** — the per-attribute lists
-are in `references/tactics-catalog.md`, and the patterns that bundle them in
-`references/architecture-patterns.md`. When *analysing* an existing architecture (ATAM Step 6,
+are in `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`, and the patterns that bundle them in
+`${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md`. When *analysing* an existing architecture (ATAM Step 6,
 ADD Step 7, or a design review), walk the attribute's **tactics-based questionnaire**: for each
 tactic, ask "is it used? where? how well is it implemented? what is the risk if it is missing or
 weak?" The gaps become risks; the deliberate omissions become non-risks with a stated

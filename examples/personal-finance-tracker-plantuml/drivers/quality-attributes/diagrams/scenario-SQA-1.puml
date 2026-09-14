@@ -1,5 +1,5 @@
 @startuml scenario-SQA-1
-!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 left to right direction
 hide stereotype
 title Quality attribute scenario — SQA-1 — Security / confidentiality

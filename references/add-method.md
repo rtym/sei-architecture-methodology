@@ -62,13 +62,13 @@ brownfield work, the existing architecture is also an input. Getting the drivers
    concept catalog** — the menu you choose from, coarse to fine:
    - **Reference architectures** — domain-proven whole-system structures (web app 3-tier,
      microservices, event-driven / streaming, pipe-and-filter / batch, serverless, modular
-     monolith). See `references/architecture-patterns.md` (last section).
+     monolith). See `${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md` (last section).
    - **Deployment patterns** — blue/green, canary, sidecar, service mesh, feature toggle.
    - **Architectural & design patterns** — layers, ports & adapters, CQRS, saga, broker,
      publish–subscribe, gateway, strangler fig, anti-corruption layer, circuit breaker,
-     bulkhead, cache-aside, load balancer. Catalog: `references/architecture-patterns.md`.
+     bulkhead, cache-aside, load balancer. Catalog: `${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md`.
    - **Tactics** — the fine-grained decisions below patterns, one per quality-attribute
-     response. Full per-attribute lists: `references/tactics-catalog.md`.
+     response. Full per-attribute lists: `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`.
    - **Externally developed components** — frameworks, middleware, cloud services, SaaS,
      libraries; a "buy/adopt vs build" decision with its own tradeoffs (fit, lock-in, control).
 
@@ -89,7 +89,7 @@ brownfield work, the existing architecture is also an input. Getting the drivers
    and the alternatives rejected.
 7. **Perform analysis of the current design and review the iteration goal.** For each selected
    driver: satisfied / partially / not addressed, with notes on risks and assumptions. Use the
-   **tactics-based questionnaire** for each attribute (`references/tactics-catalog.md`) as the
+   **tactics-based questionnaire** for each attribute (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`) as the
    checklist — for every relevant tactic ask "is it used, where, and what is the risk if not?".
    Prefer a **peer** to do (or help with) the analysis — a second person won't share your
    assumptions and will have a different experience base. Then review whether enough design was
@@ -103,7 +103,7 @@ brownfield work, the existing architecture is also an input. Getting the drivers
 
 **Identify** candidates three ways, usually in combination:
 - **best-practice catalogs** — patterns, reference architectures, tactic taxonomies, framework
-  docs (`references/architecture-patterns.md`, `references/tactics-catalog.md`); many
+  docs (`${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md`, `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`); many
   alternatives, but vetting them costs time;
 - **your own experience** — fast and confident for a familiar system type; risks reusing the
   same hammer;
@@ -229,7 +229,7 @@ round** when a majority — or at least the highest-priority drivers — are *Co
 ## Analysis during design
 
 Design and analysis interleave — don't wait for a formal ATAM. Cheap in-iteration checks
-(see `references/design-reviews.md`):
+(see `${CLAUDE_PLUGIN_ROOT}/references/design-reviews.md`):
 - **Tactics-based analysis** — walk the attribute's tactic list as a questionnaire.
 - **Reflective questions** — the architect asks themselves the "have I…?" questions for the
   iteration's drivers before declaring the goal met.

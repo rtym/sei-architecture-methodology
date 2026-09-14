@@ -113,8 +113,26 @@ bash skills/sei-diagrams/scripts/setup.sh
 
 Installs `@mermaid-js/mermaid-cli` (+ `@mermaid-js/layout-elk`) locally under the skill and
 downloads a headless Chromium once (~150 MB). Needs Node 18+. **PlantUML** (used for true-UML
-use-case diagrams and canonical C4) needs a Java runtime — `brew install openjdk`;
+use-case diagrams and canonical C4) needs a Java runtime plus PlantUML itself —
+`brew install openjdk plantuml`, or `sudo apt-get install plantuml`;
 `scripts/render-plantuml.sh` auto-detects a keg-only Homebrew JDK.
+
+#### PlantUML includes
+
+`render-plantuml.sh` puts the skill's `assets/` directory on PlantUML's include path
+(`PLANTUML_INCLUDE_PATH`), so every `.puml` writes its includes as **bare, assets-relative
+names** — never with `../`:
+
+```
+!include plantuml-theme.puml        ' non-C4 UML: palette + skinparams
+!include c4/C4_Container.puml       ' canonical C4 macros (vendored, offline)
+!include c4/sei-c4-palette.puml     ' SEI palette overlay for the C4 macros
+```
+
+This is what makes the diagrams portable. Your `.puml` files live in *your* project under
+`architecture/diagrams/`, while the plugin lives under `~/.claude/plugins/…` — no number of
+`../` walks from one to the other. A `!include` containing `../` is a bug, and
+`tests/validate.py --self` rejects it.
 
 ---
 
@@ -317,7 +335,9 @@ sei-architecture-methodology/
 │   ├── architecture-documentation/
 │   └── sei-diagrams/
 │       ├── assets/                    # palette + theme files (mermaid + plantuml)
-│       │   └── c4/                    #   vendored C4-PlantUML 2.10.0 + sei-c4-palette.puml (offline)
+│       │   └── c4/                    #   vendored C4-PlantUML 2.10.0 (MIT) + sei-c4-palette.puml (offline)
+│       │       ├── LICENSE            #     upstream MIT notice, verbatim
+│       │       └── README.md          #     provenance: upstream, pinned version, unmodified
 │       └── scripts/                   # setup.sh, render.sh, render-plantuml.sh
 ├── references/                        # deep method notes + tactics catalog + patterns + checklist
 ├── templates/                         # blank artifact templates (one per driver kind, per report, per view)
@@ -327,10 +347,12 @@ sei-architecture-methodology/
 ├── examples/
 │   ├── personal-finance-tracker-mermaid/    # the full worked example, every diagram in Mermaid
 │   └── personal-finance-tracker-plantuml/   # the same example, every diagram in PlantUML / C4-PlantUML
-└── tests/
-    ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability)
-    ├── test_mdreport.py               # mdreport unit tests
-    └── run.sh                         # full suite
+├── tests/
+│   ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability)
+│   ├── test_mdreport.py               # mdreport unit tests
+│   └── run.sh                         # full suite
+├── LICENSE                            # Apache-2.0 (provisional — see Licensing)
+└── NOTICE                             # third-party attribution (vendored C4-PlantUML, MIT)
 ```
 
 ### The drivers directory
@@ -360,10 +382,14 @@ bash tests/run.sh --quick    # skip the render smoke test
 ```
 
 Checks: `plugin.json` parses; every shell script parses; every skill has valid front-matter and
-is registered; every commands file delegates to a `SKILL.md`; every embedded Mermaid diagram in
-the shipped docs and examples obeys the ten rules; the deprecated flat `QAS-<n>` ID never
-appears; `mdreport.py` converts a representative document correctly; the example artifacts
-validate; a diagram renders to PNG.
+is registered; every commands file delegates to a `SKILL.md`; every cross-file path in a
+command, skill, template or reference is `${CLAUDE_PLUGIN_ROOT}`-anchored; every `!include`
+resolves through the renderer's include path rather than `../` traversal; every embedded Mermaid
+diagram in the shipped docs and examples obeys the ten rules; the deprecated flat `QAS-<n>` ID
+never appears; the license actually grants something and `LICENSE` / `plugin.json` / `NOTICE`
+agree; the vendored C4-PlantUML ships its MIT notice and its pinned version matches everywhere
+it is asserted; `mdreport.py` converts a representative document correctly; the example
+artifacts validate; a Mermaid diagram and a PlantUML diagram each render to PNG.
 
 Validate produced artifacts in a target project:
 
@@ -374,16 +400,22 @@ python path/to/sei-architecture-methodology/tests/validate.py architecture/**/*.
 ### Continuous integration
 
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml) runs on every push to `main`, on
-pull requests, and on manual dispatch, as two jobs:
+pull requests, and on manual dispatch, as three jobs:
 
 | Job | What it runs | Needs |
 |-----|--------------|-------|
 | `test suite (no renderer)` | `tests/run.sh --quick` — everything but the render smoke test | Python only; finishes in seconds |
 | `full suite (Mermaid renderer)` | `setup.sh` then the complete `tests/run.sh` | Node 20 + a headless Chromium (cached between runs) |
+| `full suite (PlantUML renderer)` | the complete `tests/run.sh`, then renders every shipped example `.puml` | PlantUML + a JRE (apt) |
 
-The split keeps feedback fast: only the second job pays the ~150 MB Chromium download. Because
-`tests/run.sh` *skips* the render step without failing when `mmdc` is absent, the render job
-asserts the binary exists first — otherwise it could report success having rendered nothing.
+The split keeps feedback fast — only the Mermaid job pays the ~150 MB Chromium download — and a
+failure names which renderer broke. Because `tests/run.sh` *skips* a render step without failing
+when its toolchain is absent, both renderer jobs assert their binary exists first; otherwise
+either could report success having rendered nothing.
+
+The PlantUML smoke test deliberately renders from a temp directory **outside** the repository.
+Rendering from inside it would pass even with broken includes, because a `../`-traversal path
+happens to resolve here — and nowhere else.
 
 ---
 
@@ -406,3 +438,32 @@ Encodes the public SEI body of knowledge:
 - Clements et al. — *Documenting Software Architectures: Views and Beyond*, 2nd ed.
 - SEI technical reports: ATAM (CMU/SEI-2000-TR-004), QAW (CMU/SEI-2003-TR-016), ADD (CMU/SEI-2006-TR-023).
 - ISO/IEC 25010:2023 (product quality model); ISO/IEC/IEEE 42010 (architecture description).
+
+---
+
+## Licensing
+
+This project is licensed under the **Apache License 2.0** — see [`LICENSE`](LICENSE).
+
+> **Status: provisional.** Apache-2.0 is applied so the plugin can actually be installed and
+> evaluated; the author may release *future* versions under a different license. That does not
+> qualify the grant: each released version stays under the license it shipped with.
+
+### Third-party components
+
+This repository redistributes one third-party component, under its own license:
+
+| Component | Version | License | Location |
+|-----------|---------|---------|----------|
+| [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML) | v2.10.0 (unmodified) | MIT — © 2018 Ricardo Niepel | [`skills/sei-diagrams/assets/c4/`](skills/sei-diagrams/assets/c4/README.md) |
+
+The five vendored `C4*.puml` files are byte-identical to the upstream `v2.10.0` tag and are
+covered by [their own MIT license](skills/sei-diagrams/assets/c4/LICENSE), **not** by this
+repository's Apache-2.0 license. They are vendored rather than fetched so diagram rendering is
+offline, reproducible and version-pinned. `sei-c4-palette.puml` in that directory is this
+project's own work and is Apache-2.0 like the rest of the repo.
+
+The SEI body of knowledge this project encodes (see **Sources** above) remains the copyright of
+its respective authors and publishers; the license here covers only this repository's own text,
+templates and code. *ATAM* and *Architecture Tradeoff Analysis Method* are service marks of
+Carnegie Mellon University, used here nominatively to name the method.

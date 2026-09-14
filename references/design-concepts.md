@@ -10,8 +10,8 @@ you identify, adapt, and combine existing solutions rather than invent.
 |----------|------------|---------------------------|
 | **Reference architectures** | a domain-proven blueprint for the whole system (3-tier web app, microservices, event-driven/streaming, pipe-and-filter/batch, serverless, modular monolith, big-data lambda, service mesh) | earliest iterations — "what is the overall structure?" |
 | **Deployment patterns** | how software is packaged and rolled out (blue/green, canary, rolling, sidecar, service mesh, feature toggle) | early — alongside the reference architecture |
-| **Architecture & design patterns** | a proven arrangement of a few elements solving a recurring problem (layers, ports & adapters, CQRS, saga, broker, publish-subscribe, gateway, circuit breaker, bulkhead, cache-aside, strangler fig, anti-corruption layer) | throughout — see `references/architecture-patterns.md` |
-| **Tactics** | a single design decision affecting one quality-attribute response (the level below patterns; a pattern usually bundles several) | throughout — full lists in `references/tactics-catalog.md` |
+| **Architecture & design patterns** | a proven arrangement of a few elements solving a recurring problem (layers, ports & adapters, CQRS, saga, broker, publish-subscribe, gateway, circuit breaker, bulkhead, cache-aside, strangler fig, anti-corruption layer) | throughout — see `${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md` |
+| **Tactics** | a single design decision affecting one quality-attribute response (the level below patterns; a pattern usually bundles several) | throughout — full lists in `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md` |
 | **Externally developed components** | frameworks, platforms, middleware, cloud services, SaaS, libraries you adopt rather than build | early for full-stack frameworks tied to the reference architecture; later for specific needs |
 
 To address one driver you often **combine** categories — e.g. a security driver may take a

@@ -1,5 +1,5 @@
 @startuml overview-core
-!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 skinparam actorStyle awesome
 left to right direction
 title Use case overview — Personal Finance Tracker (core)

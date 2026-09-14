@@ -1,5 +1,5 @@
 @startuml view-module-decomposition-01
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 skinparam linetype ortho
 title Module decomposition — Personal Finance Tracker API (layered; allowed-to-use is downward)
 rectangle "**edge layer**\nhttp — routing, request/response DTOs" as L1

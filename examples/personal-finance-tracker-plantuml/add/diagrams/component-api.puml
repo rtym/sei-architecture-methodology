@@ -1,6 +1,6 @@
 @startuml component-api
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Component.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+!include c4/C4_Component.puml
+!include c4/sei-c4-palette.puml
 LAYOUT_TOP_DOWN()
 title Component diagram — API Service (C4 level 3)
 Container(spa, "Web App", "React 18 / TS", "Sends REST requests")

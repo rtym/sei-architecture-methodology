@@ -8,7 +8,7 @@
 > The top aggregate file of `architecture/drivers/` (GitHub renders it on directory browse).
 > One file per driver lives under `business-goals/`, `use-cases/`, `constraints/`,
 > `quality-attributes/`, and each of those has its own small `README.md` index
-> (`templates/subdir-readme.md`). This file holds the ID legend, the traceability matrix, the
+> (`${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md`). This file holds the ID legend, the traceability matrix, the
 > coverage check, the prioritised list, and the change log. **Every path below is a working
 > relative Markdown link.**
 

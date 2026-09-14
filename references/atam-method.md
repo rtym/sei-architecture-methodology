@@ -114,7 +114,7 @@ throughput how high? ported to what and in how long?* Refine into concrete scena
 **tabular utility tree** (`Utility → QA → refinement → scenario`). Built by the **architect and
 the decision makers together**: the architect rates each scenario's **technical difficulty /
 risk** (H/M/L); the decision makers rate its **business importance** (H/M/L). See
-`references/architectural-drivers.md`.
+`${CLAUDE_PLUGIN_ROOT}/references/architectural-drivers.md`.
 
 **Step 6 — Analyze the architectural approaches.** Take the highest-ranked scenarios one at a
 time; the architect explains how the architecture supports each; questioners probe for the
@@ -127,7 +127,7 @@ answered, do a **back-of-the-envelope analysis** to see whether the decisions ar
 against the QA requirements. The analysis is **not** meant to be comprehensive — elicit just
 enough to link the decisions to the QA requirements. Use the analysis template below and, as the
 question bank, the **tactics-based questionnaire** for the relevant attribute
-(`references/tactics-catalog.md`).
+(`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`).
 
 **Hiatus** (~1 week) — the team summarises what it learned and interacts informally with the
 architect; a few more scenarios may be analysed and Phase-1 questions clarified.
@@ -260,7 +260,7 @@ Even lighter still — the **tactics-based questionnaire** (~1 hour per quality 
 tactic becomes a "Does the system support …?" question) — can be run solo by the architect for
 reflection, or as a short evaluator↔architect Q&A. It reveals design decisions taken *and not
 taken*, and the risks buried in them, very quickly. Also: reflective questions and a
-scenario-based design review (`references/design-reviews.md`).
+scenario-based design review (`${CLAUDE_PLUGIN_ROOT}/references/design-reviews.md`).
 
 ## After ATAM
 

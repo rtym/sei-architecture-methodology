@@ -1,5 +1,5 @@
 @startuml UC-4
-!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 skinparam actorStyle awesome
 left to right direction
 title Use case — UC-4 Categorise transaction
