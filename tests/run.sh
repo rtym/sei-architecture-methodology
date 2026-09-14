@@ -112,12 +112,26 @@ title Should not render
 @enduml
 EOF
 
-  ( cd "$tmp" && bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" \
-      architecture/diagrams/context.puml architecture/diagrams/seq.puml ) >/dev/null 2>&1 \
-    && [ -s "$tmp/architecture/diagrams/context.png" ] \
-    && [ -s "$tmp/architecture/diagrams/seq.png" ] \
-    && ok "render-plantuml.sh -> PNG from a user project" \
-    || bad "render-plantuml.sh -> PNG from a user project"
+  # Keep the renderer's own diagnostics: when this fails on a machine you cannot poke at
+  # (CI), the PlantUML error text is the only thing that says why.
+  if ( cd "$tmp" && bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" \
+         architecture/diagrams/context.puml architecture/diagrams/seq.puml ) >"$tmp/render.log" 2>&1 \
+       && [ -s "$tmp/architecture/diagrams/context.png" ] \
+       && [ -s "$tmp/architecture/diagrams/seq.png" ]; then
+    ok "render-plantuml.sh -> PNG from a user project"
+  else
+    bad "render-plantuml.sh -> PNG from a user project"
+    echo "--- renderer output ---"
+    sed 's/^/    /' "$tmp/render.log" || true
+    echo "--- toolchain ---"
+    echo "    plantuml: $(command -v plantuml || echo 'not on PATH')"
+    ( plantuml -version 2>&1 | head -3 | sed 's/^/    /' ) || true
+    echo "    dot: $(command -v dot || echo 'not on PATH')"
+    ( dot -V 2>&1 | sed 's/^/    /' ) || true
+    echo "    PLANTUML_INCLUDE_PATH=${PLANTUML_INCLUDE_PATH:-<unset>}"
+    ls -l "$tmp/architecture/diagrams/" | sed 's/^/    /'
+    echo "-----------------------"
+  fi
 
   if ( cd "$tmp" && bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" \
          architecture/diagrams/bad.puml ) >/dev/null 2>&1; then
