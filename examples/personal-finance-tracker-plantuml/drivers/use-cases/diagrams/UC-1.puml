@@ -1,5 +1,5 @@
 @startuml UC-1
-!include ../../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 skinparam actorStyle awesome
 left to right direction
 title Use case — UC-1 Record a transaction

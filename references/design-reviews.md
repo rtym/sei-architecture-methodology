@@ -7,7 +7,7 @@ hand their findings back to `/drivers` (`Status`) and `/add`.
 
 ## 1. Tactics-based analysis
 
-Use the per-attribute **tactic taxonomies** (`references/tactics-catalog.md`) as an interview /
+Use the per-attribute **tactic taxonomies** (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`) as an interview /
 questionnaire. For each relevant tactic ask:
 
 - Is this tactic used in the architecture? **Where** (which element / decision)?
@@ -46,7 +46,7 @@ brainstorming round.
    action (an ADD iteration, a spike, a monitoring gap to close).
 
 Output: the registers appended to `atam-report.md` marked `Lightweight` (see
-`references/atam-method.md` → *Lightweight Architecture Evaluation*), or an inline note in the
+`${CLAUDE_PLUGIN_ROOT}/references/atam-method.md` → *Lightweight Architecture Evaluation*), or an inline note in the
 ADD session log.
 
 ## When to escalate to a full ATAM

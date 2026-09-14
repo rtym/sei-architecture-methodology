@@ -46,7 +46,7 @@ as a system, not a person. Rendered to `diagrams/UC-<n>.png` and visually cross-
 
 ```plantuml
 @startuml
-!include ../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 skinparam actorStyle awesome
 left to right direction
 actor "<Primary actor>" as actor1

@@ -4,8 +4,8 @@ The **general scenario** for an attribute is a reusable template: for each of th
 lists the *range of values* a concrete scenario can draw from. Build a concrete
 `<ATTR>QA-<n>` by picking one (or a few) value(s) per part, making them specific to your
 system, and putting a **number with a unit** (and a percentile for time) on the response
-measure. Tactic lists for each attribute are in `references/tactics-catalog.md`; the
-tactics-based questionnaire framing is in `references/quality-attribute-taxonomy.md`.
+measure. Tactic lists for each attribute are in `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`; the
+tactics-based questionnaire framing is in `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`.
 
 ISO/IEC 25010 homes: availability → Reliability; deployability / energy efficiency / scalability
 / portability → Flexibility; integrability → Compatibility; modifiability / testability →

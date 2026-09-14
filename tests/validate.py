@@ -660,6 +660,171 @@ def validate_file(path: Path) -> list[str] | None:
 # Self-check of the plugin
 # --------------------------------------------------------------------------- #
 
+# A PlantUML !include, minus any leading whitespace. Vendored upstream C4 files are exempt:
+# they are copied verbatim from plantuml-stdlib and include each other by ./name.
+INCLUDE_RE = re.compile(r"^\s*!include(?:sub|url)?\s+(\S+)", re.MULTILINE)
+
+
+def check_plantuml_includes() -> list[str]:
+    """Every !include we ship must resolve through PLANTUML_INCLUDE_PATH, not by walking `../`.
+
+    render-plantuml.sh puts skills/sei-diagrams/assets/ on PlantUML's include path, so an
+    include is written as a bare name (`plantuml-theme.puml`, `c4/C4_Container.puml`). A `../`
+    traversal only ever resolved because the examples happen to sit inside this repo — from
+    `architecture/diagrams/` in a user's project no number of `../` reaches an installed plugin.
+    """
+    errs: list[str] = []
+    assets = ROOT / "skills" / "sei-diagrams" / "assets"
+
+    # the theme + C4 macro set the documented includes resolve to must actually be there
+    for rel in ("plantuml-theme.puml", "c4/C4.puml", "c4/C4_Context.puml", "c4/C4_Container.puml",
+                "c4/C4_Component.puml", "c4/C4_Deployment.puml", "c4/sei-c4-palette.puml"):
+        if not (assets / rel).is_file():
+            errs.append(f"skills/sei-diagrams/assets/{rel}: missing — !include {rel} cannot resolve")
+
+    targets = [*sorted((ROOT / "skills").glob("*/SKILL.md")),
+               *sorted((ROOT / "templates").glob("*.md")),
+               *sorted((ROOT / "references").glob("*.md")),
+               *sorted((ROOT / "examples").rglob("*.puml")),
+               *sorted((ROOT / "examples").rglob("*.md"))]
+    for f in targets:
+        for m in INCLUDE_RE.finditer(f.read_text(encoding="utf-8", errors="replace")):
+            inc = m.group(1)
+            rel = f.relative_to(ROOT)
+            if inc.startswith(("http://", "https://", "<")):
+                errs.append(f"{rel}: '!include {inc}' fetches over the network — "
+                            f"use the vendored copy under assets/")
+            elif ".." in inc.split("/"):
+                errs.append(f"{rel}: '!include {inc}' walks out with '../' — write it as a bare "
+                            f"assets-relative name (PLANTUML_INCLUDE_PATH resolves it anywhere)")
+            elif inc.startswith("/") or inc.startswith("${"):
+                errs.append(f"{rel}: '!include {inc}' is absolute — PlantUML does not expand "
+                            f"variables; use a bare assets-relative name")
+            elif not (assets / inc).is_file():
+                errs.append(f"{rel}: '!include {inc}' does not resolve under assets/")
+
+    # the renderer has to put assets/ on the include path, or every bare include above breaks
+    render_pl = (ROOT / "skills" / "sei-diagrams" / "scripts" / "render-plantuml.sh") \
+        .read_text(encoding="utf-8")
+    if "export PLANTUML_INCLUDE_PATH" not in render_pl:
+        errs.append("render-plantuml.sh: does not export PLANTUML_INCLUDE_PATH — bare "
+                    "'!include plantuml-theme.puml' will not resolve outside this repo")
+    return errs
+
+
+def check_license() -> list[str]:
+    """The license must actually grant something, and say the same thing everywhere.
+
+    The repo previously shipped an "all rights reserved / no permission is granted" LICENSE while
+    the README told people to install the plugin — anyone following the README was doing what the
+    LICENSE forbade. Guard against that reappearing, and against LICENSE / plugin.json / NOTICE
+    drifting apart.
+    """
+    errs: list[str] = []
+    lic_path = ROOT / "LICENSE"
+    if not lic_path.is_file():
+        return ["LICENSE: missing"]
+    lic = lic_path.read_text(encoding="utf-8")
+
+    # 1. it has to be a real grant, not a placeholder
+    if re.search(r"(?i)no permission is granted", lic):
+        errs.append("LICENSE: still says 'no permission is granted' — the README tells people to "
+                    "install this plugin, which that language forbids")
+    if re.search(r"(?i)^#?\s*license\s*[-—]+\s*TBD\s*$", lic, re.MULTILINE):
+        errs.append("LICENSE: is a TBD placeholder, not a license")
+
+    # 2. Apache-2.0 must be present unaltered in the parts that matter
+    for marker in ("Apache License", "Version 2.0, January 2004",
+                   "Licensed under the Apache License, Version 2.0"):
+        if marker not in lic:
+            errs.append(f"LICENSE: missing Apache-2.0 text marker {marker!r}")
+
+    # 3. plugin.json must declare the same license
+    try:
+        manifest = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    except Exception as e:
+        return errs + [f"plugin.json unreadable: {e}"]
+    declared = manifest.get("license")
+    if not declared:
+        errs.append("plugin.json: no 'license' field (SPDX id, e.g. \"Apache-2.0\")")
+    elif declared != "Apache-2.0":
+        errs.append(f"plugin.json: license '{declared}' does not match the Apache-2.0 LICENSE file")
+
+    # 4. Apache-2.0 ships a NOTICE; it is also where third-party attribution belongs
+    notice_path = ROOT / "NOTICE"
+    if not notice_path.is_file():
+        errs.append("NOTICE: missing — Apache-2.0 projects carry one, and it is where the "
+                    "vendored C4-PlantUML attribution belongs")
+    else:
+        notice = notice_path.read_text(encoding="utf-8")
+        for expected in ("C4-PlantUML", "Ricardo Niepel", "MIT"):
+            if expected not in notice:
+                errs.append(f"NOTICE: does not mention {expected!r}")
+
+    return errs
+
+
+def check_vendored_c4() -> list[str]:
+    """The vendored C4-PlantUML macro set is MIT code we redistribute — attribution must ship.
+
+    MIT asks for exactly one thing in return for the grant: "The above copyright notice and this
+    permission notice shall be included in all copies or substantial portions of the Software."
+    assets/c4/ is ~96 KB of substantial portion, so the notice has to be there — and has to stay
+    there through future edits, hence this check rather than a one-off fix.
+    """
+    errs: list[str] = []
+    c4 = ROOT / "skills" / "sei-diagrams" / "assets" / "c4"
+    upstream = ["C4.puml", "C4_Context.puml", "C4_Container.puml",
+                "C4_Component.puml", "C4_Deployment.puml"]
+
+    lic = c4 / "LICENSE"
+    if not lic.is_file():
+        errs.append("skills/sei-diagrams/assets/c4/LICENSE: missing — vendored C4-PlantUML is "
+                    "MIT and its copyright + permission notice must ship with the copies")
+    else:
+        text = lic.read_text(encoding="utf-8")
+        # the copyright line and the permission clause are the two things MIT actually requires
+        if not re.search(r"Copyright \(c\) \d{4} .+", text):
+            errs.append("assets/c4/LICENSE: no 'Copyright (c) <year> <holder>' line")
+        if "The above copyright notice and this permission notice shall be included" not in text:
+            errs.append("assets/c4/LICENSE: missing the MIT permission notice clause")
+
+    readme = c4 / "README.md"
+    if not readme.is_file():
+        errs.append("skills/sei-diagrams/assets/c4/README.md: missing — vendored code needs "
+                    "provenance (upstream URL, pinned version, modified-or-not)")
+        return errs
+
+    prov = readme.read_text(encoding="utf-8")
+    if "plantuml-stdlib/C4-PlantUML" not in prov:
+        errs.append("assets/c4/README.md: does not name the upstream repository")
+
+    # The pinned version is asserted in three places; drift between them is how a vendored
+    # dependency quietly stops being the version everyone believes it is.
+    tags = set()
+    for name in upstream:
+        f = c4 / name
+        if not f.is_file():
+            errs.append(f"assets/c4/{name}: missing — vendored C4-PlantUML is incomplete")
+            continue
+        tags |= set(re.findall(r"C4-PlantUML/(v[\d.]+)/", f.read_text(encoding="utf-8")))
+    if len(tags) > 1:
+        errs.append(f"assets/c4/: vendored files reference more than one upstream tag {sorted(tags)}")
+    for tag in tags:
+        if tag not in prov:
+            errs.append(f"assets/c4/README.md: does not state the pinned version {tag}")
+        root_readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        if "C4-PlantUML" in root_readme and tag.lstrip("v") not in root_readme:
+            errs.append(f"README.md: C4-PlantUML version is out of sync with assets/c4/ ({tag})")
+
+    # the top-level README must disclose that the repo redistributes third-party code
+    root_readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    if not re.search(r"(?im)^#+\s.*third[- ]party", root_readme):
+        errs.append("README.md: no 'Third-party' section disclosing the vendored C4-PlantUML")
+
+    return errs
+
+
 def check_self() -> list[str]:
     errs: list[str] = []
 
@@ -726,16 +891,24 @@ def check_self() -> list[str]:
                     errs.append(f"{sf.parent.relative_to(ROOT).as_posix()}: "
                                 f"allowed-tools is missing '{needed}'")
 
-    # every cross-file path in a command or SKILL.md must be plugin-root-anchored, because the
-    # cwd at runtime is the user's project, not the plugin
+    # Every cross-file path in anything the model reads at runtime must be plugin-root-anchored,
+    # because the cwd at runtime is the user's project, not the plugin. That covers commands and
+    # SKILL.md, and equally templates/ and references/ — those are read mid-task too, so a bare
+    # `references/foo.md` inside one of them is just as unresolvable.
     BARE_PATH_RE = re.compile(
         r"(?<![/{\w-])(references|templates|assets)/[A-Za-z0-9_./-]+"
         r"|(?<![/{\w-])scripts/(?:build-report|render|render-plantuml|setup)\.sh"
         r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md")
-    for md in [*cmds, *skill_files]:
+    template_files = sorted((ROOT / "templates").glob("*.md"))
+    reference_files = sorted((ROOT / "references").glob("*.md"))
+    for md in [*cmds, *skill_files, *template_files, *reference_files]:
         for m in BARE_PATH_RE.finditer(md.read_text(encoding="utf-8")):
             errs.append(f"{md.relative_to(ROOT)}: path '{m.group(0)}' is not "
                         f"anchored to ${{CLAUDE_PLUGIN_ROOT}}")
+
+    errs += check_plantuml_includes()
+    errs += check_vendored_c4()
+    errs += check_license()
 
     # embedded diagrams in skills/templates/references must obey the rules
     for md in [*skill_files,

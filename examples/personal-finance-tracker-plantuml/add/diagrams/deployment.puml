@@ -1,6 +1,6 @@
 @startuml deployment
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Deployment.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+!include c4/C4_Deployment.puml
+!include c4/sei-c4-palette.puml
 LAYOUT_TOP_DOWN()
 title Deployment — Personal Finance Tracker (production, eu-west-1, 2 AZs)
 Deployment_Node(cloud, "Managed cloud", "eu-west-1 · 2 availability zones") {

@@ -1,6 +1,6 @@
 @startuml view-cnc-runtime-01
-!include ../../../../skills/sei-diagrams/assets/c4/C4_Container.puml
-!include ../../../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
+!include c4/C4_Container.puml
+!include c4/sei-c4-palette.puml
 LAYOUT_TOP_DOWN()
 title Runtime (C&C) view — Personal Finance Tracker
 Person(user, "Registered user", "Mobile browser")

@@ -81,7 +81,7 @@ Refined scenarios feed:
 - later, **ATAM** — the QAW scenarios seed the utility tree and Phase-2 brainstorming.
 
 The QAW is one structured form of "gathering ASRs by interviewing stakeholders" — see
-`references/architectural-drivers.md` for the other three ways (requirements-doc sniffing, PALM
+`${CLAUDE_PLUGIN_ROOT}/references/architectural-drivers.md` for the other three ways (requirements-doc sniffing, PALM
 business-goal workshop, the architect's own utility tree) and the "play dumb" technique for a
 stakeholder who says *"I don't know what that requirement should be."*
 

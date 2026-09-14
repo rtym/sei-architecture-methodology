@@ -3,8 +3,8 @@
 ' (matches assets/palette.md and assets/mermaid-theme.json). Non-C4 PlantUML uses
 ' assets/plantuml-theme.puml instead.
 '
-'   !include <path>/c4/C4_Container.puml
-'   !include <path>/c4/sei-c4-palette.puml
+'   !include c4/C4_Container.puml
+'   !include c4/sei-c4-palette.puml
 
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Helvetica

@@ -68,3 +68,44 @@ jobs:
 
       - name: Run full test suite
         run: bash tests/run.sh
+
+  # PlantUML is the other half of the diagram toolchain (true-UML use cases, canonical C4).
+  # Split from the Mermaid job so a failure names which renderer broke, and so the two run in
+  # parallel. tests/run.sh step 8 renders from a temp dir OUTSIDE the repo, which is the only
+  # way a '../'-traversal !include regression shows up.
+  plantuml:
+    name: full suite (PlantUML renderer)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PlantUML (pulls a JRE)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends plantuml
+
+      # tests/run.sh SKIPS step 8 (without failing) when java or plantuml is absent, so assert
+      # both are really there — otherwise this job could pass green having rendered nothing.
+      - name: Verify the renderer is installed
+        run: |
+          command -v java     || { echo "java missing — the PlantUML smoke test would skip"; exit 1; }
+          command -v plantuml || { echo "plantuml missing — the PlantUML smoke test would skip"; exit 1; }
+
+      - name: Run full test suite
+        run: bash tests/run.sh
+
+      # Belt and braces: render every shipped example .puml for real. The smoke test proves the
+      # include path works; this proves the 21 committed diagrams still compile.
+      - name: Render every example diagram
+        run: |
+          set -e
+          for d in $(git ls-files 'examples/**/*.puml' | xargs -n1 dirname | sort -u); do
+            bash skills/sei-diagrams/scripts/render-plantuml.sh --out "$RUNNER_TEMP/puml" "$d"
+          done
+          n=$(find "$RUNNER_TEMP/puml" -name '*.png' | wc -l)
+          echo "rendered $n diagram(s)"
+          [ "$n" -ge 21 ] || { echo "expected at least 21 PNGs, got $n"; exit 1; }

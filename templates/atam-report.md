@@ -44,7 +44,7 @@ sensitivity points, tradeoff points, risk themes.
 
 ## Step 5 — Quality attribute utility tree
 
-A **table** (see `templates/utility-tree.md`). `(V, R)` = (business value, technical risk);
+A **table** (see `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`). `(V, R)` = (business value, technical risk);
 `★` = architecturally significant (H, H).
 
 | Quality attribute | Refinement (concern) | Leaf scenario (ID — one line + measure) | Priority (V, R) | Status |

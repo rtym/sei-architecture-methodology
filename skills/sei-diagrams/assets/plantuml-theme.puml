@@ -1,5 +1,6 @@
 ' SEI diagrams — PlantUML palette (matches assets/palette.md and mermaid-theme.json)
-' Usage: put  !include ../../skills/sei-diagrams/assets/plantuml-theme.puml  at the top of a .puml
+' Usage: put  !include plantuml-theme.puml  at the top of a .puml (render-plantuml.sh puts
+'        this directory on PlantUML's include path, so no ../ traversal is needed).
 
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Helvetica

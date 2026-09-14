@@ -1,5 +1,5 @@
 @startuml view-security-01
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 skinparam linetype ortho
 hide stereotype
 title Security view — Personal Finance Tracker (SQA-1 control path)

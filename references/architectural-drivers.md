@@ -85,7 +85,7 @@ architectural mechanisms — 24 h vs. 10 min vs. 10 s vs. 100 ms means very diff
 
 The QAW is a facilitated, stakeholder-focused method to generate, consolidate, prioritise, and
 refine QA scenarios *before* the architecture is complete (full 8-step method:
-`references/qaw-method.md`). Its results feed five uses: refine requirements · understand /
+`${CLAUDE_PLUGIN_ROOT}/references/qaw-method.md`). Its results feed five uses: refine requirements · understand /
 clarify the architectural drivers · provide rationale for later design decisions · guide
 prototypes and simulations · influence the order the architecture is developed.
 

@@ -1,5 +1,5 @@
 @startuml sequence-dashboard
-!include ../../../../skills/sei-diagrams/assets/plantuml-theme.puml
+!include plantuml-theme.puml
 title UC-2 dashboard load — realises PQA-1
 autonumber
 participant "Web App" as U
