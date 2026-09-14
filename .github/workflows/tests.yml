@@ -83,10 +83,13 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install PlantUML (pulls a JRE)
+      # graphviz is a Recommends of the plantuml package, so --no-install-recommends drops it.
+      # Without dot, PlantUML 1.2020.2 fails EVERY diagram (not just the graph-layout ones),
+      # so it must be installed explicitly.
+      - name: Install PlantUML and Graphviz (pulls a JRE)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends plantuml
+          sudo apt-get install -y --no-install-recommends plantuml graphviz
 
       # tests/run.sh SKIPS step 8 (without failing) when java or plantuml is absent, so assert
       # both are really there — otherwise this job could pass green having rendered nothing.
@@ -94,6 +97,9 @@ jobs:
         run: |
           command -v java     || { echo "java missing — the PlantUML smoke test would skip"; exit 1; }
           command -v plantuml || { echo "plantuml missing — the PlantUML smoke test would skip"; exit 1; }
+          command -v dot      || { echo "graphviz missing — PlantUML fails every diagram without dot"; exit 1; }
+          plantuml -version | head -2
+          dot -V
 
       - name: Run full test suite
         run: bash tests/run.sh
