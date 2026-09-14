@@ -6,7 +6,7 @@ description: >-
   when the user invokes /add, asks to run an ADD session, design or evolve an architecture from
   quality attribute drivers, or produce an architecture document from scenarios.
 version: 1.0.0
-allowed-tools: [Read, Write, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
 # Attribute-Driven Design (ADD 3.0)
@@ -18,11 +18,11 @@ Working directory: `architecture/add/` (create it).
 - `architecture/add/<slug>-session.md` — the session log
 - `architecture/add/<slug>-Architecture.md` — the architecture document
 
-Deep references: `references/add-method.md`, `references/design-concepts.md` (the concept
-catalog + how to identify/select), `references/interfaces.md` (Step 5),
-`references/architecture-in-the-lifecycle.md` (Iteration 0, architecture debt). Diagram rules:
+Deep references: `${CLAUDE_PLUGIN_ROOT}/references/add-method.md`, `${CLAUDE_PLUGIN_ROOT}/references/design-concepts.md` (the concept
+catalog + how to identify/select), `${CLAUDE_PLUGIN_ROOT}/references/interfaces.md` (Step 5),
+`${CLAUDE_PLUGIN_ROOT}/references/architecture-in-the-lifecycle.md` (Iteration 0, architecture debt). Diagram rules:
 the `sei-diagrams` skill
-(`skills/sei-diagrams/SKILL.md`) — **all** diagrams in both files follow it.
+(`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/SKILL.md`) — **all** diagrams in both files follow it.
 
 **Keep prompts and findings short** — a sentence or two. Offer choices as numbered lists.
 **Draft first**: at each step propose a complete draft, then refine with the user.
@@ -282,7 +282,7 @@ End with a one-line summary of the most architecturally significant drivers.
 ### Iteration Plan / design backlog (pragmatic addition)
 
 Group drivers into N iterations, each with a bounded goal, ordered by the **design roadmap** for
-the system type (`references/add-method.md` → *Design roadmap*):
+the system type (`${CLAUDE_PLUGIN_ROOT}/references/add-method.md` → *Design roadmap*):
 - **greenfield, mature domain**: iter 1 = establish overall structure (reference architecture +
   deployment pattern); iter 2 = structures for the primary use cases; later iters = refine for
   the remaining quality-attribute drivers;
@@ -297,7 +297,7 @@ concerns discovered while adopting a concept). Step 2 moves a card to *Partially
 Step 7 moves it to *Completely Addressed* against an explicit criterion (analysed, or prototyped
 and verified). End the round when the highest-priority drivers are *Completely Addressed*.
 Note: **Steps 2 and 3 may be reversed** for greenfield / reference-architecture work (pick an
-element first). Deep reference: `references/add-method.md`.
+element first). Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/add-method.md`.
 
 **Coverage check (mandatory):** list every driver ID from Step 1 and confirm each appears in ≥ 1
 iteration / backlog item before presenting. Present, wait for review, write the agreed plan into
@@ -319,7 +319,7 @@ iteration. **State the choice and why. Wait for confirmation.**
 **Identify** candidates from the **design concept catalog** (coarse → fine): reference
 architectures · deployment patterns · architectural & design patterns · **tactics** ·
 externally developed components — drawing on best-practice catalogs
-(`references/tactics-catalog.md`, `references/architecture-patterns.md`), your own experience,
+(`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`, `${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md`), your own experience,
 and a peer brainstorm. **Select** with a pros/cons table keyed to the iteration's drivers; for a
 high-stakes choice, add a SWOT or CBAM (ROI) analysis. Every rationale cites ≥ 1 driver ID;
 record the discarded alternatives and why. Name tactics from the catalog so Step 7 and ATAM can
@@ -329,7 +329,7 @@ question them with the matching questionnaire. **Present the table and wait for 
 
 Two tables: **instantiation decisions** (elements created/modified + responsibility) and
 **interfaces** (provided / required / protocol per element). For each significant interface
-capture the four agreement points from `references/interfaces.md` — scope, interaction style,
+capture the four agreement points from `${CLAUDE_PLUGIN_ROOT}/references/interfaces.md` — scope, interaction style,
 data representation & structure, error model — and apply the design principles (least surprise,
 small interfaces, uniform access, DRY, consistency). **Present both and wait for review.**
 
@@ -352,7 +352,7 @@ writing to `Architecture.md`.**
 ### Step 7 — Analyse and review the iteration goal
 
 Analysis table: each selected driver → **yes / partially / no** + notes. Drive the analysis with
-the **tactics-based questionnaire** for each attribute in play (`references/tactics-catalog.md`):
+the **tactics-based questionnaire** for each attribute in play (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`):
 for every relevant tactic, is it used, where, and what is the risk if it is not? State whether
 the goal was achieved and which drivers/concerns remain. Ask whether to run another iteration.
 Yes → Step 2 with remaining drivers. No → set **Status: completed**, print both file paths, and
@@ -379,7 +379,7 @@ Do not declare the activity complete until the generated artifact passes both:
    the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
-   `references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
+   `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
    re-run, repeat.
 
 Every embedded diagram must additionally have been rendered to PNG and **visually cross-verified**

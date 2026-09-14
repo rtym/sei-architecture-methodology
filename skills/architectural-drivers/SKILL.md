@@ -7,7 +7,7 @@ description: >-
   invokes /drivers or asks to capture architectural drivers, list use cases, track
   requirements/constraints/business goals, or assemble the driver inputs for an ADD or ATAM run.
 version: 1.1.0
-allowed-tools: [Read, Write, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
 # Architectural drivers
@@ -15,7 +15,7 @@ allowed-tools: [Read, Write, Bash, Glob]
 The **architectural drivers** are the inputs that shape the architecture. Each one worth
 capturing is an **architecturally significant requirement (ASR)** — it has a *profound impact on
 the architecture* **and** *high business/mission value* (deep dive:
-`references/architectural-drivers.md`). ASRs come from requirements documents, stakeholder
+`${CLAUDE_PLUGIN_ROOT}/references/architectural-drivers.md`). ASRs come from requirements documents, stakeholder
 interviews / a QAW, the architect's own utility tree, or derivation from business goals. In the
 SEI method there are four kinds:
 
@@ -102,10 +102,10 @@ architecture/drivers/
   diagram** (copied, kept in sync) and links back to `scenarios.md` for the utility tree and the
   wider set. The drivers directory is always self-sufficient as ADD/ATAM input.
 
-Deep reference: `references/quality-attribute-taxonomy.md`, `references/add-method.md`.
-Templates: `templates/drivers-readme.md`, `templates/subdir-readme.md`,
-`templates/business-goal.md`, `templates/use-case.md`, `templates/constraint.md`,
-`templates/quality-attribute-scenario.md`.
+Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`, `${CLAUDE_PLUGIN_ROOT}/references/add-method.md`.
+Templates: `${CLAUDE_PLUGIN_ROOT}/templates/drivers-readme.md`, `${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md`,
+`${CLAUDE_PLUGIN_ROOT}/templates/business-goal.md`, `${CLAUDE_PLUGIN_ROOT}/templates/use-case.md`, `${CLAUDE_PLUGIN_ROOT}/templates/constraint.md`,
+`${CLAUDE_PLUGIN_ROOT}/templates/quality-attribute-scenario.md`.
 
 **Keep prompts short.** Numbered lists. **Draft first**, refine.
 
@@ -116,7 +116,7 @@ Ask for / read: product brief, PRD, vision doc, backlog, SLAs, an existing requi
 org/regulatory context. Create `architecture/drivers/` and its four sub-directories. If a QAW
 report or `scenarios.md` exists, plan to import (not merely link) it.
 
-**Four ways to gather ASRs** (`references/architectural-drivers.md`): (1) *sniff* a requirements
+**Four ways to gather ASRs** (`${CLAUDE_PLUGIN_ROOT}/references/architectural-drivers.md`): (1) *sniff* a requirements
 doc for the architecturally significant categories (usage, time, external elements, networking,
 orchestration, security, data, resources, project management, hardware, flexibility, named
 tech) and their anticipated change; (2) *interview stakeholders* — when they say "I don't know
@@ -129,12 +129,12 @@ sources aren't available.
 Draft 3–7 business goals, each as *"<stakeholder> needs <outcome> so that <business value>"*.
 Categories to probe (SEI business-goal categories): growth & market share, financial,
 personal/reputational, responsibility to society/law, quality of product, quality of process,
-stakeholder relationships. One file per goal from `templates/business-goal.md`. Present, confirm.
+stakeholder relationships. One file per goal from `${CLAUDE_PLUGIN_ROOT}/templates/business-goal.md`. Present, confirm.
 
 ### Step 3 — Primary functional requirements as use cases → `use-cases/UC-<n>.md`
 Identify only the use cases with **architectural impact** — those that exercise a quality
 attribute, cross a trust or process boundary, drive a key integration, or dominate load. One file
-per use case from `templates/use-case.md`, each with: primary actor, supporting actors, trigger,
+per use case from `${CLAUDE_PLUGIN_ROOT}/templates/use-case.md`, each with: primary actor, supporting actors, trigger,
 preconditions, main success scenario (numbered), key alternate/exception flows, architectural
 significance, related drivers.
 
@@ -145,7 +145,7 @@ significance, related drivers.
    for always-invoked sub-behaviour and `<<extend>>` for conditional sub-behaviour (dashed,
    labelled). A supporting actor that is a **system** (a third-party API, a batch job, another
    service — not a person or role) is **not** a stick figure: draw it as a `«system»`-stereotyped
-   rectangle instead (`rectangle "<Name>" <<system>>` in PlantUML; the `«system»` box convention
+   rectangle instead (`rectangle "<Name>" << system >>` in PlantUML; the `«system»` box convention
    in Mermaid) — it is still outside the boundary and still connects to the use case with an
    ordinary association.
 2. Show the source in the conversation, render to `use-cases/diagrams/UC-<n>.png`, `Read` the PNG
@@ -169,13 +169,13 @@ private to one parent. Every overview diagram must reuse the same codes as the i
 diagrams — an overview is not the place to introduce a fresh, undocumented label.
 
 ### Step 4 — Constraints → `constraints/CON-<n>.md`
-One file per constraint from `templates/constraint.md`: type (business / technical / regulatory),
+One file per constraint from `${CLAUDE_PLUGIN_ROOT}/templates/constraint.md`: type (business / technical / regulatory),
 the constraint, its source, hard vs negotiable, and any business goal or quality attribute
 scenario it conflicts with.
 
 ### Step 5 — Quality attributes → `quality-attributes/<ATTR>QA-<n>.md`
 **Document every quality attribute as a six-part quality attribute scenario, and support it with
-its own scenario diagram.** One file per scenario from `templates/quality-attribute-scenario.md`:
+its own scenario diagram.** One file per scenario from `${CLAUDE_PLUGIN_ROOT}/templates/quality-attribute-scenario.md`:
 - the **six-part table**: source of stimulus, stimulus, artifact, environment, response,
   **numeric** response measure;
 - the **ISO/IEC 25010:2023** characteristic + sub-characteristic;
@@ -207,11 +207,11 @@ per leaf scenario, three grouping levels captured in the columns:
   `addressed` vs `open`.
 
 If a QAW was run, import its tree (Step 9 of `/qaw`); otherwise construct it here from the
-scenario set. `README.md` links to it. Template: `templates/utility-tree.md`.
+scenario set. `README.md` links to it. Template: `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`.
 
 ### Step 6 — `README.md` — traceability matrix + coverage check
-Write `architecture/drivers/README.md` from `templates/drivers-readme.md`, and one
-`README.md` per subdirectory from `templates/subdir-readme.md`. The matrix has one row per
+Write `architecture/drivers/README.md` from `${CLAUDE_PLUGIN_ROOT}/templates/drivers-readme.md`, and one
+`README.md` per subdirectory from `${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md`. The matrix has one row per
 driver, with the "File" cell a **relative Markdown link**:
 
 | Driver | File | Supports BG | Realised / constrained by | Addressed in | Status |
@@ -271,7 +271,7 @@ Do not declare the activity complete until it passes both:
    tree, `README.md` traceability with no orphans, no broken relative links, diagram rules, and
    the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the *Architectural drivers* section of
-   `references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix, re-run, repeat.
+   `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix, re-run, repeat.
 
 Every embedded diagram must additionally have been rendered to PNG and **visually cross-verified**
 (`Read` the image — correctness + minimal crossings) per the `sei-diagrams` skill.

@@ -6,7 +6,7 @@ description: >-
   or asks to define quality attributes, write NFRs / non-functional requirements as scenarios,
   build a utility tree, or produce architectural drivers for an ADD or ATAM run.
 version: 1.0.0
-allowed-tools: [Read, Write, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
 # Quality attribute scenarios
@@ -15,7 +15,7 @@ Produce **measurable** quality attribute scenarios in the SEI six-part form, plu
 driver list that ADD and ATAM can consume directly.
 
 Output file: `architecture/quality-attributes/scenarios.md` (create the folder).
-Deep reference: `references/quality-attribute-taxonomy.md` at the plugin root.
+Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`.
 
 **Keep prompts short.** Draft first, refine second. Offer choices as numbered lists.
 
@@ -40,14 +40,14 @@ Classify every scenario against the **ISO/IEC 25010:2023** product quality model
 standard taxonomy; the SEI six-part scenario is the *form*, ISO 25010 supplies the *vocabulary*.
 Full definitions, the sub-characteristic breakdown, the **general-scenario "portions"** menu
 (the range of values each of the six parts can take), and the per-attribute tactics-based
-questionnaire are in `references/quality-attribute-taxonomy.md` (with tactic and pattern lists
-in `references/tactics-catalog.md` and `references/architecture-patterns.md`). The full
+questionnaire are in `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md` (with tactic and pattern lists
+in `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md` and `${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md`). The full
 **general-scenario portion tables for all 10 attributes** (availability, deployability, energy
 efficiency, integrability, modifiability, performance, safety, security, testability, usability)
 — the menu of values for each of the six parts, plus a worked concrete example — are in
-`references/quality-attribute-scenarios.md`. Build each concrete scenario by choosing values
+`${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-scenarios.md`. Build each concrete scenario by choosing values
 from the portions and making the response measure numeric.
-For a cloud or mobile system, `references/runtime-environments.md` lists the environment-specific
+For a cloud or mobile system, `${CLAUDE_PLUGIN_ROOT}/references/runtime-environments.md` lists the environment-specific
 stimuli worth a scenario (cold start, zone loss, autoscale lag, offline operation, battery,
 OS eviction).
 
@@ -111,13 +111,13 @@ Add scenarios for any taxonomy attribute the user flags as significant but uncov
 Every quality attribute scenario is also drawn as the canonical SEI **six-part scenario diagram**
 so the whole picture — *source → stimulus → (artifact, in environment) → response → response
 measure* — is visible at a glance. Use the `sei-diagrams` skill's **"Quality attribute scenario"**
-diagram pattern (`skills/sei-diagrams/SKILL.md`, section *Quality attribute scenario diagram*).
+diagram pattern (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/SKILL.md`, section *Quality attribute scenario diagram*).
 
 For each `<ATTR>QA-n`:
 1. Render the Mermaid `flowchart LR` for that scenario, filled with its six parts, using the
    shared theme. Show it in the conversation.
 2. On request, batch-render all scenario diagrams to PNG into
-   `architecture/quality-attributes/diagrams/<ATTR>QA-<n>.png` with `scripts/render.sh`.
+   `architecture/quality-attributes/diagrams/<ATTR>QA-<n>.png` with `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh`.
 3. Embed the diagram (or a link to the PNG) directly under the scenario's row/section in
    `scenarios.md`.
 
@@ -127,7 +127,7 @@ Organise the scenarios into a **utility tree — a table, not a diagram**: one r
 scenario with columns *Quality attribute · Refinement (concern) · Leaf scenario (ID + response
 measure) · Priority (V, R) · Status*. `(V, R)` = business value and technical risk, each H/M/L
 (`V ≈ Importance`, `R ≈ Difficulty`); mark a `(H, H)` leaf `★`. This is the same structure ATAM
-step 5 uses. Template: `templates/utility-tree.md`.
+step 5 uses. Template: `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`.
 
 ### Step 7 — Prioritised driver list
 
@@ -142,7 +142,7 @@ Write `architecture/quality-attributes/scenarios.md` from the template below. Co
 ## Output template
 
 ```markdown
-# Quality Attribute Scenarios: <system>
+# Quality Attribute Scenarios: <SystemName>
 
 - **Date**: <YYYY-MM-DD>
 - **Source material**: <brief / PRD / interview>
@@ -216,7 +216,7 @@ Do not declare the activity complete until the generated artifact passes both:
    the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
-   `references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
+   `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
    re-run, repeat.
 
 Every embedded diagram must additionally have been rendered to PNG and **visually cross-verified**

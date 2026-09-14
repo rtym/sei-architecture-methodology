@@ -7,7 +7,7 @@ description: >-
   attributes, QAW, ADD, ATAM, documentation, diagrams) they need. Explains the workflow and hands
   off to the matching sub-skill.
 version: 1.0.0
-allowed-tools: [Read, Write, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
 # SEI Architecture Methodology — router
@@ -94,11 +94,11 @@ Typical engagements:
   **and every diagram is rendered to PNG and visually cross-verified** (`Read` the image, check
   correctness + crossings, iterate) before it is embedded anywhere.
 - **Reporting**: the working artifacts are Markdown. When the user wants a deliverable report, ask
-  **Markdown, HTML, or both**, then build it with `scripts/build-report.sh <file.md> --format
+  **Markdown, HTML, or both**, then build it with `${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh <file.md> --format
   <fmt> [--embed-diagrams]`. HTML output is a single self-contained file styled with the SEI
   palette, with a cover page and table of contents.
-- **References**: deeper method notes live in `references/` at the plugin root — see
-  `references/README.md` for the index. Core: `architecture-fundamentals.md` (structures,
+- **References**: deeper method notes live in `${CLAUDE_PLUGIN_ROOT}/references/` at the plugin root — see
+  `${CLAUDE_PLUGIN_ROOT}/references/README.md` for the index. Core: `architecture-fundamentals.md` (structures,
   views, the "good architecture" rules of thumb), `architectural-drivers.md`,
   `quality-attribute-taxonomy.md`, `tactics-catalog.md`, `architecture-patterns.md`,
   `design-concepts.md`, `qaw-method.md`, `add-method.md`, `atam-method.md`,

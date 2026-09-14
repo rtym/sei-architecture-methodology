@@ -7,7 +7,7 @@ description: >-
   context / container / component / sequence / deployment / class / state / quality-attribute-
   scenario diagram.
 version: 1.0.0
-allowed-tools: [Read, Write, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
 # SEI diagrams — clean UML / C4, rendered to PNG
@@ -17,8 +17,8 @@ one curated palette. Then render them to PNG.
 
 - Diagram sources: `architecture/diagrams/*.mmd` (Mermaid) or `*.puml` (PlantUML).
 - Rendered output: `architecture/diagrams/*.png`.
-- Theme + palette: `assets/mermaid-theme.json`, `assets/palette.md`, `assets/plantuml-theme.puml`.
-- Renderers: `scripts/render.sh` (Mermaid), `scripts/render-plantuml.sh` (PlantUML), `scripts/setup.sh`.
+- Theme + palette: `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/mermaid-theme.json`, `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/palette.md`, `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/plantuml-theme.puml`.
+- Renderers: `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh` (Mermaid), `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh` (PlantUML), `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/setup.sh`.
 
 ## Notation
 
@@ -33,10 +33,10 @@ the calling skill already fixed it. Sensible defaults when they have no preferen
 | Quality attribute scenario | Mermaid `flowchart LR` (PlantUML pattern also provided) | the canonical six-part box-and-arrow |
 
 > The quality-attribute **utility tree is a table, not a diagram** — see
-> `templates/utility-tree.md`. `sei-diagrams` does not render it.
+> `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`. `sei-diagrams` does not render it.
 
-- **Mermaid** — `.mmd` source, `scripts/render.sh` (first run `scripts/setup.sh`). No Java.
-- **PlantUML** — `.puml` source, `scripts/render-plantuml.sh`. Needs Java; the script
+- **Mermaid** — `.mmd` source, `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh` (first run `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/setup.sh`). No Java.
+- **PlantUML** — `.puml` source, `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh`. Needs Java; the script
   auto-detects a keg-only Homebrew JDK and, if there is truly none, prints the one-line install.
 
 **The ten rules and the visual-verification loop are identical for both** — only the source
@@ -49,9 +49,9 @@ syntax and the render script differ.
 3. **Show the diagram source in the conversation** (a fenced ```mermaid or ```plantuml block) and
    get review.
 4. **Render to PNG**:
-   - Mermaid: `bash skills/sei-diagrams/scripts/render.sh architecture/diagrams/<name>.mmd`
-     (first run: `bash skills/sei-diagrams/scripts/setup.sh`).
-   - PlantUML: `bash skills/sei-diagrams/scripts/render-plantuml.sh architecture/diagrams/<name>.puml`.
+   - Mermaid: `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/diagrams/<name>.mmd`
+     (first run: `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/setup.sh`).
+   - PlantUML: `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh architecture/diagrams/<name>.puml`.
 5. **Visually cross-verify** — mandatory, same for both notations. `Read` the generated PNG and
    check it against the verification checklist below. If it fails, fix the source and go back to
    step 4. Only a PNG that passes may be embedded in a document or handed to the user.
@@ -97,7 +97,7 @@ Never present or embed a diagram you have not looked at as a rendered image.
 | **Use case model** | UML use case | **PlantUML `usecase`** (true UML glyphs — default); Mermaid `flowchart LR` fallback |
 | Quality attribute scenario (6-part) | box-and-arrow | Mermaid `flowchart LR` or the PlantUML pattern (both below) |
 
-> **Utility tree** — not a diagram. It is a Markdown table (`templates/utility-tree.md`).
+> **Utility tree** — not a diagram. It is a Markdown table (`${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`).
 
 ### Context & container diagrams follow the C4 model
 
@@ -132,12 +132,12 @@ Both satisfy the principles above — pick per the user's notation choice:
 - **C4-PlantUML** — canonical C4 shapes and stereotypes via the C4-PlantUML macros
   (`Person()`, `System()`, `Container()`, `Component()`, `Rel()`, `System_Boundary()`,
   `Deployment_Node()`). **The C4-PlantUML macro set is vendored** under
-  `assets/c4/` (`C4.puml`, `C4_Context.puml`, `C4_Container.puml`, `C4_Component.puml`,
+  `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/c4/` (`C4.puml`, `C4_Context.puml`, `C4_Container.puml`, `C4_Component.puml`,
   `C4_Deployment.puml`), so it renders **offline** — `!include` it by **relative path**, never
   `<C4/…>` (which fetches from the network). Follow the C4 include with
   `!include …/c4/sei-c4-palette.puml` so the C4 elements use the SEI palette (the
   non-C4 `plantuml-theme.puml` does not restyle C4 macros). Needs Java
-  (`scripts/render-plantuml.sh` explains how to install it). Use when the user wants canonical
+  (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh` explains how to install it). Use when the user wants canonical
   C4 notation.
 
 The worked example ships in **both notations** — `examples/personal-finance-tracker-mermaid/`
@@ -148,7 +148,7 @@ PlantUML / C4-PlantUML) — as a side-by-side reference.
 
 ```mermaid
 flowchart TB
-  %% Container diagram — <System> (C4 level 2)
+  %% Container diagram — <SystemName> (C4 level 2)
   user(["User role<br/><i>how they access</i>"])
   ext["External system<br/><i>external · protocol</i>"]
   subgraph sys["<System name>"]
@@ -179,7 +179,7 @@ class and sit **outside** the `subgraph` boundary. Put the tech stack on an `<i>
 relationship with an action phrase. For a **deployment** diagram, nest `subgraph`s for
 region → cluster → node and place containers in the leaf `subgraph`.
 
-Same diagram in **C4-PlantUML** (canonical notation; render with `scripts/render-plantuml.sh`).
+Same diagram in **C4-PlantUML** (canonical notation; render with `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh`).
 Adjust the `../…` depth so the two includes resolve from the `.puml` file's location:
 
 ```plantuml
@@ -187,7 +187,7 @@ Adjust the `../…` depth so the two includes resolve from the `.puml` file's lo
 !include ../../skills/sei-diagrams/assets/c4/C4_Container.puml
 !include ../../skills/sei-diagrams/assets/c4/sei-c4-palette.puml
 LAYOUT_TOP_DOWN()
-title Container diagram — <System>
+title Container diagram — <SystemName>
 Person(user, "User role", "how they access")
 System_Ext(ext, "External system", "protocol")
 System_Boundary(sys, "<System name>") {
@@ -280,7 +280,7 @@ stereotyped `<<include>>` / `<<extend>>` (extend points from the extension to th
 **Systems are not actors — don't draw them as stick figures.** An actor in UML is a *role*, and a
 role played by an external system (a third-party API, a batch job, another service) is still
 drawn distinctly from a human role: give it a `«system»`-stereotyped **rectangle**, not the
-person glyph. In PlantUML that's `rectangle "<Name>" <<system>> as alias` used in place of
+person glyph. In PlantUML that's `rectangle "<Name>" << system >> as alias` used in place of
 `actor "<Name>" as alias`; the rectangle still participates in ordinary associations
 (`alias --> usecaseAlias`) and sits outside the system boundary exactly like an actor would. In
 the Mermaid fallback it's the `["«system»<br/>Name"]` box already shown above. Reserve the
@@ -297,7 +297,7 @@ subsystem (≤ ~10 use cases).
 skinparam actorStyle awesome
 left to right direction
 actor "Registered user" as user
-rectangle "Bank Import API" <<system>> as bank
+rectangle "Bank Import API" << system >> as bank
 rectangle "Personal Finance Tracker" {
   usecase "UC-1\nRecord transaction" as uc1
   usecase "UC-2\nCategorise transaction" as uc2
@@ -311,7 +311,7 @@ uc3 ..> uc2 : <<include>>
 @enduml
 ```
 
-Render with `scripts/render-plantuml.sh` (auto-detects a keg-only Homebrew JDK; if truly no Java,
+Render with `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh` (auto-detects a keg-only Homebrew JDK; if truly no Java,
 it prints the one-line install command).
 
 **Mermaid fallback (approximate shapes — human actor gets a `fa:fa-user` person icon, system
@@ -358,7 +358,7 @@ are dashed `<<…>>` dependencies, and there are no avoidable crossings — iter
    never a bare verb (`"uses"`, `"calls"`).
 6. **Size ≤ 10 nodes** per diagram. More than that → split into sub-diagrams.
 7. **Boundaries.** Container and component diagrams wrap system-owned elements in a boundary —
-   a `subgraph "<System>"` in flowchart-C4, `Boundary(id, "Label") { … }` in native C4. External
+   a `subgraph "<SystemName>"` in flowchart-C4, `Boundary(id, "Label") { … }` in native C4. External
    elements sit outside it.
 8. **Sequence syntax.** Declare all participants at the top; `autonumber` when > 4 steps; `->>`
    for sync calls, `-->>` for responses, `-)` for async fire-and-forget. No `;` in message text
@@ -461,31 +461,31 @@ carries the PNG and a link to it.
 - The PNG must be the one you visually verified; re-render and the file (same path) updates in place.
 - Never replace a diagram with a bare "see `diagrams/x.png`" text reference — always the `![]()`
   image line (plus, for PlantUML, the source link).
-- `scripts/build-report.sh --embed-diagrams` base64-inlines both the fenced Mermaid blocks
+- `${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh --embed-diagrams` base64-inlines both the fenced Mermaid blocks
   **and** the referenced PNGs, so a report stays self-contained regardless of notation.
 
 ## Rendering
 
 ```bash
 # one-time
-bash skills/sei-diagrams/scripts/setup.sh
+bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/setup.sh
 
 # render one file, a glob, or a whole folder
-bash skills/sei-diagrams/scripts/render.sh architecture/diagrams/context.mmd
-bash skills/sei-diagrams/scripts/render.sh architecture/diagrams/
-bash skills/sei-diagrams/scripts/render.sh --out architecture/quality-attributes/diagrams "architecture/quality-attributes/*.mmd"
+bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/diagrams/context.mmd
+bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/diagrams/
+bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh --out architecture/quality-attributes/diagrams "architecture/quality-attributes/*.mmd"
 
 # extract mermaid blocks from a Markdown file and render each
-bash skills/sei-diagrams/scripts/render.sh architecture/add/foo-Architecture.md
+bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/add/foo-Architecture.md
 ```
 
-`render.sh` applies `assets/mermaid-theme.json` (palette + `themeCSS`), renders at scale 3 (crisp
+`render.sh` applies `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/mermaid-theme.json` (palette + `themeCSS`), renders at scale 3 (crisp
 PNG), white background, width 1600. Output PNG sits next to the source unless `--out` is given.
 It also extracts and renders every ```mermaid block from a `.md` file (`<mdname>-01.png`, …).
 
-**PlantUML** (only if the user needs full UML): `bash skills/sei-diagrams/scripts/render-plantuml.sh
+**PlantUML** (only if the user needs full UML): `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh
 architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the script prints the
-`brew install openjdk` hint. `assets/plantuml-theme.puml` carries the matching palette; `!include`
+`brew install openjdk` hint. `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/plantuml-theme.puml` carries the matching palette; `!include`
 it at the top of each `.puml`.
 
 ## Rules
@@ -496,7 +496,7 @@ it at the top of each `.puml`.
   has not been looked at as a rendered image is not finished.
 - Iterate: if verification fails, change the source per the Layout playbook, re-render, re-`Read`.
 - Apply all ten rules and the layout playbook to every diagram — including quick ones.
-- Colour is semantic and comes only from the theme + the `classDef` lines in `assets/classdefs.md`;
+- Colour is semantic and comes only from the theme + the `classDef` lines in `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/classdefs.md`;
   no ad-hoc inline colour.
 - Keep the `.mmd` / `.puml` source **and** the rendered `.png` in a `diagrams/` sub-folder next to
   the Markdown that uses them, so diagrams are re-renderable, diff-able, and the relative image
@@ -516,7 +516,7 @@ instead.
 
 ```mermaid
 C4Context
-  title Context — <System>
+  title Context — <SystemName>
   Person(user, "User role", "One-line description")
   System(sys, "System", "One-line description")
   System_Ext(ext, "External system", "One-line description")
@@ -526,7 +526,7 @@ C4Context
 
 ```mermaid
 C4Container
-  title Container diagram — <System>
+  title Container diagram — <SystemName>
   Person(user, "User role", "One-line description")
   Container_Boundary(b, "System") {
     Container(web, "Web App", "React 18 / TypeScript", "Delivers the UI")

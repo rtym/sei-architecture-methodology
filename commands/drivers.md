@@ -1,6 +1,10 @@
+---
+description: Collect and track the four SEI architectural driver kinds — business goals, use cases, constraints, and six-part quality attribute scenarios — as a traceable architecture/drivers/ register.
+---
+
 # /drivers — Architectural drivers register
 
-Read `skills/architectural-drivers/SKILL.md` and follow its instructions exactly. Collect and
+Read `${CLAUDE_PLUGIN_ROOT}/skills/architectural-drivers/SKILL.md` and follow its instructions exactly. Collect and
 track the four driver kinds — business goals, primary functional requirements (as proper UML
 **use cases**, each with its own use case diagram), constraints, and quality attribute scenarios
 (six-part, each with its own horizontal scenario diagram) — as a **directory**,

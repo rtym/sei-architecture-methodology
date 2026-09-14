@@ -6,7 +6,7 @@ description: >-
   before a software architecture exists. Use when the user invokes /qaw or asks to run a QAW,
   facilitate a quality attribute workshop, or elicit scenarios with stakeholders.
 version: 1.0.0
-allowed-tools: [Read, Write, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
 # Quality Attribute Workshop (QAW)
@@ -16,10 +16,10 @@ Facilitate the SEI QAW. The QAW is **system-centric** and **stakeholder-focused*
 represents (or relays for) the stakeholders.
 
 Output file: `architecture/qaw/qaw-report.md` (create the folder). Update it after every step.
-Deep reference: `references/qaw-method.md` (the QAW is one structured form of "gathering ASRs by
-interviewing stakeholders" — `references/architectural-drivers.md` covers the other three ways
+Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/qaw-method.md` (the QAW is one structured form of "gathering ASRs by
+interviewing stakeholders" — `${CLAUDE_PLUGIN_ROOT}/references/architectural-drivers.md` covers the other three ways
 and the "play dumb" technique for a stakeholder who says *"I don't know what that requirement
-should be"*). Report template: `templates/qaw-report.md`.
+should be"*). Report template: `${CLAUDE_PLUGIN_ROOT}/templates/qaw-report.md`.
 
 **Keep prompts short.** Numbered lists for choices. One step at a time; announce each step in one line.
 
@@ -84,7 +84,7 @@ Take the **top scenarios** (as many as time allows, usually 4–6). For each, pr
   measure (numeric);
 - **business goals** it supports;
 - the **relevant quality attributes**, classified against **ISO/IEC 25010:2023**
-  (characteristic + sub-characteristic — see `references/quality-attribute-taxonomy.md`);
+  (characteristic + sub-characteristic — see `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`);
 - a **six-part UML scenario diagram** — **horizontal `flowchart LR`** (use the `sei-diagrams`
   skill's *Quality attribute scenario diagram* pattern), rendered to PNG and visually verified;
 - **questions** raised about how the architecture would achieve it;
@@ -105,7 +105,7 @@ Refinement (concern / sub-characteristic) · Leaf scenario (ID + response measur
   (`V ≈ Importance`, `R ≈ Difficulty`.) Mark a `(H, H)` leaf `★`.
 - Follow the table with a **"Reading the tree"** note: a QA/refinement with no leaf → look for
   an unrecorded ASR; the `★` leaves get the most attention.
-- Template: `templates/utility-tree.md`.
+- Template: `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`.
 
 Hand this tree to `/drivers` — it populates `architecture/drivers/quality-attributes/utility-tree.md`
 and is referenced from the drivers `README.md`. ATAM step 5 reuses the same structure.
@@ -135,8 +135,8 @@ and is referenced from the drivers `README.md`. ATAM step 5 reuses the same stru
   the `architectural-drivers` register.
 - **Report format**: `qaw-report.md` is the working file. For the deliverable, ask the user
   **Markdown, HTML, or both** and build it with
-  `scripts/build-report.sh architecture/qaw/qaw-report.md --format <fmt> --embed-diagrams
-  --title "Quality Attribute Workshop — <system>"`.
+  `${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh architecture/qaw/qaw-report.md --format <fmt> --embed-diagrams
+  --title "Quality Attribute Workshop — <SystemName>"`.
 
 ## Quality gate — cross-check the output before you're done
 
@@ -146,7 +146,7 @@ Do not declare the activity complete until the generated artifact passes both:
    the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
-   `references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
+   `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
    re-run, repeat.
 
 Every embedded diagram must additionally have been rendered to PNG and **visually cross-verified**

@@ -70,8 +70,11 @@ claude plugin install sei-architecture-methodology@sei-architecture-methodology
 
 ### Use it in place (no install)
 
-Open this folder as your project in Claude Code — the `.claude/commands/*` and the skills are
-picked up directly. Good for hacking on the plugin itself.
+Open this folder as your project in Claude Code — `.claude/commands` is a symlink to the
+plugin's `commands/`, so the slash commands are picked up directly. Good for hacking on the
+plugin itself. Note that `${CLAUDE_PLUGIN_ROOT}` is only set for an *installed* plugin; when
+working in place, read the referenced `references/`, `templates/` and `scripts/` paths relative
+to this folder.
 
 ### Auto-enable for a team
 

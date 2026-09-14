@@ -7,7 +7,7 @@ description: >-
   architecture, write an architecture description / SAD, create architecture views, or prepare an
   architecture hand-off / vision document.
 version: 1.0.0
-allowed-tools: [Read, Write, Bash, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
 # Architecture documentation — Views and Beyond (V&B)
@@ -17,12 +17,12 @@ al., *Documenting Software Architectures*). The description is a **package of vi
 **documentation beyond views** that ties them together.
 
 Output: `architecture/docs/` (create it), one Markdown file per view + supporting docs, and a
-`README.md` roadmap. Deep reference: `references/views-and-beyond.md`. Templates in `templates/`.
-Diagrams: the `sei-diagrams` skill (`skills/sei-diagrams/SKILL.md`).
+`README.md` roadmap. Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`. Templates in `${CLAUDE_PLUGIN_ROOT}/templates/`.
+Diagrams: the `sei-diagrams` skill (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/SKILL.md`).
 
 **Keep prompts short.** Numbered lists. **Draft first**, refine.
 
-## Guiding rules (full guidance in `references/views-and-beyond.md`)
+## Guiding rules (full guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`)
 
 - **Know your reader.** Documentation serves four uses — education, communication, analysis &
   construction, forensics — and is both *prescriptive* (constrains open decisions) and
@@ -106,7 +106,7 @@ Keep to ≤ ~10 elements; split into sub-views if larger. Legend included or ref
 ### 2.3 Element interfaces
 <For significant elements: provided/required interfaces, operations, data, error handling —
 the four agreement points (scope · interaction style · data representation & structure · error
-model) from `references/interfaces.md`. Reference §8 of the ADD Architecture.md if it exists.>
+model) from `${CLAUDE_PLUGIN_ROOT}/references/interfaces.md`. Reference §8 of the ADD Architecture.md if it exists.>
 ### 2.4 Element behavior
 <Sequence / state diagrams for behavior not obvious from structure. Via sei-diagrams.>
 
@@ -150,7 +150,7 @@ Create these supporting files in `architecture/docs/`:
 | `README.md` | Roadmap + organisation | What documentation exists, how it's organised, how each stakeholder should read it, the view-selection table, and a scenario-based "how to find" guide. |
 | `system-overview.md` | System overview | What the system does, its context, major functional requirements (use cases), and the driving quality attribute scenarios (link to `../drivers/README.md` / `../scenarios.md`). |
 | `mapping-between-views.md` | Mapping between views | Tables mapping elements across views (module → runtime component → deployment node). This is where internal consistency is demonstrated. |
-| `rationale.md` | Rationale | Cross-cutting architecture rationale and the ADR log (`templates/adr.md` per decision). |
+| `rationale.md` | Rationale | Cross-cutting architecture rationale and the ADR log (`${CLAUDE_PLUGIN_ROOT}/templates/adr.md` per decision). |
 | `directory.md` | Directory | Index, glossary, acronym list. |
 | `change-log.md` | — | Dated list of revisions to the architecture description. |
 
@@ -162,8 +162,8 @@ the `docs/` directory and orders it as *roadmap → system overview → Module v
 Allocation view → other views → mapping between views → rationale → directory → change log*:
 
 ```bash
-scripts/build-report.sh --profile vandb architecture/docs/ \
-  --format both --embed-diagrams --title "Architecture Description — <system>" \
+${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh --profile vandb architecture/docs/ \
+  --format both --embed-diagrams --title "Architecture Description — <SystemName>" \
   --out architecture/reports/architecture-description.html
 ```
 
@@ -187,7 +187,7 @@ page and a table of contents that follows the V&B section order.
 
 ## Notation, combining views, behaviour
 
-Deep guidance in `references/views-and-beyond.md`:
+Deep guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`:
 
 - **Notation** — use the least formal notation that removes ambiguity for the reader: C4 for
   structure, UML for behaviour and use cases; always with a legend. The `sei-diagrams` skill
@@ -226,7 +226,7 @@ Do not declare the activity complete until the generated artifact passes both:
    the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
-   `references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
+   `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
    re-run, repeat.
 
 Every embedded diagram must additionally have been rendered to PNG and **visually cross-verified**
