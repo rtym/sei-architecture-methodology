@@ -29,13 +29,6 @@ else
   export PLANTUML_INCLUDE_PATH="$ASSETS"
 fi
 
-# Under PlantUML's SANDBOX security profile an !include may not reach outside the rendered
-# file's own directory, which breaks the include path above. Distribution builds (notably
-# Debian/Ubuntu's plantuml package) do not always default to the permissive LEGACY profile the
-# upstream jar uses. Ask for LEGACY unless the caller deliberately chose a profile.
-: "${PLANTUML_SECURITY_PROFILE:=LEGACY}"
-export PLANTUML_SECURITY_PROFILE
-
 OUT_DIR=""
 FORMAT="png"
 TARGETS=()
