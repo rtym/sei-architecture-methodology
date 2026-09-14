@@ -697,10 +697,45 @@ def check_self() -> list[str]:
         if not ds:
             errs.append(f"{rel}: front-matter has no 'description'")
 
-    # commands delegate to a skill
-    for cmd in sorted((ROOT / ".claude" / "commands").glob("*.md")):
-        if "SKILL.md" not in cmd.read_text(encoding="utf-8"):
+    # commands live at the plugin root (.claude/commands is only a symlink for in-place hacking)
+    cmd_dir = ROOT / "commands"
+    cmds = sorted(cmd_dir.glob("*.md"))
+    if not cmds:
+        errs.append("no commands/*.md at the plugin root — slash commands will not load when installed")
+    for cmd in cmds:
+        ctext = cmd.read_text(encoding="utf-8")
+        if "SKILL.md" not in ctext:
             errs.append(f"{cmd.relative_to(ROOT)}: command does not reference a SKILL.md")
+        cfm = re.match(r"^---\n(.*?)\n---\n", ctext, re.DOTALL)
+        if not cfm:
+            errs.append(f"{cmd.relative_to(ROOT)}: missing YAML front-matter "
+                        f"(the slash-command picker shows no description without it)")
+        elif not re.search(r"^description:\s*\S", cfm.group(1), re.MULTILINE):
+            errs.append(f"{cmd.relative_to(ROOT)}: front-matter has no 'description'")
+
+    # skills must be able to revise what they wrote, not just overwrite it
+    for sf in skill_files:
+        fm = re.match(r"^---\n(.*?)\n---\n", sf.read_text(encoding="utf-8"), re.DOTALL)
+        if not fm:
+            continue
+        at = re.search(r"^allowed-tools:\s*\[(.*?)\]", fm.group(1), re.MULTILINE)
+        if at:
+            tools = {x.strip() for x in at.group(1).split(",")}
+            for needed in ("Read", "Write", "Edit"):
+                if needed not in tools:
+                    errs.append(f"{sf.parent.relative_to(ROOT).as_posix()}: "
+                                f"allowed-tools is missing '{needed}'")
+
+    # every cross-file path in a command or SKILL.md must be plugin-root-anchored, because the
+    # cwd at runtime is the user's project, not the plugin
+    BARE_PATH_RE = re.compile(
+        r"(?<![/{\w-])(references|templates|assets)/[A-Za-z0-9_./-]+"
+        r"|(?<![/{\w-])scripts/(?:build-report|render|render-plantuml|setup)\.sh"
+        r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md")
+    for md in [*cmds, *skill_files]:
+        for m in BARE_PATH_RE.finditer(md.read_text(encoding="utf-8")):
+            errs.append(f"{md.relative_to(ROOT)}: path '{m.group(0)}' is not "
+                        f"anchored to ${{CLAUDE_PLUGIN_ROOT}}")
 
     # embedded diagrams in skills/templates/references must obey the rules
     for md in [*skill_files,
