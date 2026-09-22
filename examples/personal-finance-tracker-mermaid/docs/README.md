@@ -43,7 +43,7 @@ stakeholder concerns require.
 ## Related artifacts
 
 - Drivers register: [`../drivers/README.md`](../drivers/README.md)
-- Quality attribute scenarios: [`../scenarios.md`](../scenarios.md)
+- Quality attribute scenarios: [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md)
 - ADD working architecture: [`../add/personal-finance-tracker-Architecture.md`](../add/personal-finance-tracker-Architecture.md)
 - ATAM evaluation: [`../atam/atam-report.md`](../atam/atam-report.md)
 

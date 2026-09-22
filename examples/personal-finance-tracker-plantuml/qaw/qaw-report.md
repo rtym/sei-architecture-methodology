@@ -109,7 +109,12 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 
 - **Business goals**: BG-2
 - **Relevant quality attributes (ISO/IEC 25010)**: Security / confidentiality, accountability
-- **Six-part scenario diagram**: `../diagrams/scenario-SQA-1.png` (visually verified: yes)
+- **Six-part scenario diagram** (refined into `SQA-1` in the drivers register):
+
+![CS-1 six-part scenario](diagrams/scenario-CS-1.png)
+
+Source: [`diagrams/scenario-CS-1.puml`](diagrams/scenario-CS-1.puml) · rendered + visually verified.
+
 - **Questions**: Where is tenant scoping enforced — one place or many? Is the audit log tamper-evident?
 - **Issues / assumptions**: assumes all data access goes through the API (no direct DB clients).
 
@@ -126,6 +131,12 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 
 - **Business goals**: BG-1
 - **Relevant quality attributes (ISO/IEC 25010)**: Interaction capability / operability, learnability
+- **Six-part scenario diagram** (refined into `UQA-1` in the drivers register):
+
+![CS-5 six-part scenario](diagrams/scenario-CS-5.png)
+
+Source: [`diagrams/scenario-CS-5.puml`](diagrams/scenario-CS-5.puml) · rendered + visually verified.
+
 - **Questions**: Does the form need progressive disclosure? Are categories pre-seeded?
 - **Issues / assumptions**: usability test to be run on a clickable prototype before build.
 
@@ -161,4 +172,4 @@ scenarios become the `<ATTR>QA-n` drivers under
 
 ---
 
-**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [scenarios](../scenarios.md) · [ADD](../add/personal-finance-tracker-Architecture.md) · [ATAM](../atam/atam-report.md)
+**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [scenarios](../quality-attributes/scenarios.md) · [ADD](../add/personal-finance-tracker-Architecture.md) · [ATAM](../atam/atam-report.md)

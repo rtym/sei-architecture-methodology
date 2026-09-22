@@ -5,8 +5,8 @@ description: >-
   that elicits, brainstorms, consolidates, prioritises and refines quality attribute scenarios
   before a software architecture exists. Use when the user invokes /qaw or asks to run a QAW,
   facilitate a quality attribute workshop, or elicit scenarios with stakeholders.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # Quality Attribute Workshop (QAW)
@@ -142,8 +142,7 @@ and is referenced from the drivers `README.md`. ATAM step 5 reuses the same stru
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/qaw/qaw-report.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/qaw/qaw-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

@@ -2,7 +2,7 @@
 
 _Views-and-Beyond architecture description_
 
-> Generated 2026-09-12 · 10 source file(s)
+> Generated 2026-09-22 · 10 source file(s)
 
 ## Contents
 
@@ -118,7 +118,7 @@ stakeholder concerns require.
 ## Related artifacts
 
 - Drivers register: [`../drivers/README.md`](../drivers/README.md)
-- Quality attribute scenarios: [`../scenarios.md`](../scenarios.md)
+- Quality attribute scenarios: [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md)
 - ADD working architecture: [`../add/personal-finance-tracker-Architecture.md`](../add/personal-finance-tracker-Architecture.md)
 - ATAM evaluation: [`../atam/atam-report.md`](../atam/atam-report.md)
 
@@ -156,7 +156,7 @@ Source: [`diagrams/system-overview-01.puml`](../docs/diagrams/system-overview-01
 
 ## Driving quality attribute scenarios
 
-See [`../scenarios.md`](../scenarios.md) for the six-part detail. The architecture is shaped mainly by:
+See [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md) for the six-part detail. The architecture is shaped mainly by:
 
 - `SQA-1` (security / confidentiality) — cross-user access rejected and logged; 0 successful reads.
 - `AQA-1` (reliability / availability) — survive a single-AZ failure, recover < 60 s, ≥ 99.5 %/mo.

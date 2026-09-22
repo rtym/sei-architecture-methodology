@@ -1,0 +1,17 @@
+@startuml scenario-AQA-1
+!include plantuml-theme.puml
+left to right direction
+hide stereotype
+title Quality attribute scenario — AQA-1 — Reliability / availability
+rectangle "<b>Source of stimulus</b>\nCloud infrastructure" as SRC #E7E3F3
+rectangle "<b>Stimulus</b>\nA single availability zone fails" as STIM #E7E3F3
+rectangle "<b>Artifact</b>\nWhole system" as ART #EDF2F8
+rectangle "<b>Response</b>\nTraffic shifts to the healthy AZ; the data tier fails over automatically" as RESP #E4F0E9
+rectangle "<b>Response measure</b>\nUptime >= 99.5 %/month; recovery < 60 s; RPO < 5 min" as MEAS #E4F0E9
+rectangle "<b>Environment</b>\nProduction" as ENV #F5EEE3
+SRC  --> STIM : generates
+STIM --> ART  : arrives at
+ART  --> RESP : produces
+RESP --> MEAS : measured by
+ENV  ..> ART
+@enduml

@@ -3,7 +3,7 @@
 - **System**: <one line>
 - **Date**: <YYYY-MM-DD>
 - **Session**: `<slug>-session.md`
-- **Drivers**: `../drivers/drivers.md`
+- **Drivers**: [`../drivers/README.md`](../drivers/README.md)
 
 > Companion document produced by `/attribute-driven-design`. For a full Views-and-Beyond
 > description, run `/architecture-docs`; this document is the ADD working architecture.

@@ -1,5 +1,6 @@
 ---
 description: Collect and track the four SEI architectural driver kinds — business goals, use cases, constraints, and six-part quality attribute scenarios — as a traceable architecture/drivers/ register.
+argument-hint: "[<path to brief / PRD / requirements …>]"
 ---
 
 # /drivers — Architectural drivers register
@@ -13,3 +14,6 @@ track the four driver kinds — business goals, primary functional requirements 
 prioritised list + change log); a small `README.md` index in each subdirectory; and a
 `quality-attributes/utility-tree.md` — the **tabular** utility tree summarising the quality
 attributes. Every cross-reference is a working relative Markdown link.
+
+Arguments: `$ARGUMENTS`. Any paths given are the Step-1 source material — read them before drafting
+instead of asking what exists.

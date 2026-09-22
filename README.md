@@ -4,7 +4,7 @@ A pluggable Claude Code skill set that automates the **SEI (Carnegie Mellon Soft
 Institute)** software-architecture practice end to end — from eliciting architectural drivers to
 evaluating the finished architecture — and renders clean, verified UML / C4 diagrams to PNG.
 
-It packages six activities as separate skills behind one router:
+It packages seven activities as separate skills behind one router:
 
 | Command | Skill | What it does | Output under `architecture/` |
 |---------|-------|--------------|------------------------------|
@@ -112,7 +112,8 @@ bash skills/sei-diagrams/scripts/setup.sh
 ```
 
 Installs `@mermaid-js/mermaid-cli` (+ `@mermaid-js/layout-elk`) locally under the skill and
-downloads a headless Chromium once (~150 MB). Needs Node 18+. **PlantUML** (used for true-UML
+downloads a headless Chromium once (~150 MB). Needs Node 18+. The versions are pinned by the
+committed `package-lock.json`, so every clone renders identically. **PlantUML** (used for true-UML
 use-case diagrams and canonical C4) needs a Java runtime plus PlantUML itself —
 `brew install openjdk plantuml`, or `sudo apt-get install plantuml`;
 `scripts/render-plantuml.sh` auto-detects a keg-only Homebrew JDK.
@@ -322,8 +323,9 @@ sei-architecture-methodology/
 ├── .claude-plugin/
 │   ├── plugin.json                    # plugin manifest (8 skills)
 │   └── marketplace.json               # one-plugin marketplace (for /plugin marketplace add)
+├── commands/                          # /sei /drivers /quality-attributes /qaw /add /atam /architecture-docs /sei-diagram
 ├── .claude/
-│   └── commands/                      # /sei /drivers /quality-attributes /qaw /add /atam /architecture-docs /sei-diagram
+│   └── commands -> ../commands        # symlink so the slash commands load when hacking on the plugin in place
 │                                      # (settings.local.json — personal model pin / permissions — is gitignored)
 ├── skills/
 │   ├── sei-architecture/              # router
@@ -338,7 +340,8 @@ sei-architecture-methodology/
 │       │   └── c4/                    #   vendored C4-PlantUML 2.10.0 (MIT) + sei-c4-palette.puml (offline)
 │       │       ├── LICENSE            #     upstream MIT notice, verbatim
 │       │       └── README.md          #     provenance: upstream, pinned version, unmodified
-│       └── scripts/                   # setup.sh, render.sh, render-plantuml.sh
+│       ├── scripts/                   # setup.sh, render.sh, render-plantuml.sh
+│       └── package-lock.json          # pins the Mermaid renderer (npm ci in setup.sh)
 ├── references/                        # deep method notes + tactics catalog + patterns + checklist
 ├── templates/                         # blank artifact templates (one per driver kind, per report, per view)
 ├── scripts/
@@ -351,6 +354,8 @@ sei-architecture-methodology/
 │   ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability)
 │   ├── test_mdreport.py               # mdreport unit tests
 │   └── run.sh                         # full suite
+├── CHANGELOG.md                       # release notes per version
+├── CLAUDE.md                          # contributor notes: tests, conventions, release checklist
 ├── LICENSE                            # Apache-2.0 (provisional — see Licensing)
 └── NOTICE                             # third-party attribution (vendored C4-PlantUML, MIT)
 ```
@@ -389,7 +394,11 @@ diagram in the shipped docs and examples obeys the ten rules; the deprecated fla
 never appears; the license actually grants something and `LICENSE` / `plugin.json` / `NOTICE`
 agree; the vendored C4-PlantUML ships its MIT notice and its pinned version matches everywhere
 it is asserted; `mdreport.py` converts a representative document correctly; the example
-artifacts validate; a Mermaid diagram and a PlantUML diagram each render to PNG.
+artifacts validate; a Mermaid diagram and a PlantUML diagram each render to PNG. Since 1.9.0 it
+also checks that `plugin.json` and `marketplace.json` agree on the version; that every skill
+aliased by a command is hidden from the slash menu (one picker entry per activity); that every
+scenario in `scenarios.md` and every refined QAW scenario embeds a rendered diagram; and that
+`mapping-between-views.md` contains real cross-view tables.
 
 Validate produced artifacts in a target project:
 

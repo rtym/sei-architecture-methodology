@@ -109,7 +109,30 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 
 - **Business goals**: BG-2
 - **Relevant quality attributes (ISO/IEC 25010)**: Security / confidentiality, accountability
-- **Six-part scenario diagram**: `../diagrams/scenario-SQA-1.png` (visually verified: yes)
+- **Six-part scenario diagram** (refined into `SQA-1` in the drivers register):
+
+```mermaid
+flowchart LR
+  %% Quality attribute scenario — CS-1 (refined into SQA-1) — Security / confidentiality  (horizontal)
+  src["<b>Source of stimulus</b><br/>Authenticated user acting as an attacker"]
+  stim["<b>Stimulus</b><br/>Requests another user's transactions by guessing record IDs"]
+  subgraph env["Environment: Normal operation"]
+    art["<b>Artifact</b><br/>API layer and data store"]
+  end
+  resp["<b>Response</b><br/>Request is rejected; the attempt is written to an append-only audit log and alerted"]
+  meas["<b>Response measure</b><br/>0 successful cross-user reads; 100 % of attempts logged; alert < 1 min"]
+  src -->|generates| stim --> art
+  art --> resp -->|measured by| meas
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  class src,stim source
+  class art artifact
+  class resp,meas response
+```
+
+![CS-1 six-part scenario](diagrams/scenario-CS-1.png)
+
 - **Questions**: Where is tenant scoping enforced — one place or many? Is the audit log tamper-evident?
 - **Issues / assumptions**: assumes all data access goes through the API (no direct DB clients).
 
@@ -126,6 +149,30 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 
 - **Business goals**: BG-1
 - **Relevant quality attributes (ISO/IEC 25010)**: Interaction capability / operability, learnability
+- **Six-part scenario diagram** (refined into `UQA-1` in the drivers register):
+
+```mermaid
+flowchart LR
+  %% Quality attribute scenario — CS-5 (refined into UQA-1) — Interaction capability / operability  (horizontal)
+  src["<b>Source of stimulus</b><br/>First-time user"]
+  stim["<b>Stimulus</b><br/>Attempts to record their first transaction"]
+  subgraph env["Environment: Normal operation"]
+    art["<b>Artifact</b><br/>Transaction form"]
+  end
+  resp["<b>Response</b><br/>User completes the entry without consulting help documentation"]
+  meas["<b>Response measure</b><br/>≥ 85 % task-completion rate in a 10-person moderated usability test"]
+  src -->|generates| stim --> art
+  art --> resp -->|measured by| meas
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  class src,stim source
+  class art artifact
+  class resp,meas response
+```
+
+![CS-5 six-part scenario](diagrams/scenario-CS-5.png)
+
 - **Questions**: Does the form need progressive disclosure? Are categories pre-seeded?
 - **Issues / assumptions**: usability test to be run on a clickable prototype before build.
 
@@ -161,4 +208,4 @@ scenarios become the `<ATTR>QA-n` drivers under
 
 ---
 
-**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [scenarios](../scenarios.md) · [ADD](../add/personal-finance-tracker-Architecture.md) · [ATAM](../atam/atam-report.md)
+**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [scenarios](../quality-attributes/scenarios.md) · [ADD](../add/personal-finance-tracker-Architecture.md) · [ATAM](../atam/atam-report.md)

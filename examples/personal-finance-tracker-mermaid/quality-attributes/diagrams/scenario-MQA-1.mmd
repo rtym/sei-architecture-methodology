@@ -1,0 +1,17 @@
+flowchart LR
+  %% Quality attribute scenario — MQA-1 — Maintainability / modifiability  (horizontal)
+  src["<b>Source of stimulus</b><br/>Developer"]
+  stim["<b>Stimulus</b><br/>Adds a new dashboard report type"]
+  subgraph env["Environment: During a sprint"]
+    art["<b>Artifact</b><br/>Reporting module and read model"]
+  end
+  resp["<b>Response</b><br/>Change is isolated to the reporting module and its tests; no other module is touched"]
+  meas["<b>Response measure</b><br/>≤ 1 person-day; ≤ 3 modules touched; 0 regressions"]
+  src -->|generates| stim --> art
+  art --> resp -->|measured by| meas
+  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  class src,stim source
+  class art artifact
+  class resp,meas response

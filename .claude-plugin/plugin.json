@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "sei-architecture-methodology",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Automates the SEI (Carnegie Mellon Software Engineering Institute) architecture practice end to end: quality attribute scenarios, Quality Attribute Workshop (QAW), Attribute-Driven Design (ADD 3.0), Architecture Tradeoff Analysis Method (ATAM), and Views-and-Beyond documentation. Includes a diagramming skill that renders clean, low-crossing UML / C4 diagrams to PNG with a curated palette.",
   "author": {
     "name": "Roman Tymoshuk",

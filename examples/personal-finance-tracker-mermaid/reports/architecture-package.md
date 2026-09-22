@@ -1,6 +1,6 @@
 # Personal Finance Tracker — Architecture Package
 
-> Generated 2026-09-12 · 2 source file(s)
+> Generated 2026-09-22 · 2 source file(s)
 
 ## Contents
 
@@ -71,6 +71,7 @@
 | UC-1 | Record a transaction | Registered user | [diagram](../drivers/use-cases/diagrams/UC-1.png) | [UC-1](../drivers/use-cases/UC-1.md) |
 | UC-2 | View the monthly dashboard | Registered user | [diagram](../drivers/use-cases/diagrams/UC-2.png) | [UC-2](../drivers/use-cases/UC-2.md) |
 | UC-3 | Import a bank statement (CSV) | Registered user | [diagram](../drivers/use-cases/diagrams/UC-3.png) | [UC-3](../drivers/use-cases/UC-3.md) |
+| UC-4 | Categorise transaction (`<<include>>`d by UC-1, UC-3) | Registered user | [diagram](../drivers/use-cases/diagrams/UC-4.png) | [UC-4](../drivers/use-cases/UC-4.md) |
 
 Overview use case diagram: [`use-cases/diagrams/overview-core.png`](../drivers/use-cases/diagrams/overview-core.png)
 (Mermaid `flowchart` fallback — this is the Mermaid tree).
@@ -113,6 +114,7 @@ Never `QAS-`.
 | UC-1 | [UC-1](../drivers/use-cases/UC-1.md) | BG-1, BG-3 | PQA-1, MQA-1, CON-4 | ADD iter 1 | in design |
 | UC-2 | [UC-2](../drivers/use-cases/UC-2.md) | BG-1 | PQA-1, UQA-1 | ADD iter 2 | open |
 | UC-3 | [UC-3](../drivers/use-cases/UC-3.md) | BG-1 | PQA-2 | ADD iter 3 | open |
+| UC-4 | [UC-4](../drivers/use-cases/UC-4.md) | BG-1 | UC-1, UC-3 (`<<include>>`) | ADD iter 1 | in design |
 | AQA-1 | [AQA-1](../drivers/quality-attributes/AQA-1.md) | BG-1, BG-4 | CON-3, CON-5 | ADD iter 1 | open |
 | PQA-1 | [PQA-1](../drivers/quality-attributes/PQA-1.md) | BG-1 | UC-1, UC-2 | ADD iter 2 | open |
 | PQA-2 | [PQA-2](../drivers/quality-attributes/PQA-2.md) | BG-1 | UC-3 | ADD iter 3 | open |
@@ -148,7 +150,7 @@ scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
 
 ---
 
-**Navigation**: [example root](../README.md) · [quality attribute scenarios](../scenarios.md) ·
+**Navigation**: [example root](../README.md) · [quality attribute scenarios](../quality-attributes/scenarios.md) ·
 [QAW](../qaw/qaw-report.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md) ·
 [ATAM](../atam/atam-report.md) · [Views & Beyond docs](../docs/README.md)
 

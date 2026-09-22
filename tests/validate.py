@@ -472,14 +472,24 @@ def check_scenarios(path: Path) -> list[str]:
         errs.append("uses deprecated flat 'QAS-<n>' IDs")
     rows = _table_rows(text, "Response measure")
     n = len([r for r in rows if re.search(r"[A-Z]{1,4}QA-\d+", " ".join(r))])
-    if rows and not (4 <= n <= 25):
-        errs.append(f"{n} quality attribute scenarios — expected roughly 8–15 (min 5, max ~20)")
+    if rows and not (5 <= n <= 20):
+        errs.append(f"{n} quality attribute scenarios — expected 8–15 (min 5, max 20)")
     for r in rows:
         joined = " ".join(r)
         if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not NUM_RE.search(joined):
             errs.append(f"scenario row has no numeric response measure: {joined[:80]!r}")
     if rows and "25010" not in text:
         errs.append("no ISO/IEC 25010 classification anywhere in the file")
+    # every scenario is drawn: an image line to diagrams/scenario-<ID>.png (both notations) —
+    # a fenced mermaid block alone is not enough, the PNG is what was visually verified
+    images = " ".join(re.findall(r"^!\[[^\]]*\]\(([^)]+)\)\s*$", text, re.MULTILINE))
+    for r in rows:
+        m = re.search(r"\b([A-Z]{1,4}QA-\d+)\b", " ".join(r))
+        if m and f"scenario-{m.group(1)}." not in images:
+            errs.append(f"{m.group(1)}: no embedded scenario diagram — add "
+                        f"![{m.group(1)} six-part scenario](diagrams/scenario-{m.group(1)}.png)")
+    for m in re.finditer(r"`[^`\n]*diagrams/[^`\n]+\.(?:png|svg)`", text):
+        errs.append(f"diagram referenced as a bare backtick path, not an image line: {m.group(0)}")
     for j, blk in enumerate(diagrams_in_markdown(text), 1):
         errs += check_diagram(blk, f"scenario diagram #{j}")
     return errs
@@ -487,7 +497,21 @@ def check_scenarios(path: Path) -> list[str]:
 
 def check_qaw(path: Path) -> list[str]:
     errs: list[str] = []
-    text = path.read_text(encoding="utf-8").lower()
+    raw = path.read_text(encoding="utf-8")
+    text = raw.lower()
+    # Step 8 — every refined scenario carries its rendered six-part diagram
+    m = re.search(r"^##[^\n]*refine[^\n]*$(.*?)(?=^##\s|\Z)", raw, re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    if m:
+        refined = re.findall(r"^###\s+(\S+)", m.group(1), re.MULTILINE)
+        images = " ".join(re.findall(r"^!\[[^\]]*\]\(([^)]+\.(?:png|svg))\)\s*$", m.group(1), re.MULTILINE))
+        for rid in refined:
+            if rid.rstrip(":") not in images:
+                errs.append(f"refined scenario {rid} has no embedded six-part scenario diagram "
+                            f"(![...](diagrams/scenario-{rid}.png))")
+    for mm in re.finditer(r"`[^`\n]*diagrams/[^`\n]+\.(?:png|svg)`", raw):
+        errs.append(f"diagram referenced as a bare backtick path, not an image line: {mm.group(0)}")
+    for j, blk in enumerate(diagrams_in_markdown(raw), 1):
+        errs += check_diagram(blk, f"QAW diagram #{j}")
     for kw in ("introduction", "business", "architectural plan", "architectural driver",
                "brainstorm", "consolidat", "prioriti", "refine"):
         if kw not in text:
@@ -545,6 +569,23 @@ def check_view_packet(path: Path) -> list[str]:
         errs.append("view rationale cites no driver ID")
     for j, blk in enumerate(diagrams_in_markdown(text), 1):
         errs += check_diagram(blk, f"view diagram #{j}")
+    return errs
+
+
+def check_mapping(path: Path) -> list[str]:
+    """mapping-between-views.md is how a V&B package proves internal consistency — it must
+    contain real cross-view tables, not a placeholder."""
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    n_rows = sum(len(_table_rows(text, h)) for h in ("Module", "Runtime", "Component", "Driver", "Element"))
+    if n_rows == 0:
+        errs.append("mapping-between-views has no populated mapping table")
+    views = set(re.findall(r"\bview-[a-z0-9-]+", text))
+    if len(views) < 2:
+        errs.append(f"mapping-between-views names {len(views)} view file(s) — it must cross-reference "
+                    f"at least two views (view-<name>.md)")
+    if re.search(r"<[a-z][^>]*>|\bTODO\b|\bTBD\b", text):
+        errs.append("mapping-between-views contains placeholders (<…>, TODO, TBD)")
     return errs
 
 
@@ -633,6 +674,8 @@ def validate_file(path: Path) -> list[str] | None:
         return _md(check_drivers_index(path))
     if name == "utility-tree.md":
         return _md(check_utility_tree(path))
+    if name == "mapping-between-views.md":
+        return _md(check_mapping(path))
     if parent == "business-goals" and re.match(r"BG-\d+\.md$", name):
         return _md(check_bg_file(path))
     if parent == "use-cases" and re.match(r"UC-\d+\.md$", name):
@@ -878,6 +921,40 @@ def check_self() -> list[str]:
         elif not re.search(r"^description:\s*\S", cfm.group(1), re.MULTILINE):
             errs.append(f"{cmd.relative_to(ROOT)}: front-matter has no 'description'")
 
+    # One picker entry per activity: a skill either shares its name with a commands/*.md (the
+    # collision collapses them) or is hidden from the / menu with `user-invocable: false` while
+    # staying model-invocable. Otherwise every activity shows up twice in the slash-command list.
+    cmd_names = {c.stem for c in cmds}
+    for sf in skill_files:
+        fm = re.match(r"^---\n(.*?)\n---\n", sf.read_text(encoding="utf-8"), re.DOTALL)
+        if not fm or sf.parent.name in cmd_names:
+            continue
+        if not re.search(r"^user-invocable:\s*false\s*$", fm.group(1), re.MULTILINE):
+            errs.append(f"{sf.parent.relative_to(ROOT).as_posix()}: has a differently-named "
+                        f"command alias, so it needs 'user-invocable: false' or it appears twice "
+                        f"in the slash-command menu")
+        if re.search(r"^version:", fm.group(1), re.MULTILINE):
+            errs.append(f"{sf.parent.relative_to(ROOT).as_posix()}: 'version' is not a SKILL.md "
+                        f"front-matter field — the plugin version lives in plugin.json")
+
+    # The version is asserted in three places; they must agree or `/plugin marketplace update`
+    # and the plugin manager disagree about what is installed.
+    try:
+        mp = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
+        versions = {
+            "plugin.json": data.get("version"),
+            "marketplace.json metadata.version": mp.get("metadata", {}).get("version"),
+        }
+        for i, pl in enumerate(mp.get("plugins", [])):
+            versions[f"marketplace.json plugins[{i}].version"] = pl.get("version")
+            if pl.get("name") != data.get("name"):
+                errs.append(f"marketplace.json plugins[{i}].name {pl.get('name')!r} != "
+                            f"plugin.json name {data.get('name')!r}")
+        if len(set(versions.values())) != 1:
+            errs.append("version drift: " + ", ".join(f"{k}={v}" for k, v in versions.items()))
+    except Exception as e:
+        errs.append(f"marketplace.json unreadable: {e}")
+
     # skills must be able to revise what they wrote, not just overwrite it
     for sf in skill_files:
         fm = re.match(r"^---\n(.*?)\n---\n", sf.read_text(encoding="utf-8"), re.DOTALL)
@@ -898,7 +975,8 @@ def check_self() -> list[str]:
     BARE_PATH_RE = re.compile(
         r"(?<![/{\w-])(references|templates|assets)/[A-Za-z0-9_./-]+"
         r"|(?<![/{\w-])scripts/(?:build-report|render|render-plantuml|setup)\.sh"
-        r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md")
+        r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md"
+        r"|(?<![/{\w-])tests/validate\.py")
     template_files = sorted((ROOT / "templates").glob("*.md"))
     reference_files = sorted((ROOT / "references").glob("*.md"))
     for md in [*cmds, *skill_files, *template_files, *reference_files]:

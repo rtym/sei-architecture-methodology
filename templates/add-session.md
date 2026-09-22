@@ -12,9 +12,10 @@
 | ID | QA (ISO 25010) | Source | Stimulus | Artifact | Environment | Response | Measure | Priority (Imp,Diff) |
 |----|----------------|--------|----------|----------|-------------|----------|---------|---------------------|
 
-### Primary functional requirements — use cases
-| ID | Name | Description | Priority |
-|----|------|-------------|----------|
+### Primary functional requirements (use cases)
+| ID | Use case name | Primary actor | Architectural significance | Priority |
+|----|---------------|---------------|---------------------------|----------|
+| UC-1 | | | | |
 
 ### Constraints
 | ID | Type | Description |

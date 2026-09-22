@@ -5,8 +5,8 @@ description: >-
   driver-focused decomposition producing an architecture plus C4/UML views and an ADR log. Use
   when the user invokes /add, asks to run an ADD session, design or evolve an architecture from
   quality attribute drivers, or produce an architecture document from scenarios.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # Attribute-Driven Design (ADD 3.0)
@@ -29,7 +29,7 @@ the `sei-diagrams` skill
 
 ## Start
 
-On invocation, ask in one line whether to:
+On invocation — unless `/add` was given arguments that already answer it — ask in one line whether to:
 1. **New** — start a fresh session.
 2. **Continue** — list `architecture/add/*-session.md`, let the user pick, read it, resume.
 3. **Report** — the session file already *is* the report; give its path.
@@ -273,7 +273,8 @@ Announce each step in one line, then write its result to the session file.
   each with primary actor, trigger, and main success scenario.
 - **Quality attribute scenarios** — six-part form, ISO/IEC 25010 classification, attribute-prefixed
   IDs (`AQA-`, `SQA-`, `PQA-`, …), priority `(Importance, Difficulty)`. Import from
-  `architecture/drivers/drivers.md` or `scenarios.md` / QAW report if present.
+  the `architecture/drivers/` register (its `README.md` matrix and one file per driver), or from
+  `architecture/quality-attributes/scenarios.md` / the QAW report if present.
 - **Constraints** (`CON-`) — business, technical, regulatory.
 - **Architectural concerns** (`AC-`) — extensibility, team skills, tech-stack mandates, etc.
 
@@ -369,14 +370,13 @@ offer to run `/architecture-docs` (Views & Beyond) and `/atam` (evaluation).
   minimised crossings. Always render in the conversation before writing to the file.
 - Every sequence diagram in `Architecture.md` is followed immediately by a plain-English description.
 - Wait for user review at the Iteration Plan step and at Steps 2, 3, 4, 5, 6, 7.
-- After the session, `python tests/validate.py architecture/add/*.md` must pass.
+- After the session, `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/add/*.md` must pass.
 
 ## Quality gate — cross-check the output before you're done
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/add/*.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/add/*.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

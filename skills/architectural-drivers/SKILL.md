@@ -6,8 +6,8 @@ description: >-
   — as a directory of one-file-per-driver artifacts with a traceability index. Use when the user
   invokes /drivers or asks to capture architectural drivers, list use cases, track
   requirements/constraints/business goals, or assemble the driver inputs for an ADD or ATAM run.
-version: 1.1.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # Architectural drivers
@@ -265,7 +265,7 @@ Append a dated line to the top `README.md`'s change log for every run: what was 
 
 Do not declare the activity complete until it passes both:
 
-1. **Automated**: `python tests/validate.py architecture/drivers/` (recurses the directory) —
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/drivers/` (recurses the directory) —
    exits 0. Checks IDs, per-file structure, six-part scenarios with numeric measures, a use case
    diagram in every `UC-*.md`, a scenario diagram in every `<ATTR>QA-*.md`, the tabular utility
    tree, `README.md` traceability with no orphans, no broken relative links, diagram rules, and

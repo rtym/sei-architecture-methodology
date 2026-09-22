@@ -106,6 +106,6 @@ scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
 
 ---
 
-**Navigation**: [example root](../README.md) · [quality attribute scenarios](../scenarios.md) ·
+**Navigation**: [example root](../README.md) · [quality attribute scenarios](../quality-attributes/scenarios.md) ·
 [QAW](../qaw/qaw-report.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md) ·
 [ATAM](../atam/atam-report.md) · [Views & Beyond docs](../docs/README.md)

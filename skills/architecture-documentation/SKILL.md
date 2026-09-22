@@ -6,8 +6,8 @@ description: >-
   views, rationale, directory). Use when the user invokes /architecture-docs or asks to document an
   architecture, write an architecture description / SAD, create architecture views, or prepare an
   architecture hand-off / vision document.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # Architecture documentation — Views and Beyond (V&B)
@@ -148,7 +148,7 @@ Create these supporting files in `architecture/docs/`:
 | File | V&B part | Contents |
 |------|----------|----------|
 | `README.md` | Roadmap + organisation | What documentation exists, how it's organised, how each stakeholder should read it, the view-selection table, and a scenario-based "how to find" guide. |
-| `system-overview.md` | System overview | What the system does, its context, major functional requirements (use cases), and the driving quality attribute scenarios (link to `../drivers/README.md` / `../scenarios.md`). |
+| `system-overview.md` | System overview | What the system does, its context, major functional requirements (use cases), and the driving quality attribute scenarios (link to `../drivers/README.md` / `../quality-attributes/scenarios.md`). |
 | `mapping-between-views.md` | Mapping between views | Tables mapping elements across views (module → runtime component → deployment node). This is where internal consistency is demonstrated. |
 | `rationale.md` | Rationale | Cross-cutting architecture rationale and the ADR log (`${CLAUDE_PLUGIN_ROOT}/templates/adr.md` per decision). |
 | `directory.md` | Directory | Index, glossary, acronym list. |
@@ -182,7 +182,7 @@ page and a table of contents that follows the V&B section order.
 4. Write the **beyond-views** files. The `mapping-between-views.md` is mandatory — it is how the
    package proves internal consistency.
 5. Write `README.md` last, once the view set is stable; end it with a Navigation footer.
-6. Run `python tests/validate.py architecture/docs/*.md` and fix any reported issues, including
+6. Run `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` and fix any reported issues, including
    broken relative links.
 
 ## Notation, combining views, behaviour
@@ -222,8 +222,7 @@ Deep guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`:
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/docs/*.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

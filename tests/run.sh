@@ -129,7 +129,6 @@ EOF
     echo "    dot: $(command -v dot || echo 'not on PATH')"
     ( dot -V 2>&1 | sed 's/^/    /' ) || true
     echo "    PLANTUML_INCLUDE_PATH=${PLANTUML_INCLUDE_PATH:-<unset>}"
-    echo "    PLANTUML_SECURITY_PROFILE=${PLANTUML_SECURITY_PROFILE:-<unset>}"
     echo "    plantuml wrapper:"
     [ -r "$(command -v plantuml 2>/dev/null)" ] \
       && head -20 "$(command -v plantuml)" | sed 's/^/      /' || echo "      (not a readable script)"

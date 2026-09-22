@@ -5,7 +5,6 @@ description: >-
   software architecture. Use when the user invokes /atam or asks to evaluate / review / assess an
   architecture, build a quality-attribute utility tree, or identify architectural risks,
   sensitivity points, tradeoff points and risk themes.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
@@ -21,7 +20,7 @@ Tactic and pattern catalogs for Step 6: `${CLAUDE_PLUGIN_ROOT}/references/tactic
 
 ### Full ATAM or a lightweight evaluation?
 
-Ask up front which mode fits:
+Ask up front which mode fits (skip the question if `/atam` was invoked with `full` or `lightweight`):
 
 - **Full ATAM** (this skill's default) — external or cross-team evaluators, two phases, a formal
   report; for high-risk, high-cost, or contentious architectures.
@@ -73,7 +72,7 @@ scenario-analysis template, and the LAE 8-step agenda are in `${CLAUDE_PLUGIN_RO
 | **Tradeoff points** | A sensitivity point affecting **more than one** quality attribute in opposite directions |
 | **Risk themes** | Groups of related risks that point to a systemic weakness; each mapped to a business driver it endangers |
 
-## The nine steps (three evaluation phases)
+## The nine steps (four phases: 0 preparation · 1 evaluation · 2 evaluation with stakeholders · 3 reporting)
 
 ### Phase 0 — Partnership and preparation
 Confirm scope, the architecture package to be evaluated, the stakeholder list for Phase 2, and the
@@ -171,8 +170,7 @@ scenarios from Step 7 that were not already covered.
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/atam/atam-report.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/atam/atam-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

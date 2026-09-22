@@ -29,11 +29,39 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ### PQA-1 — scenario diagram
 
-`diagrams/scenario-PQA-1.png` (visually verified: yes)
+![PQA-1 six-part scenario](diagrams/scenario-PQA-1.png)
+
+Source: [`diagrams/scenario-PQA-1.puml`](diagrams/scenario-PQA-1.puml) · rendered + visually verified.
+
+### PQA-2 — scenario diagram
+
+![PQA-2 six-part scenario](diagrams/scenario-PQA-2.png)
+
+Source: [`diagrams/scenario-PQA-2.puml`](diagrams/scenario-PQA-2.puml) · rendered + visually verified.
 
 ### SQA-1 — scenario diagram
 
 ![SQA-1 six-part scenario](diagrams/scenario-SQA-1.png)
+
+Source: [`diagrams/scenario-SQA-1.puml`](diagrams/scenario-SQA-1.puml) · rendered + visually verified.
+
+### AQA-1 — scenario diagram
+
+![AQA-1 six-part scenario](diagrams/scenario-AQA-1.png)
+
+Source: [`diagrams/scenario-AQA-1.puml`](diagrams/scenario-AQA-1.puml) · rendered + visually verified.
+
+### MQA-1 — scenario diagram
+
+![MQA-1 six-part scenario](diagrams/scenario-MQA-1.png)
+
+Source: [`diagrams/scenario-MQA-1.puml`](diagrams/scenario-MQA-1.puml) · rendered + visually verified.
+
+### UQA-1 — scenario diagram
+
+![UQA-1 six-part scenario](diagrams/scenario-UQA-1.png)
+
+Source: [`diagrams/scenario-UQA-1.puml`](diagrams/scenario-UQA-1.puml) · rendered + visually verified.
 
 ## Primary functional requirements — use cases with architectural impact
 
@@ -55,7 +83,7 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ## Utility tree
 
-A **table** (see [`drivers/quality-attributes/utility-tree.md`](drivers/quality-attributes/utility-tree.md)
+A **table** (see [`drivers/quality-attributes/utility-tree.md`](../drivers/quality-attributes/utility-tree.md)
 for the full version with per-leaf status). `(V, R)` = (business value, technical risk); `★` =
 architecturally significant `(H, H)`.
 
@@ -79,4 +107,4 @@ architecturally significant `(H, H)`.
 
 ---
 
-**Navigation**: [example root](README.md) · [drivers](drivers/README.md) · [QAW](qaw/qaw-report.md) · [ADD](add/personal-finance-tracker-Architecture.md)
+**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [QAW](../qaw/qaw-report.md) · [ADD](../add/personal-finance-tracker-Architecture.md)

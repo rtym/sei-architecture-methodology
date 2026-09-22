@@ -1,4 +1,4 @@
-# Architectural Drivers — `drivers/README.md`: <system>
+# Architectural Drivers — `drivers/README.md`: <SystemName>
 
 - **Date**: <YYYY-MM-DD>
 - **Owner**: <name>
@@ -78,6 +78,6 @@ traces up to ≥ 1 BG. Gaps found: <list or "none">.
 ---
 
 **Navigation**: [project root](../../README.md) ·
-[quality attribute scenarios](../scenarios.md) · [QAW](../qaw/qaw-report.md) ·
+[quality attribute scenarios](../quality-attributes/scenarios.md) · [QAW](../qaw/qaw-report.md) ·
 [ADD architecture](../add/) · [ATAM](../atam/atam-report.md) ·
 [Views & Beyond docs](../docs/README.md)

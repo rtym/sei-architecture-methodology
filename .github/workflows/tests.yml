@@ -44,15 +44,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # no npm cache: package-lock.json is intentionally gitignored,
-          # so there is no lockfile for setup-node to key a cache on.
+          cache: npm
+          cache-dependency-path: skills/sei-diagrams/package-lock.json
 
       # The Chromium download dominates this job; cache it across runs.
       - name: Cache puppeteer Chromium
         uses: actions/cache@v4
         with:
           path: ~/.cache/puppeteer
-          key: puppeteer-${{ runner.os }}-${{ hashFiles('skills/sei-diagrams/package.json') }}
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('skills/sei-diagrams/package-lock.json') }}
           restore-keys: puppeteer-${{ runner.os }}-
 
       - name: Install the Mermaid renderer
@@ -115,7 +115,7 @@ jobs:
         run: bash tests/run.sh
 
       # Belt and braces: render every shipped example .puml for real. The smoke test proves the
-      # include path works; this proves the 21 committed diagrams still compile.
+      # include path works; this proves the 29 committed diagrams still compile.
       - name: Render every example diagram
         run: |
           set -e
@@ -124,4 +124,4 @@ jobs:
           done
           n=$(find "$RUNNER_TEMP/puml" -name '*.png' | wc -l)
           echo "rendered $n diagram(s)"
-          [ "$n" -ge 21 ] || { echo "expected at least 21 PNGs, got $n"; exit 1; }
+          [ "$n" -ge 29 ] || { echo "expected at least 29 PNGs, got $n"; exit 1; }

@@ -1,7 +1,7 @@
 # Reference — Best-practices quality gate
 
 Every skill runs this checklist against its own output **before declaring the activity done**, and
-runs `python tests/validate.py <artifact>` (the automated subset). Report each item as
+runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated subset). Report each item as
 `ok` / `fix: …`. Fix, re-check, repeat.
 
 ---

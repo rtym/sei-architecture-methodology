@@ -6,8 +6,8 @@ description: >-
   run an architecture assessment / architecture vision and is not sure which activity (quality
   attributes, QAW, ADD, ATAM, documentation, diagrams) they need. Explains the workflow and hands
   off to the matching sub-skill.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # SEI Architecture Methodology — router

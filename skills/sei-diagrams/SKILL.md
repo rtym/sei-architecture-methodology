@@ -6,8 +6,8 @@ description: >-
   /sei-diagram, asks to draw / render / export a diagram to PNG, or when any other SEI skill needs a
   context / container / component / sequence / deployment / class / state / quality-attribute-
   scenario diagram.
-version: 1.1.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # SEI diagrams — clean UML / C4, rendered to PNG
@@ -44,7 +44,8 @@ syntax and the render script differ.
 
 ## Workflow
 
-1. Pick the diagram type (table below) and confirm the **notation** (Mermaid or PlantUML — ask).
+1. Pick the diagram type (table below) and confirm the **notation** (Mermaid or PlantUML — ask,
+   unless `/sei-diagram` was given a type / notation argument or the calling skill fixed it).
 2. Write the source file to `architecture/diagrams/<name>.mmd` (Mermaid) or `<name>.puml` (PlantUML).
 3. **Show the diagram source in the conversation** (a fenced ```mermaid or ```plantuml block) and
    get review.
@@ -512,7 +513,7 @@ architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the s
   ```mermaid fenced block **plus** a `![title](diagrams/<name>.png)` image line; PlantUML = the
   image line **plus** a link to the `.puml` source (no pasted `@startuml` block).
 - Re-render **and re-verify** the PNG whenever the source changes; never hand-edit a PNG.
-- `python tests/validate.py` checks every `.mmd` file and every fenced mermaid block against the
+- `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py` checks every `.mmd` file and every fenced mermaid block against the
   rules — run it and fix reported issues.
 
 ## Appendix — native Mermaid C4 syntax (inline sketches only)

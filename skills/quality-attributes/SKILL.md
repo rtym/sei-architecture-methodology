@@ -5,7 +5,6 @@ description: >-
   attribute scenarios and a prioritised driver list. Use when the user invokes /quality-attributes
   or asks to define quality attributes, write NFRs / non-functional requirements as scenarios,
   build a utility tree, or produce architectural drivers for an ADD or ATAM run.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
@@ -114,12 +113,20 @@ measure* — is visible at a glance. Use the `sei-diagrams` skill's **"Quality a
 diagram pattern (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/SKILL.md`, section *Quality attribute scenario diagram*).
 
 For each `<ATTR>QA-n`:
-1. Render the Mermaid `flowchart LR` for that scenario, filled with its six parts, using the
-   shared theme. Show it in the conversation.
-2. On request, batch-render all scenario diagrams to PNG into
-   `architecture/quality-attributes/diagrams/<ATTR>QA-<n>.png` with `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh`.
-3. Embed the diagram (or a link to the PNG) directly under the scenario's row/section in
-   `scenarios.md`.
+1. Write the six-part diagram source — Mermaid `flowchart LR` (default) or the PlantUML pattern —
+   to `architecture/quality-attributes/diagrams/scenario-<ATTR>QA-<n>.mmd|.puml`, filled with the
+   scenario's six parts, using the shared theme. Show the source in the conversation.
+2. **Render it to PNG** (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh` or
+   `render-plantuml.sh`) as `diagrams/scenario-<ATTR>QA-<n>.png`, then **`Read` the PNG and
+   visually cross-verify** it (six boxes left-to-right, artifact inside the environment, labels
+   intact, no crossings). Rendering is not optional — the quality gate below requires it.
+3. Embed it in `scenarios.md` directly under the scenario's `### <ATTR>QA-<n> — scenario diagram`
+   heading per the `sei-diagrams` *Embedding in Markdown* rule: Mermaid → the fenced block **plus**
+   `![<ATTR>QA-<n> six-part scenario](diagrams/scenario-<ATTR>QA-<n>.png)`; PlantUML → that image
+   line plus a link to the `.puml` source. Never a bare backtick path.
+
+The same file names (`scenario-<ATTR>QA-<n>.*`) are what `/drivers` copies into
+`architecture/drivers/quality-attributes/diagrams/`, so the two stay in sync by construction.
 
 ### Step 6 — Build the utility tree (optional but recommended)
 
@@ -164,7 +171,24 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ### PQA-1 — scenario diagram
 
-<Mermaid six-part scenario diagram, or link to architecture/quality-attributes/diagrams/PQA-1.png>
+```mermaid
+flowchart LR
+  %% Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour
+  src["<b>Source of stimulus</b><br/>Registered user"]
+  stim["<b>Stimulus</b><br/>Loads the dashboard (500 concurrent users)"]
+  subgraph env["Environment: Normal operation"]
+    art["<b>Artifact</b><br/>Dashboard service"]
+  end
+  resp["<b>Response</b><br/>Renders charts and recent activity"]
+  meas["<b>Response measure</b><br/>Interactive &lt; 1.5 s at p95"]
+  src -->|generates| stim --> art
+  art --> resp -->|measured by| meas
+  class src,stim source
+  class art artifact
+  class resp,meas response
+```
+
+![PQA-1 six-part scenario](diagrams/scenario-PQA-1.png)
 
 
 ## Primary functional requirements — use cases with architectural impact
@@ -200,8 +224,9 @@ leaves get the most attention.
 - Every scenario has all six parts **and** a numeric response measure.
 - Every scenario is classified against **ISO/IEC 25010:2023** (characteristic + sub-characteristic);
   note in the header if the 2011 model is used instead.
-- Every scenario is visualised as a six-part UML scenario diagram (Step 5) and the diagram is
-  embedded or linked next to the scenario.
+- Every scenario is visualised as a six-part UML scenario diagram (Step 5), rendered to
+  `diagrams/scenario-<ATTR>QA-<n>.png`, visually verified, and embedded (fenced block + image line,
+  or image line + `.puml` link) directly under its `### <ATTR>QA-<n> — scenario diagram` heading.
 - IDs: `BG-`, `UC-` (use cases), `CON-`, and attribute-prefixed QA scenarios (`AQA-`, `SQA-`, `PQA-`, … — see the architectural-drivers skill). Sequential within each prefix; never reused.
 - Every scenario cites ≥ 1 business goal.
 - Priority is the `(Importance, Difficulty)` pair, not a single word.
@@ -212,8 +237,7 @@ leaves get the most attention.
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/quality-attributes/scenarios.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/quality-attributes/scenarios.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
