@@ -119,7 +119,8 @@ Deployment — **must follow C4 principles** regardless of which drawing tool pr
    vs `datastore` vs `source`).
 6. **One diagram = one question.** Keep it to ≤ ~10 elements; if a system has more containers,
    split by concern and add a parent context diagram.
-7. Diagrams are **self-explanatory**: a title, and a legend when notation isn't obvious.
+7. Diagrams are **self-explanatory**: a title, and a legend when notation isn't obvious — see
+   *The legend* below.
 
 ### Notation: flowchart-C4 (house style) or C4-PlantUML
 
@@ -213,6 +214,68 @@ Rel(api, ext, "Sends notifications", "SMTP")
 **Sequence** in PlantUML: `!include plantuml-theme.puml`, then `autonumber`, declare
 all `participant`s at the top, `->` for calls and `-->` for returns, `alt` / `group` for
 branches — one message per line, no `;` in message text.
+
+## The legend
+
+Colour and shape are **semantic** in this house style (internal · external · person · datastore ·
+emphasis — `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/palette.md`), so every structural diagram needs a key. Do
+**not** paste one into each diagram: a legend costs nodes against the ≤ 10 budget and repeats.
+
+**Render the legend once per package** as its own diagram — `architecture/diagrams/legend.png`
+(or `docs/diagrams/legend.png` for a Views-and-Beyond package) — and **reference** it from the
+roadmap `README.md` and from any view packet whose §1 says "legend: see …". A view packet's
+"Include or reference a legend" is satisfied by the reference.
+
+```mermaid
+flowchart LR
+  %% Legend — what shape and colour mean (SEI palette)
+  %% name: legend
+  person(["Person / role"])
+  internal["Internal element<br/><i>technology</i>"]
+  external["External system<br/><i>third party</i>"]
+  store[("Datastore")]
+  queue[["Queue / bus"]]
+  emph["Under discussion / risk"]
+  %% invisible links (~~~) only: they lay the key out in two rows of three instead of
+  %% one tall column — unconnected flowchart nodes do not flow left-to-right on their own
+  person ~~~ internal ~~~ external
+  store ~~~ queue ~~~ emph
+  classDef source    fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef external  fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  classDef emphasis  fill:#F6E4E4,stroke:#B04A46,color:#1F2933;
+  class person source
+  class internal internal
+  class external external
+  class store,queue datastore
+  class emph emphasis
+```
+
+Same key in **PlantUML** (coloured rectangles always render; a bare `legend` block may not):
+
+```plantuml
+@startuml legend
+!include plantuml-theme.puml
+hide stereotype
+left to right direction
+title Legend — what shape and colour mean (SEI palette)
+rectangle "Person / role" as P #E7E3F3
+rectangle "Internal element" as I #EDF2F8
+rectangle "External system" as E #F5EEE3
+rectangle "Datastore / queue" as D #E4F0E9
+rectangle "Under discussion / risk" as R #F6E4E4
+@enduml
+```
+
+**Inline key** — only when a diagram must stand completely alone (a slide, an issue comment):
+add a `subgraph legend["Legend"]` holding **just the roles that diagram uses**, and remember it
+counts toward the node budget. In PlantUML the native `legend top left … endlegend` block adds a
+key inside an existing diagram without adding elements.
+
+Keep the legend and the palette in step: the `classDef` lines above are the ones in
+`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/classdefs.md`; the meanings are in `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/palette.md`.
+A legend that lists a role the palette does not define is a bug in one of the two.
 
 ## Sequence, state and deployment — house patterns
 
@@ -586,6 +649,7 @@ architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the s
 - Apply all ten rules and the layout playbook to every diagram — including quick ones.
 - Colour is semantic and comes only from the theme + the `classDef` lines in `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/classdefs.md`;
   no ad-hoc inline colour.
+- One **legend** per package, rendered once and referenced — not pasted into every diagram.
 - Keep the `.mmd` / `.puml` source **and** the rendered `.png` in a `diagrams/` sub-folder next to
   the Markdown that uses them, so diagrams are re-renderable, diff-able, and the relative image
   path resolves on GitHub / GitLab.

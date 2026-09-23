@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | ≤ 1 person-day; ≤ 3 modules touched; 0 regressions |
 | **Business goals supported** | BG-3 |
 | **Priority** | Importance = M · Difficulty = M |
+| **Candidate tactics** | **Modifiability** — *reduce coupling*: encapsulate, restrict dependencies, abstract common services; *increase cohesion*: increase semantic coherence; *defer binding*: runtime binding through a report-type registry |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

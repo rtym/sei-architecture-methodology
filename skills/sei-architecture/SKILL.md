@@ -57,7 +57,8 @@ and hands off.
 Typical engagements:
 
 - **Architecture vision / greenfield**: 0 → 1 (or 2) → 3 → 5 → 6.
-- **Architecture assessment of an existing system**: 0 → 1 → 4 → (targeted 3 to fix risk themes) → 5.
+- **Architecture assessment of an existing system**: **brownfield intake** (below) → 0 → 1 → 4 →
+  (targeted 3 to fix risk themes) → 5.
 - **Just need drivers / scenarios**: 0 and/or 1.
 - **Just need a diagram rendered**: 6.
 
@@ -76,6 +77,31 @@ Typical engagements:
    - "document", "architecture description", "views", "hand-off doc" → **architecture-documentation**
    - "draw", "diagram", "render", "PNG", "UML", "C4" → **sei-diagrams**
 4. State which skill you're using in one line, then follow that skill's `SKILL.md` exactly.
+
+## Brownfield intake (an existing system, before activity 0)
+
+The assessment path assumes drivers exist. For a system that is already built they usually do
+not — but the repository, its configuration and its history answer much of the question. When the
+user asks to assess / document / evaluate an **existing** system, or says `brownfield`, or the
+working directory is plainly a codebase rather than an empty project, **offer the intake first**:
+
+> "There's a codebase here. I can read it first and pre-draft the drivers and an as-built
+> container view, then we correct them together — or skip straight to `/drivers`."
+
+On yes, follow `${CLAUDE_PLUGIN_ROOT}/references/brownfield-intake.md`: read the repository in the documented
+order (docs and ADRs → manifests → source layout → entry points → integrations → persistence →
+deployment and CI config → runtime config → cross-cutting tactics → tests → observability →
+git history), then write `architecture/brownfield-intake.md` — an evidence table
+(claim · file path · confidence) plus a first draft of the use cases, constraints, quality
+attribute scenarios, architectural concerns, an as-built container view and module decomposition,
+and a separate **gap list**.
+
+**The rule that governs the whole procedure**: code shows the architecture, never the requirement.
+A cache proves someone cared about latency; it does not supply the number. Every derived driver is
+a hypothesis marked *derived — confirm* until a stakeholder confirms it, response measures come
+from observability config or from people rather than from inference, and a **missing** tactic is a
+finding for `/atam`, not a driver. Then hand the note to `/drivers`, which turns the confirmed
+hypotheses into the register.
 
 ## Shared conventions (all sub-skills follow these)
 
@@ -111,7 +137,8 @@ Typical engagements:
   `${CLAUDE_PLUGIN_ROOT}/references/README.md` for the index. Core: `architecture-fundamentals.md` (structures,
   views, the "good architecture" rules of thumb), `architectural-drivers.md`,
   `quality-attribute-taxonomy.md`, `tactics-catalog.md`, `architecture-patterns.md`,
-  `design-concepts.md`, `qaw-method.md`, `add-method.md`, `atam-method.md`,
+  `design-concepts.md`, `brownfield-intake.md` (reverse-engineering drivers from a repository),
+  `qaw-method.md`, `add-method.md`, `atam-method.md`,
   `design-reviews.md`, `views-and-beyond.md`, `interfaces.md`,
   `architecture-in-the-lifecycle.md` (debt, Agile, distributed dev),
   `runtime-environments.md` (virtualization, cloud, mobile). Read the relevant one when a step

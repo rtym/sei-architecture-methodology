@@ -18,6 +18,9 @@ renders it on directory browse). Every diagram in this package is Mermaid.
 | [`directory.md`](directory.md) | Directory | look up a term, an acronym, or where an element is defined |
 | [`change-log.md`](change-log.md) | — | revision history of this description |
 
+Every view in this package shares one key — [`diagrams/legend.png`](diagrams/legend.png) ([source](diagrams/legend.mmd)) — rendered once and referenced from each view packet's
+§1 rather than repeated inside every diagram.
+
 Only a stub view set is included in this example (one view per viewtype). A real package adds a
 uses/layered module view, more C&C views, and install / work-assignment allocation views as
 stakeholder concerns require.

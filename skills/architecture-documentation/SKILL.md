@@ -30,7 +30,9 @@ Diagrams: the `sei-diagrams` skill (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/S
   need (PM, developer, tester/integrator, interoperating-system designer, maintainer, end user,
   analyst, infrastructure support, future architect — see the reference's stakeholder table).
 - **Least-formal-that-removes-ambiguity notation**, always with a key/legend: informal
-  boxes-and-lines → semi-formal (C4 for structure, UML for behaviour) → formal ADL (rare).
+  boxes-and-lines → semi-formal (C4 for structure, UML for behaviour) → formal ADL (rare). Render
+  **one** legend for the package (`docs/diagrams/legend.png`, pattern in the `sei-diagrams` skill)
+  and reference it from `README.md` and from each view packet's §1.
 - **Document the relevant views + beyond-views.** All three structural viewtypes must be
   covered; add **quality views** (security / communications / error-handling / reliability /
   performance) when a concern is pervasive and spread across structures.

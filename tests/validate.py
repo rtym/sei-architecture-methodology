@@ -1059,6 +1059,12 @@ def check_self() -> list[str]:
             errs.append(f"{md.relative_to(ROOT)}: path '{m.group(0)}' is not "
                         f"anchored to ${{CLAUDE_PLUGIN_ROOT}}")
 
+    # a reference nobody can find from the index is a reference that does not exist
+    ref_index = (ROOT / "references" / "README.md").read_text(encoding="utf-8")
+    for rf in sorted((ROOT / "references").glob("*.md")):
+        if rf.name != "README.md" and f"({rf.name})" not in ref_index:
+            errs.append(f"references/{rf.name}: not linked from references/README.md")
+
     errs += check_plantuml_includes()
     errs += check_vendored_c4()
     errs += check_license()

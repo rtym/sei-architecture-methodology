@@ -331,7 +331,9 @@ iteration. **State the choice and why. Wait for confirmation.**
 
 **Identify** candidates from the **design concept catalog** (coarse → fine): reference
 architectures · deployment patterns · architectural & design patterns · **tactics** ·
-externally developed components — drawing on best-practice catalogs
+externally developed components. Start from the **candidate tactics** already recorded on each
+selected driver's `<ATTR>QA-<n>.md` (they are a shortlist, not a decision — accept, reject or
+extend them, and say which in the rationale), then widen with the best-practice catalogs
 (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`, `${CLAUDE_PLUGIN_ROOT}/references/architecture-patterns.md`), your own experience,
 and a peer brainstorm. **Select** with a pros/cons table keyed to the iteration's drivers; for a
 high-stakes choice, add a SWOT or CBAM (ROI) analysis. Every rationale cites ≥ 1 driver ID;

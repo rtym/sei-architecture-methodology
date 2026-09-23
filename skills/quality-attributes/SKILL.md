@@ -115,7 +115,28 @@ the taxonomy. For each, fill all six parts and give:
 - the **ISO/IEC 25010 characteristic and sub-characteristic**,
 - the **business goal(s)** it supports,
 - a **priority pair** `(Importance, Difficulty)` each `H` / `M` / `L` — Importance = to the
-  business; Difficulty = expected architectural/technical challenge (the architect's estimate).
+  business; Difficulty = expected architectural/technical challenge (the architect's estimate),
+- **candidate tactics** — the tactic families this attribute is normally met with, from the table
+  below. This is a *hint for ADD Step 4*, not a decision: it turns "design for availability" into
+  a shortlist the designer can accept, reject or extend, and tells ATAM Step 6 which
+  tactics-based questionnaire to walk. Never let it narrow the scenario itself — the measure is
+  the requirement, the tactic is one way to meet it.
+
+### Candidate tactics by attribute (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`)
+
+| ISO/IEC 25010 characteristic | Tactics-catalog section | Categories to shortlist from |
+|------------------------------|-------------------------|------------------------------|
+| Reliability / availability, fault tolerance, recoverability | **Availability** | detect faults · recover (preparation & repair) · recover (reintroduction) · prevent faults |
+| Performance efficiency | **Performance** | control resource demand · manage resources |
+| Security | **Security** | detect attacks · resist attacks · react to attacks · recover from attacks |
+| Maintainability / modifiability | **Modifiability** | reduce module size · increase cohesion · reduce coupling · defer binding |
+| Maintainability / testability | **Testability** | control and observe state · limit complexity |
+| Interaction capability | **Usability** | support user initiative · support system initiative |
+| Compatibility / interoperability | **Integrability** | limit dependencies · adapt · coordinate |
+| Flexibility / scalability | **Scalability** | statelessness · partitioning · elastic pools · load balancing · async processing |
+| Flexibility / installability (deployability) | **Deployability** | manage the deployment pipeline · manage the deployed system |
+| Flexibility / adaptability, replaceability (portability) | **Portability** | intermediary · portability layer · defer binding to the platform · adhere to standards |
+| Safety | **Safety** | detect unsafe state · contain / recover · prevent unsafe state |
 
 Present as a table. Tell the user which parts you guessed so they correct the right cells.
 
@@ -255,6 +276,8 @@ leaves get the most attention.
 - IDs: `BG-`, `UC-` (use cases), `CON-`, and attribute-prefixed QA scenarios (`AQA-`, `SQA-`, `PQA-`, … — see the architectural-drivers skill). Sequential within each prefix; never reused.
 - Every scenario cites ≥ 1 business goal.
 - Priority is the `(Importance, Difficulty)` pair, not a single word.
+- Every scenario names its **candidate tactics** (category + specific tactics) from the catalog —
+  a shortlist for ADD Step 4, never a design decision taken here.
 - Keep the total set small enough to act on: 8–15 scenarios; more than 20 means the net is too wide.
 - One copy of each scenario: in register mode the per-scenario file in `architecture/drivers/`
   is the source of truth and `scenarios.md` only links to it; in standalone mode `scenarios.md`

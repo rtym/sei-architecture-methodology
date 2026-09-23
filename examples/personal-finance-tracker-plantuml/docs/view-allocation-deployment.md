@@ -14,6 +14,8 @@ Source: [`diagrams/view-allocation-deployment-01.puml`](diagrams/view-allocation
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
+Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
+
 ## 2. Element catalog
 
 ### 2.1 Elements and their properties

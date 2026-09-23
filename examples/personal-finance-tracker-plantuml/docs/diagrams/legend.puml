@@ -1,0 +1,11 @@
+@startuml legend
+!include plantuml-theme.puml
+hide stereotype
+left to right direction
+title Legend — what shape and colour mean (SEI palette)
+rectangle "Person / role" as P #E7E3F3
+rectangle "Internal element" as I #EDF2F8
+rectangle "External system" as E #F5EEE3
+rectangle "Datastore / queue" as D #E4F0E9
+rectangle "Under discussion / risk" as R #F6E4E4
+@enduml

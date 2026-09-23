@@ -128,7 +128,11 @@ Templates: `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`, `${CLAUDE_P
 
 ### Step 1 — Gather source material
 Ask for / read: product brief, PRD, vision doc, backlog, SLAs, an existing requirements list,
-org/regulatory context. Create `architecture/drivers/` and its sub-directories, and — if it does
+org/regulatory context. **If the project already has a codebase**, run the brownfield intake first
+(`${CLAUDE_PLUGIN_ROOT}/references/brownfield-intake.md`, or the note it already produced at
+`architecture/brownfield-intake.md`): it pre-drafts use cases, constraints, scenarios and concerns
+from the repository with an evidence trail, so this step starts from a draft to correct. Every
+driver it derived stays marked *derived — confirm* until a stakeholder confirms it. Create `architecture/drivers/` and its sub-directories, and — if it does
 not exist — the package index `architecture/README.md` from
 `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`. Classify the **design purpose** (greenfield
 system / feature, brownfield replacement / extension / migration) and record it in both README
@@ -211,6 +215,9 @@ its own scenario diagram.** One file per scenario from `${CLAUDE_PLUGIN_ROOT}/te
   **numeric** response measure;
 - the **ISO/IEC 25010:2023** characteristic + sub-characteristic;
 - business goal(s) supported; priority pair `(Importance, Difficulty)`;
+- **candidate tactics** — the tactic families from `${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md` this
+  attribute is normally met with (see the table in the `quality-attributes` skill). A shortlist
+  for ADD Step 4 and the questionnaire ATAM Step 6 walks — not a design decision;
 - the **six-part scenario diagram** via the `sei-diagrams` skill's *Quality attribute scenario
   diagram* pattern (horizontal — Mermaid `flowchart LR` or the PlantUML pattern), rendered to
   `quality-attributes/diagrams/scenario-<ATTR>QA-<n>.png`, `Read` and visually cross-verified,

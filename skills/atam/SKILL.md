@@ -53,8 +53,11 @@ schedule, and rank by ROI. See `${CLAUDE_PLUGIN_ROOT}/references/atam-method.md`
 - Three framing questions: **who sees the results** (open vs private)? **which stakeholders
   participate**? **are the business goals captured and prioritised** (if not, budget time for it)?
 
-If the architecture is undocumented, run enough of `/architecture-docs` first to have something
-concrete to analyse, or capture a minimal container + deployment view here.
+If the architecture is undocumented, run the brownfield intake
+(`${CLAUDE_PLUGIN_ROOT}/references/brownfield-intake.md`) to recover as-built views and a driver draft from the
+repository, then enough of `/architecture-docs` to have something concrete to analyse — or capture
+a minimal container + deployment view here. The intake's **gap list** (absent tactics, as-built
+versus as-intended) is a ready-made scenario set for Step 6.
 
 Roles (full ATAM): team leader · evaluation leader · scenario scribe · e-scribe (also records
 the *issue* that motivated each scenario) · questioner. The **architect must willingly

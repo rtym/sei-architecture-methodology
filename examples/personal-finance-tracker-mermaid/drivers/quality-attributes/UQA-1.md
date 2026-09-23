@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | ≥ 85 % task-completion rate in a 10-person moderated usability test |
 | **Business goals supported** | BG-1 |
 | **Priority** | Importance = M · Difficulty = M |
+| **Candidate tactics** | **Usability** — *support system initiative*: maintain task model, maintain user model (sensible defaults, progress feedback); *support user initiative*: cancel, undo |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

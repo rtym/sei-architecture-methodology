@@ -2,7 +2,7 @@
 
 _Views-and-Beyond architecture description_
 
-> Generated 2026-09-22 · 10 source file(s)
+> Generated 2026-09-23 · 10 source file(s)
 
 ## Contents
 
@@ -92,6 +92,9 @@ renders it on directory browse). Every diagram in this package is Mermaid.
 | [`rationale.md`](../docs/rationale.md) | Rationale | understand why the big decisions were made (ADR log) |
 | [`directory.md`](../docs/directory.md) | Directory | look up a term, an acronym, or where an element is defined |
 | [`change-log.md`](../docs/change-log.md) | — | revision history of this description |
+
+Every view in this package shares one key — [`diagrams/legend.png`](../docs/diagrams/legend.png) ([source](../docs/diagrams/legend.mmd)) — rendered once and referenced from each view packet's
+§1 rather than repeated inside every diagram.
 
 Only a stub view set is included in this example (one view per viewtype). A real package adds a
 uses/layered module view, more C&C views, and install / work-assignment allocation views as
@@ -236,6 +239,8 @@ flowchart TB
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
+
 ## 2. Element catalog
 
 ### 2.1 Elements and their properties
@@ -345,6 +350,8 @@ flowchart TB
 ![View: Runtime (C&C)](../docs/diagrams/view-cnc-runtime-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
+
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
 ## 2. Element catalog
 
@@ -476,6 +483,8 @@ flowchart TB
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
+
 ## 2. Element catalog
 
 ### 2.1 Elements and their properties
@@ -579,6 +588,8 @@ flowchart TB
 ![Security view — Personal Finance Tracker](../docs/diagrams/view-security-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
+
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
 ## 2. Element catalog
 

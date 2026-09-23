@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | Uptime ≥ 99.5 %/month; recovery < 60 s; RPO < 5 min |
 | **Business goals supported** | BG-1, BG-4 |
 | **Priority** | Importance = H · Difficulty = H |
+| **Candidate tactics** | **Availability** — *detect faults*: monitor, health check (ping/echo); *recover, preparation & repair*: active redundancy (stateless API replicas across two AZs), passive redundancy (managed DB primary/standby), retry, rollback; *recover, reintroduction*: state resynchronization |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

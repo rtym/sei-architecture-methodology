@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | Fully interactive < 1.5 s at p95 |
 | **Business goals supported** | BG-1 |
 | **Priority** | Importance = H · Difficulty = M |
+| **Candidate tactics** | **Performance** — *manage resources*: maintain multiple copies of computations (cache-aside), introduce concurrency, increase resources; *control resource demand*: reduce overhead, bound execution times |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

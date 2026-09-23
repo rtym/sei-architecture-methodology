@@ -4,6 +4,25 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## 1.11.0 — 2026-09-23
+
+### Added
+- **Brownfield intake** (`references/brownfield-intake.md`, `/sei brownfield`): a documented
+  procedure for reverse-engineering a first draft of the drivers and the as-built views from an
+  existing repository — what to read and in what order, what to produce, and an evidence table
+  (claim · file path · confidence) behind every claim. Governed by one rule: code shows the
+  architecture, never the requirement, so every derived driver is marked *derived — confirm* and
+  an absent tactic is an evaluation finding rather than a driver. Wired into the router, `/drivers`
+  Step 1 and `/atam`'s undocumented-architecture path.
+- **Candidate tactics per quality attribute scenario**: each scenario names the tactic families it
+  is normally met with (mapping table from ISO/IEC 25010 characteristic to tactics-catalog
+  section), giving ADD Step 4 a shortlist to accept, reject or extend and telling ATAM Step 6
+  which questionnaire to walk. A hint, never a design decision.
+- **A package legend**: one legend diagram per package, rendered once and referenced from the
+  documentation roadmap and the view packets instead of repeated in every diagram. Mermaid and
+  PlantUML patterns, plus the inline-key variant for a diagram that must stand alone.
+- Validator: every file in `references/` must be linked from the references index.
+
 ## 1.10.0 — 2026-09-22
 
 Method-level improvements from a careful read of every skill: hand-offs between activities,

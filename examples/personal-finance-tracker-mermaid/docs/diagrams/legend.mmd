@@ -1,0 +1,22 @@
+flowchart LR
+  %% Legend — what shape and colour mean (SEI palette)
+  person(["Person / role"])
+  internal["Internal element<br/><i>technology</i>"]
+  external["External system<br/><i>third party</i>"]
+  store[("Datastore")]
+  queue[["Queue / bus"]]
+  emph["Under discussion / risk"]
+  %% invisible links (~~~) only: they lay the key out in two rows of three instead of
+  %% one tall column — unconnected flowchart nodes do not flow left-to-right on their own
+  person ~~~ internal ~~~ external
+  store ~~~ queue ~~~ emph
+  classDef source    fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef external  fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  classDef emphasis  fill:#F6E4E4,stroke:#B04A46,color:#1F2933;
+  class person source
+  class internal internal
+  class external external
+  class store,queue datastore
+  class emph emphasis

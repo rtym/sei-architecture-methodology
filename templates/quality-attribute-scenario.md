@@ -19,7 +19,14 @@ by its own six-part scenario diagram** (below).
 | **Response measure** | <numeric, with a percentile/threshold/time bound> |
 | **Business goals supported** | BG-<…> |
 | **Priority** | Importance = H/M/L · Difficulty = H/M/L |
+| **Candidate tactics** | <the tactic categories this attribute is normally met with — see below> |
 | **Type** | general | concrete |
+
+**Candidate tactics** are a *hint, not a decision*: the tactic families from
+`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md` that this attribute is normally achieved with, named so
+ADD Step 4 starts from a shortlist and ATAM Step 6 knows which questionnaire to walk. Name the
+*category* and the specific tactics (e.g. *Performance — manage resources*: caching, introduce
+concurrency). The architecture may end up using none of them; record what it does use in the ADR.
 
 ## Six-part scenario diagram
 

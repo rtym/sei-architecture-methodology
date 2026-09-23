@@ -440,13 +440,20 @@ happens to resolve here — and nowhere else.
 
 ## Deep method notes
 
+For an **existing** system, `/sei brownfield` reads the repository first — docs and ADRs, build
+manifests, entry points, integrations, deployment config, cross-cutting tactics, observability,
+git history — and pre-drafts the drivers and as-built views with an evidence trail, so `/drivers`
+starts from a draft to correct. Code shows the architecture, never the requirement: every derived
+driver stays marked *derived — confirm*, and a missing tactic is an `/atam` finding, not a driver.
+
 `references/` holds the encoded body of knowledge each skill draws on — see
 [`references/README.md`](references/README.md) for the index and
 [`references/glossary.md`](references/glossary.md) for the terminology. It covers architecture
 fundamentals, the quality-attribute taxonomy + per-attribute general scenarios + tactics
 catalog + patterns, ASR elicitation, ADD 3.0, ATAM + Lightweight Architecture Evaluation +
 lightweight design reviews, Views-and-Beyond documentation, interfaces, architecture debt /
-Agile / the architect's role, and runtime environments (virtualization / cloud / mobile).
+Agile / the architect's role, runtime environments (virtualization / cloud / mobile), and the
+brownfield intake procedure.
 
 ## Sources
 
