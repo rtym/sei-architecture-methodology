@@ -187,7 +187,8 @@ page and a table of contents that follows the V&B section order.
 4. Write the **beyond-views** files. The `mapping-between-views.md` is mandatory — it is how the
    package proves internal consistency.
 5. Write `README.md` last, once the view set is stable; end it with a Navigation footer. Update
-   the `/architecture-docs` row and change log of the package index `architecture/README.md`.
+   the `/architecture-docs` row and change log of the package index `architecture/README.md`,
+   creating it from `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if it does not exist.
 6. Run `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` and fix any reported issues, including
    broken relative links.
 

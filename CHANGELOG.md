@@ -23,6 +23,12 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
   PlantUML patterns, plus the inline-key variant for a diagram that must stand alone.
 - Validator: every file in `references/` must be linked from the references index.
 
+### Fixed
+- `/atam` and `/architecture-docs` told you to update the package index but, unlike the three
+  other skills that write to it, never said to create it when absent — a standalone run on a
+  project with no drivers register pointed at a file that did not exist. ATAM also now says what
+  to do when there is no register to write statuses back to.
+
 ## 1.10.0 — 2026-09-22
 
 Method-level improvements from a careful read of every skill: hand-offs between activities,

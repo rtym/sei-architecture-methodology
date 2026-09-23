@@ -158,7 +158,10 @@ scenarios from Step 7 that were not already covered.
 - **drivers register write-back**: every scenario with ≥ 1 Risk is set to `at risk` in its
   `architecture/drivers/…/<ID>.md` and in the drivers `README.md` matrix; a dated change-log line
   naming the risk IDs is appended there and to the package index `architecture/README.md`
-  (`/atam` row → done).
+  (`/atam` row → done). Create the index from `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if it does
+  not exist. If this evaluation ran **without** a drivers register there is nothing to write back
+  to: say so in the report, keep the `at risk` scenarios in the utility tree here, and recommend
+  `/drivers` so the next evaluation has somewhere to land.
 
 ## Rules
 
