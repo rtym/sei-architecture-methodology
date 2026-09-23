@@ -115,13 +115,14 @@ jobs:
         run: bash tests/run.sh
 
       # Belt and braces: render every shipped example .puml for real. The smoke test proves the
-      # include path works; this proves the 29 committed diagrams still compile.
+      # include path works; this proves the committed diagrams still compile.
       - name: Render every example diagram
         run: |
           set -e
+          want=$(git ls-files 'examples/**/*.puml' | wc -l)
           for d in $(git ls-files 'examples/**/*.puml' | xargs -n1 dirname | sort -u); do
             bash skills/sei-diagrams/scripts/render-plantuml.sh --out "$RUNNER_TEMP/puml" "$d"
           done
           n=$(find "$RUNNER_TEMP/puml" -name '*.png' | wc -l)
-          echo "rendered $n diagram(s)"
-          [ "$n" -ge 29 ] || { echo "expected at least 29 PNGs, got $n"; exit 1; }
+          echo "rendered $n diagram(s), expected $want"
+          [ "$n" -ge "$want" ] || { echo "expected at least $want PNGs, got $n"; exit 1; }

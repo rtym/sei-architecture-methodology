@@ -4,6 +4,13 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## Unreleased
+
+### Fixed
+- CI's PlantUML "render every example diagram" step asserted a hardcoded count of committed
+  `.puml` files (29) that drifted stale after the 1.10.0 diagram dedup left 26. Now derived from
+  `git ls-files` at run time so it can't drift again.
+
 ## 1.11.0 — 2026-09-23
 
 ### Added
