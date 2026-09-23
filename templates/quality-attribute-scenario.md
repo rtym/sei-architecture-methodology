@@ -1,7 +1,7 @@
 # <ATTR>QA-<n>: <short title>
 
-- **Status**: open | in design | partially | addressed | retired
-- **Source**: authored here | `../../quality-attributes/scenarios.md` (kept in sync)
+- **Status**: open | in design | partially | addressed | at risk | retired
+- **Source**: authored here by `/drivers` | written here by `/quality-attributes` (register mode) | imported from a standalone `../../quality-attributes/scenarios.md`
 
 The quality attribute is **documented as a six-part quality attribute scenario** and **supported
 by its own six-part scenario diagram** (below).

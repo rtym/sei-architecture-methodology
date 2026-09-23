@@ -4,6 +4,7 @@
 - **Source material**: product brief + founder/eng-lead interview
 - **Status**: reviewed
 - **QA model**: ISO/IEC 25010:2023
+- **Mode**: register — the per-scenario files and diagrams live in [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md); this file is the summary
 
 ## Business goals
 
@@ -27,41 +28,16 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 | MQA-1 | Maintainability / modifiability | Developer | Adds a new dashboard report type | Business logic + read model | During a sprint | Change isolated to the reporting module and its tests | ≤ 1 person-day; ≤ 3 modules touched; 0 regressions | BG-3 | M | M |
 | UQA-1 | Interaction capability / operability | First-time user | Records their first transaction | Transaction form | Normal operation | User completes entry without consulting help | ≥ 85 % task-completion rate in a 10-person usability test | BG-1 | M | M |
 
-### PQA-1 — scenario diagram
+### Scenario files and diagrams (register)
 
-![PQA-1 six-part scenario](diagrams/scenario-PQA-1.png)
-
-Source: [`diagrams/scenario-PQA-1.puml`](diagrams/scenario-PQA-1.puml) · rendered + visually verified.
-
-### PQA-2 — scenario diagram
-
-![PQA-2 six-part scenario](diagrams/scenario-PQA-2.png)
-
-Source: [`diagrams/scenario-PQA-2.puml`](diagrams/scenario-PQA-2.puml) · rendered + visually verified.
-
-### SQA-1 — scenario diagram
-
-![SQA-1 six-part scenario](diagrams/scenario-SQA-1.png)
-
-Source: [`diagrams/scenario-SQA-1.puml`](diagrams/scenario-SQA-1.puml) · rendered + visually verified.
-
-### AQA-1 — scenario diagram
-
-![AQA-1 six-part scenario](diagrams/scenario-AQA-1.png)
-
-Source: [`diagrams/scenario-AQA-1.puml`](diagrams/scenario-AQA-1.puml) · rendered + visually verified.
-
-### MQA-1 — scenario diagram
-
-![MQA-1 six-part scenario](diagrams/scenario-MQA-1.png)
-
-Source: [`diagrams/scenario-MQA-1.puml`](diagrams/scenario-MQA-1.puml) · rendered + visually verified.
-
-### UQA-1 — scenario diagram
-
-![UQA-1 six-part scenario](diagrams/scenario-UQA-1.png)
-
-Source: [`diagrams/scenario-UQA-1.puml`](diagrams/scenario-UQA-1.puml) · rendered + visually verified.
+| Scenario | Six-part diagram (rendered + visually verified) |
+|----------|--------------------------------------------------|
+| [PQA-1](../drivers/quality-attributes/PQA-1.md) | [scenario-PQA-1.png](../drivers/quality-attributes/diagrams/scenario-PQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-1.puml) |
+| [PQA-2](../drivers/quality-attributes/PQA-2.md) | [scenario-PQA-2.png](../drivers/quality-attributes/diagrams/scenario-PQA-2.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-2.puml) |
+| [SQA-1](../drivers/quality-attributes/SQA-1.md) | [scenario-SQA-1.png](../drivers/quality-attributes/diagrams/scenario-SQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-SQA-1.puml) |
+| [AQA-1](../drivers/quality-attributes/AQA-1.md) | [scenario-AQA-1.png](../drivers/quality-attributes/diagrams/scenario-AQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-AQA-1.puml) |
+| [MQA-1](../drivers/quality-attributes/MQA-1.md) | [scenario-MQA-1.png](../drivers/quality-attributes/diagrams/scenario-MQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-MQA-1.puml) |
+| [UQA-1](../drivers/quality-attributes/UQA-1.md) | [scenario-UQA-1.png](../drivers/quality-attributes/diagrams/scenario-UQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-UQA-1.puml) |
 
 ## Primary functional requirements — use cases with architectural impact
 

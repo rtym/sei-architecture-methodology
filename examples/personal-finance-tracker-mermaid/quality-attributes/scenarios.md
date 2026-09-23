@@ -4,6 +4,8 @@
 - **Source material**: product brief + founder/eng-lead interview
 - **Status**: reviewed
 - **QA model**: ISO/IEC 25010:2023
+- **Mode**: register — the per-scenario files and diagrams live in [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md); this file is the summary
+- **Mode**: register — the per-scenario files and diagrams live in [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md); this file is the summary
 
 ## Business goals
 
@@ -27,149 +29,16 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 | MQA-1 | Maintainability / modifiability | Developer | Adds a new dashboard report type | Business logic + read model | During a sprint | Change isolated to the reporting module and its tests | ≤ 1 person-day; ≤ 3 modules touched; 0 regressions | BG-3 | M | M |
 | UQA-1 | Interaction capability / operability | First-time user | Records their first transaction | Transaction form | Normal operation | User completes entry without consulting help | ≥ 85 % task-completion rate in a 10-person usability test | BG-1 | M | M |
 
-### PQA-1 — scenario diagram
+### Scenario files and diagrams (register)
 
-```mermaid
-flowchart LR
-  %% Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour  (horizontal)
-  src["<b>Source of stimulus</b><br/>Registered user"]
-  stim["<b>Stimulus</b><br/>Loads the monthly dashboard with 500 concurrent users"]
-  subgraph env["Environment: Normal operation"]
-    art["<b>Artifact</b><br/>Dashboard read path"]
-  end
-  resp["<b>Response</b><br/>Renders totals, category chart, recent activity and savings-goal progress"]
-  meas["<b>Response measure</b><br/>Fully interactive < 1.5 s at p95"]
-  src -->|generates| stim --> art
-  art --> resp -->|measured by| meas
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class src,stim source
-  class art artifact
-  class resp,meas response
-```
-
-![PQA-1 six-part scenario](diagrams/scenario-PQA-1.png)
-
-### PQA-2 — scenario diagram
-
-```mermaid
-flowchart LR
-  %% Quality attribute scenario — PQA-2 — Performance efficiency / capacity  (horizontal)
-  src["<b>Source of stimulus</b><br/>Registered user"]
-  stim["<b>Stimulus</b><br/>Imports a 5 000-row CSV bank statement"]
-  subgraph env["Environment: Normal operation"]
-    art["<b>Artifact</b><br/>Import Worker"]
-  end
-  resp["<b>Response</b><br/>Parses, maps and bulk-inserts asynchronously; interactive traffic is unaffected"]
-  meas["<b>Response measure</b><br/>Import completes < 30 s; dashboard p95 stays < 1.8 s during the import"]
-  src -->|generates| stim --> art
-  art --> resp -->|measured by| meas
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class src,stim source
-  class art artifact
-  class resp,meas response
-```
-
-![PQA-2 six-part scenario](diagrams/scenario-PQA-2.png)
-
-### SQA-1 — scenario diagram
-
-```mermaid
-flowchart LR
-  %% Quality attribute scenario — SQA-1 — Security / confidentiality  (horizontal)
-  src["<b>Source of stimulus</b><br/>Authenticated user acting as an attacker"]
-  stim["<b>Stimulus</b><br/>Requests another user's transactions by guessing record IDs"]
-  subgraph env["Environment: Normal operation"]
-    art["<b>Artifact</b><br/>API layer and data store"]
-  end
-  resp["<b>Response</b><br/>Request is rejected; the attempt is written to an append-only audit log and alerted"]
-  meas["<b>Response measure</b><br/>0 successful cross-user reads; 100 % of attempts logged; alert < 1 min"]
-  src -->|generates| stim --> art
-  art --> resp -->|measured by| meas
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class src,stim source
-  class art artifact
-  class resp,meas response
-```
-
-![SQA-1 six-part scenario](diagrams/scenario-SQA-1.png)
-
-### AQA-1 — scenario diagram
-
-```mermaid
-flowchart LR
-  %% Quality attribute scenario — AQA-1 — Reliability / availability  (horizontal)
-  src["<b>Source of stimulus</b><br/>Cloud infrastructure"]
-  stim["<b>Stimulus</b><br/>A single availability zone fails"]
-  subgraph env["Environment: Production"]
-    art["<b>Artifact</b><br/>Whole system"]
-  end
-  resp["<b>Response</b><br/>Traffic shifts to the healthy AZ; the data tier fails over automatically"]
-  meas["<b>Response measure</b><br/>Uptime ≥ 99.5 %/month; recovery < 60 s; RPO < 5 min"]
-  src -->|generates| stim --> art
-  art --> resp -->|measured by| meas
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class src,stim source
-  class art artifact
-  class resp,meas response
-```
-
-![AQA-1 six-part scenario](diagrams/scenario-AQA-1.png)
-
-### MQA-1 — scenario diagram
-
-```mermaid
-flowchart LR
-  %% Quality attribute scenario — MQA-1 — Maintainability / modifiability  (horizontal)
-  src["<b>Source of stimulus</b><br/>Developer"]
-  stim["<b>Stimulus</b><br/>Adds a new dashboard report type"]
-  subgraph env["Environment: During a sprint"]
-    art["<b>Artifact</b><br/>Reporting module and read model"]
-  end
-  resp["<b>Response</b><br/>Change is isolated to the reporting module and its tests; no other module is touched"]
-  meas["<b>Response measure</b><br/>≤ 1 person-day; ≤ 3 modules touched; 0 regressions"]
-  src -->|generates| stim --> art
-  art --> resp -->|measured by| meas
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class src,stim source
-  class art artifact
-  class resp,meas response
-```
-
-![MQA-1 six-part scenario](diagrams/scenario-MQA-1.png)
-
-### UQA-1 — scenario diagram
-
-```mermaid
-flowchart LR
-  %% Quality attribute scenario — UQA-1 — Interaction capability / operability  (horizontal)
-  src["<b>Source of stimulus</b><br/>First-time user"]
-  stim["<b>Stimulus</b><br/>Attempts to record their first transaction"]
-  subgraph env["Environment: Normal operation"]
-    art["<b>Artifact</b><br/>Transaction form"]
-  end
-  resp["<b>Response</b><br/>User completes the entry without consulting help documentation"]
-  meas["<b>Response measure</b><br/>≥ 85 % task-completion rate in a 10-person moderated usability test"]
-  src -->|generates| stim --> art
-  art --> resp -->|measured by| meas
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef response fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class src,stim source
-  class art artifact
-  class resp,meas response
-```
-
-![UQA-1 six-part scenario](diagrams/scenario-UQA-1.png)
+| Scenario | Six-part diagram (rendered + visually verified) |
+|----------|--------------------------------------------------|
+| [PQA-1](../drivers/quality-attributes/PQA-1.md) | [scenario-PQA-1.png](../drivers/quality-attributes/diagrams/scenario-PQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-1.mmd) |
+| [PQA-2](../drivers/quality-attributes/PQA-2.md) | [scenario-PQA-2.png](../drivers/quality-attributes/diagrams/scenario-PQA-2.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-2.mmd) |
+| [SQA-1](../drivers/quality-attributes/SQA-1.md) | [scenario-SQA-1.png](../drivers/quality-attributes/diagrams/scenario-SQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-SQA-1.mmd) |
+| [AQA-1](../drivers/quality-attributes/AQA-1.md) | [scenario-AQA-1.png](../drivers/quality-attributes/diagrams/scenario-AQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-AQA-1.mmd) |
+| [MQA-1](../drivers/quality-attributes/MQA-1.md) | [scenario-MQA-1.png](../drivers/quality-attributes/diagrams/scenario-MQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-MQA-1.mmd) |
+| [UQA-1](../drivers/quality-attributes/UQA-1.md) | [scenario-UQA-1.png](../drivers/quality-attributes/diagrams/scenario-UQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-UQA-1.mmd) |
 
 ## Primary functional requirements — use cases with architectural impact
 

@@ -1,6 +1,6 @@
 # AQA-1: Survive a single-AZ failure
 
-- **Status**: open
+- **Status**: at risk (ATAM R-3, R-4)
 - **Source**: authored here (kept in sync with [`../../quality-attributes/scenarios.md`](../../quality-attributes/scenarios.md))
 
 Documented as a **six-part quality attribute scenario** and supported by its own **horizontal

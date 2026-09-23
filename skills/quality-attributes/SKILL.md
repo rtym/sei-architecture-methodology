@@ -16,6 +16,26 @@ driver list that ADD and ATAM can consume directly.
 Output file: `architecture/quality-attributes/scenarios.md` (create the folder).
 Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`.
 
+## Where the output goes — one source of truth
+
+Check whether `architecture/drivers/` exists **before** writing anything:
+
+- **Register mode** (the drivers directory exists): each scenario is written **directly** as
+  `architecture/drivers/quality-attributes/<ATTR>QA-<n>.md` from
+  `${CLAUDE_PLUGIN_ROOT}/templates/quality-attribute-scenario.md`, with its diagram in
+  `architecture/drivers/quality-attributes/diagrams/scenario-<ATTR>QA-<n>.*`; the utility tree goes to
+  `architecture/drivers/quality-attributes/utility-tree.md`; the drivers `README.md` inventory,
+  traceability matrix and change log get their rows. `scenarios.md` is then a **generated
+  summary** — business goals, the one-row-per-scenario table, links to each register file, the
+  prioritised list — with **no** duplicated six-part detail or diagrams. Nothing has to be "kept in
+  sync" because there is only one copy.
+- **Standalone mode** (no register yet): `scenarios.md` carries the full detail and every diagram
+  (in `architecture/quality-attributes/diagrams/`), as the template below shows. `/drivers` imports
+  it later.
+
+Either way, finish by updating the `/quality-attributes` row of the package index
+`architecture/README.md` (create it from `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if absent).
+
 **Keep prompts short.** Draft first, refine second. Offer choices as numbered lists.
 
 ## The six-part scenario
@@ -142,9 +162,13 @@ Emit the final **architectural drivers** section: the `(H,H)` and `(H,M)` scenar
 are what ADD iterations and ATAM analysis target. List functional requirements with architectural
 impact — recorded as use cases (`UC-n`) — and constraints (`CON-n`) alongside.
 
-### Step 8 — Write the file
+### Step 8 — Write the file(s)
 
-Write `architecture/quality-attributes/scenarios.md` from the template below. Confirm the path.
+**Register mode**: write / update the per-scenario files, diagrams, utility tree and README rows
+in `architecture/drivers/quality-attributes/`, then write `scenarios.md` as the summary (the
+template below minus the per-scenario diagram sections; each table row's ID links to
+`../drivers/quality-attributes/<ATTR>QA-<n>.md`). **Standalone mode**: write
+`architecture/quality-attributes/scenarios.md` from the full template below. Confirm the paths.
 
 ## Output template
 
@@ -154,6 +178,7 @@ Write `architecture/quality-attributes/scenarios.md` from the template below. Co
 - **Date**: <YYYY-MM-DD>
 - **Source material**: <brief / PRD / interview>
 - **Status**: draft | reviewed | baselined
+- **Mode**: standalone | register (per-scenario files in `../drivers/quality-attributes/`)
 
 ## Business goals
 
@@ -231,7 +256,9 @@ leaves get the most attention.
 - Every scenario cites ≥ 1 business goal.
 - Priority is the `(Importance, Difficulty)` pair, not a single word.
 - Keep the total set small enough to act on: 8–15 scenarios; more than 20 means the net is too wide.
-- The file is the source of truth — write it before declaring the activity done.
+- One copy of each scenario: in register mode the per-scenario file in `architecture/drivers/`
+  is the source of truth and `scenarios.md` only links to it; in standalone mode `scenarios.md`
+  is. Write it before declaring the activity done.
 
 ## Quality gate — cross-check the output before you're done
 

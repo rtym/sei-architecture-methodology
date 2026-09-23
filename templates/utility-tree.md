@@ -1,4 +1,4 @@
-# Quality Attribute Utility Tree: <system>
+# Quality Attribute Utility Tree: <SystemName>
 
 - **Date**: <YYYY-MM-DD>
 - **Purpose**: prioritise quality-attribute requirements as scenarios (input to ATAM step 6 / ADD)
@@ -29,7 +29,7 @@ architecturally significant — mark it `★`.
 | Security | Confidentiality | `SQA-1` — 0 successful cross-tenant reads; 100 % of attempts logged | (H, H) `★` | open |
 | Maintainability | Modifiability | `MQA-1` — add a report type in ≤ 1 person-day, 0 regressions | (M, M) | open |
 
-`Status` ∈ `open` / `in design` / `partially` / `addressed` / `retired`.
+`Status` ∈ `open` / `in design` / `partially` / `addressed` / `at risk` / `retired`.
 
 ## Reading the tree
 

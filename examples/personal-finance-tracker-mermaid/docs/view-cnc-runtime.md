@@ -70,7 +70,36 @@ HTTP interface catalogue and events: ADD [`../add/personal-finance-tracker-Archi
 
 ### 2.4 Element behavior
 
-Dashboard read (cache hit / miss) sequence: ADD `Architecture.md` §6.
+One behaviour diagram per architecturally significant use case. UC-2 dashboard load (cache hit /
+miss), the path that realises PQA-1 — re-rendered from the ADD `Architecture.md` §6:
+
+```mermaid
+sequenceDiagram
+  title UC-2 dashboard load — realises PQA-1
+  %% name: view-cnc-runtime-behaviour-uc2
+  autonumber
+  participant U as Web App
+  participant A as API Service
+  participant C as Read Cache
+  participant D as Primary Database
+  U->>A: GET /dashboard (month)
+  A->>C: GET aggregates(user, month)
+  alt cache hit
+    C-->>A: aggregates
+  else cache miss
+    A->>D: SELECT aggregate rows (tenant-scoped)
+    D-->>A: rows
+    A->>C: SET aggregates(user, month) TTL 15 min
+  end
+  A-->>U: 200 dashboard JSON
+```
+
+![UC-2 dashboard load — cache hit / miss](diagrams/view-cnc-runtime-behaviour-uc2.png)
+
+On a cache hit the Primary Database is not touched; on a miss the API Service recomputes from
+tenant-scoped rows and repopulates the Read Cache, so staleness is bounded by the 15-minute TTL.
+UC-1 (record transaction) and UC-3 (import statement) are straight-line write paths through the
+Tenant Guard and Data Access components and need no separate diagram.
 
 ## 3. Context diagram
 

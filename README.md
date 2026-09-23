@@ -21,7 +21,9 @@ Every skill:
 
 - **drafts first**, then refines with you — it doesn't interview you question by question;
 - writes **Markdown** artifacts under `architecture/` as the single source of truth;
-- keeps **traceability** — decisions and findings cite driver IDs;
+- keeps **traceability** — decisions and findings cite driver IDs; ADD writes an ADR per decision,
+  ATAM marks scenarios `at risk`, and both write statuses back to the drivers register;
+- registers its output in `architecture/README.md`, the package index;
 - routes every diagram through `sei-diagrams`: **rendered to PNG and visually verified** (the
   model opens the image and checks correctness + edge crossings) before it is embedded anywhere;
 - can emit its report as **Markdown or HTML** (`scripts/build-report.sh`).
@@ -312,7 +314,8 @@ with the SEI palette, with a cover page and table of contents. Example:
   `skills/sei-diagrams/assets/` (`mermaid-theme.json`, `palette.md`, `plantuml-theme.puml`).
 - **Every diagram is rendered to PNG and visually cross-verified** (`Read` the image), then
   embedded in Markdown as **both** the ```mermaid/```plantuml source **and** a relative
-  `![](diagrams/x.png)` image line so it renders on GitHub and GitLab.
+  `![](diagrams/x.png)` image line so it renders on GitHub and GitLab. A `%% name: x` comment in
+  a Mermaid block names its PNG, so inserting a diagram never renumbers the others.
 
 ---
 
@@ -363,8 +366,11 @@ sei-architecture-methodology/
 ### The drivers directory
 
 ```
+architecture/README.md                # package index — every activity registers its output here
 architecture/drivers/
-├── README.md                         # ID legend · traceability matrix · coverage check · prioritised list · change log
+├── README.md                         # design purpose · ID legend · traceability matrix · coverage check · prioritised list · change log
+├── stakeholders.md                   # ST-<n> — the one stakeholder register (QAW, ATAM, V&B read it)
+├── concerns/README.md + AC-<n>.md    # architectural concerns (ADD input)
 ├── business-goals/README.md + BG-<n>.md
 ├── use-cases/README.md + UC-<n>.md   # + use-cases/diagrams/UC-<n>.puml|.mmd|.png  (proper UML use case diagram, one per use case)
 ├── constraints/README.md + CON-<n>.md
@@ -375,7 +381,8 @@ architecture/drivers/
     └── diagrams/
 ```
 
-Every `README.md` links its files with relative Markdown links and ends with a Navigation footer.
+Every `README.md` links its files with relative Markdown links and ends with a Navigation footer
+that links up to the package index and only to sibling packages that exist.
 
 ---
 
@@ -398,7 +405,10 @@ artifacts validate; a Mermaid diagram and a PlantUML diagram each render to PNG.
 also checks that `plugin.json` and `marketplace.json` agree on the version; that every skill
 aliased by a command is hidden from the slash menu (one picker entry per activity); that every
 scenario in `scenarios.md` and every refined QAW scenario embeds a rendered diagram; and that
-`mapping-between-views.md` contains real cross-view tables.
+`mapping-between-views.md` contains real cross-view tables. Since 1.10.0: the package index
+exists, retired drivers are excluded from the coverage check, `stakeholders.md` and `concerns/`
+validate, refined QAW scenarios map to register IDs and raw ones carry a type, ATAM reports
+declare their mode, §9 decisions link their ADRs, and the C&C view documents behaviour per use case.
 
 Validate produced artifacts in a target project:
 

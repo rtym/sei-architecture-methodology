@@ -214,6 +214,81 @@ Rel(api, ext, "Sends notifications", "SMTP")
 all `participant`s at the top, `->` for calls and `-->` for returns, `alt` / `group` for
 branches — one message per line, no `;` in message text.
 
+## Sequence, state and deployment — house patterns
+
+**Sequence** (UML, Mermaid): participants declared up front in call order, `autonumber` when
+more than four steps, `->>` call / `-->>` return / `-)` async, `alt`/`opt` for branches, and a
+plain-English paragraph immediately below the diagram.
+
+```mermaid
+sequenceDiagram
+  title UC-2 dashboard load — realises PQA-1
+  %% name: sequence-dashboard
+  autonumber
+  participant U as Web App
+  participant A as API Service
+  participant C as Read Cache
+  participant D as Primary Database
+  U->>A: GET /dashboard (month)
+  A->>C: GET aggregates(user, month)
+  alt cache hit
+    C-->>A: aggregates
+  else cache miss
+    A->>D: SELECT aggregate rows (tenant-scoped)
+    D-->>A: rows
+    A->>C: SET aggregates TTL 15 min
+  end
+  A-->>U: 200 dashboard JSON
+```
+
+**State** (UML, Mermaid): one element's modes; every transition labelled with its trigger
+(`event [guard] / action`); `[*]` start and end.
+
+```mermaid
+stateDiagram-v2
+  %% State — Import job lifecycle (UC-3)
+  %% name: state-import-job
+  [*] --> Queued : file uploaded
+  Queued --> Parsing : worker picks job
+  Parsing --> Mapping : rows parsed
+  Parsing --> Failed : malformed file / reject + notify
+  Mapping --> Committing : categories resolved
+  Committing --> Done : bulk insert committed
+  Committing --> Failed : constraint violation / roll back
+  Failed --> [*]
+  Done --> [*]
+```
+
+**Deployment** (C4 deployment, Mermaid): nested `subgraph`s for region → platform → node, the
+containers as leaves with replica counts and the datastore shape for stores; labelled edges.
+
+```mermaid
+flowchart TB
+  %% Deployment — <SystemName> (production topology)
+  %% name: deployment
+  subgraph region["Cloud region — 2 availability zones"]
+    subgraph edge["CDN + static hosting"]
+      web["Web App<br/><i>static build</i>"]
+    end
+    subgraph cluster["Container platform (multi-AZ)"]
+      api["API Service<br/><i>2+ replicas, stateless</i>"]
+      worker["Import Worker<br/><i>1+ replicas</i>"]
+    end
+    subgraph data["Managed data tier"]
+      db[("PostgreSQL 15<br/><i>primary + standby, auto-failover</i>")]
+      cache[("Redis 7<br/><i>primary + replica</i>")]
+    end
+  end
+  web -->|"Calls REST API (HTTPS)"| api
+  api -->|"SQL / TLS"| db
+  api -->|"GET/SET aggregates"| cache
+  worker -->|"Bulk insert (SQL / TLS)"| db
+  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  class web,api,worker internal
+  class db,cache datastore
+```
+
 ## Quality attribute scenario diagram
 
 The canonical SEI six-part scenario, drawn so every part is visible. **Use this for every `<ATTR>QA-n`**
@@ -350,7 +425,9 @@ are dashed `<<…>>` dependencies, and there are no avoidable crossings — iter
 
 1. **Title.** Every diagram starts with a title: native `C4*` diagrams use a `title` line right
    after the keyword; `sequenceDiagram` uses `title …` on line 2; `flowchart` / `classDiagram` /
-   `stateDiagram` put the title in a top `%%` comment; PlantUML uses a `title` line.
+   `stateDiagram` put the title in a top `%%` comment; PlantUML uses a `title` line. A
+   `%% name: <slug>` comment follows the title when the block lives in a Markdown file (it names
+   the rendered PNG).
 2. **Aliases** are `camelCase` or `snake_case` — never contain spaces (`apiService`, not `api service`).
 3. **Descriptions.** Every element carries a specific role/description — a last string argument in
    native C4, an `<i>…</i>` line in flowchart-C4.
@@ -483,7 +560,10 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/ad
 
 `render.sh` applies `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/mermaid-theme.json` (palette + `themeCSS`), renders at scale 3 (crisp
 PNG), white background, width 1600. Output PNG sits next to the source unless `--out` is given.
-It also extracts and renders every ```mermaid block from a `.md` file (`<mdname>-01.png`, …).
+It also extracts and renders every ```mermaid block from a `.md` file. **Name each block** with a
+`%% name: <slug>` comment (on the line after the title comment) so the PNG is `diagrams/<slug>.png`
+and the `![](diagrams/<slug>.png)` line stays valid when blocks are inserted or reordered;
+unnamed blocks fall back to `<mdname>-01.png`, `-02.png`, ….
 
 **PlantUML** (only if the user needs full UML): `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh
 architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the script prints the

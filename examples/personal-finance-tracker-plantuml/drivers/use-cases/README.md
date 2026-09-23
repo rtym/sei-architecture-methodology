@@ -15,4 +15,4 @@ Overview diagram (all core use cases): [overview-core](diagrams/overview-core.pn
 
 ---
 
-**Navigation**: [drivers README](../README.md) · [example root](../../README.md)
+**Navigation**: [drivers README](../README.md) · [architecture package](../../README.md)

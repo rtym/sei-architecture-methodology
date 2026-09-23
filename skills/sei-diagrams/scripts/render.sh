@@ -6,8 +6,9 @@
 #
 # TARGET may be:
 #   *.mmd / *.mermaid   a Mermaid source file            -> <name>.png
-#   *.md                a Markdown file; each ```mermaid  -> <mdname>-<NN>.png
-#                       fenced block is extracted and rendered
+#   *.md                a Markdown file; each ```mermaid  -> <slug>.png when the block has a
+#                       fenced block is extracted and    `%% name: <slug>` comment, else <mdname>-<NN>.png
+#                       rendered
 #   a directory         every *.mmd / *.mermaid inside it
 #
 # Output goes next to the source unless --out DIR is given.
@@ -94,10 +95,21 @@ dest_for() { # <src-basename-no-ext>
 extract_md() { # <file.md>  -> writes <base>-NN.mmd into TMP_DIR, echoes their paths
   local md="$1" base
   base="$(basename "${md%.*}")"
+  # A block may name its own output with a `%% name: <slug>` comment (Mermaid ignores the
+  # comment); otherwise blocks are numbered in document order.
   awk -v out="$TMP_DIR" -v base="$base" '
-    /^[[:space:]]*```mermaid[[:space:]]*$/ { inblk=1; n++; fn=sprintf("%s/%s-%02d.mmd", out, base, n); next }
-    inblk && /^[[:space:]]*```[[:space:]]*$/ { inblk=0; close(fn); print fn; next }
-    inblk { print $0 > fn }
+    /^[[:space:]]*```mermaid[[:space:]]*$/ { inblk=1; n++; buf=""; nm=""; next }
+    inblk && /^[[:space:]]*```[[:space:]]*$/ {
+      inblk=0
+      if (nm != "") fn=sprintf("%s/%s.mmd", out, nm); else fn=sprintf("%s/%s-%02d.mmd", out, base, n)
+      printf "%s", buf > fn; close(fn); print fn; next
+    }
+    inblk {
+      if (match($0, /^[[:space:]]*%%[[:space:]]*name:[[:space:]]*/)) {
+        nm=substr($0, RLENGTH+1); gsub(/[[:space:]]+$/, "", nm); gsub(/[^A-Za-z0-9._-]/, "-", nm)
+      }
+      buf = buf $0 "\n"
+    }
   ' "$md"
 }
 

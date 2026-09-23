@@ -33,7 +33,9 @@ Reference the ADD `Architecture.md` §8 if it exists rather than duplicating.>
 
 ### 2.4 Element behavior
 
-<Sequence / state diagrams for behavior not evident from structure — via `sei-diagrams`.>
+<Sequence / state diagrams for behavior not evident from structure — via `sei-diagrams`. In the
+primary **C&C** view: one behaviour diagram per architecturally significant use case (`UC-<n>`)
+from the drivers register — reuse the ADD `Architecture.md` §6 diagrams, re-rendered here.>
 
 ## 3. Context diagram
 

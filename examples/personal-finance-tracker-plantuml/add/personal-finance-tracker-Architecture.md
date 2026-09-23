@@ -62,7 +62,7 @@ The API service is the single write path and the single place tenant scoping (SQ
 The Redis read cache serves the dashboard (PQA-1); it is a performance element, not a system of
 record, so its loss degrades latency but not correctness (AQA-1).
 
-## 5. Component diagrams
+## 5. Component and module views
 
 ### API Service
 
@@ -76,6 +76,22 @@ Source: [`diagrams/component-api.puml`](diagrams/component-api.puml) · rendered
 
 Every request passes through the Tenant Guard before any service runs, so cross-tenant access
 (SQA-1) is structurally prevented rather than checked per-endpoint.
+
+### Module decomposition
+
+#### Diagram
+
+![Module decomposition — Personal Finance Tracker API](diagrams/module-decomposition.png)
+
+Source: [`diagrams/module-decomposition.puml`](diagrams/module-decomposition.puml) · rendered + visually verified.
+
+#### Description
+
+Four layers inside the single deployable; a layer may use only the layer below it, and the four
+domain modules may not use one another (a cross-domain need is mediated by `reporting` reading
+through `persistence`). The `security` layer is the one place tenant scoping is applied (SQA-1,
+ADR-2); the `reporting` module's report-type registry is what keeps MQA-1 to a one-day change.
+This is the seed of the Views-and-Beyond [module decomposition view](../docs/view-module-decomposition.md).
 
 ## 6. Sequence diagrams
 
@@ -130,12 +146,14 @@ The one interface `UC-1` and `SQA-1` both run through, specified per `references
 
 ## 9. Design decisions
 
-| Decision | Rationale (cite driver IDs) | Alternatives discarded |
-|----------|-----------------------------|------------------------|
-| Single API service owns all writes and enforces tenant scoping in one middleware | SQA-1 needs one auditable choke point; CON-2 favours few moving parts | Per-service authz checks (easy to miss one) |
-| Redis cache-aside for dashboard aggregates with 15-min TTL | PQA-1 p95 budget; DB alone won't meet it at 500 concurrent | Materialised views (slower to iterate — MQA-1); CDN caching (per-user data) |
-| Managed PostgreSQL primary/standby, multi-AZ, automated failover | AQA-1 recovery target; CON-5 mandates PostgreSQL; CON-3 low-cost tier still offers this | Self-managed HA (CON-2 time), single instance (fails AQA-1) |
+Each significant decision is an ADR in [`adr/`](adr/ADR-1.md); this table is the log.
+
+| Decision | Rationale (cite driver IDs) | Alternatives discarded | ADR |
+|----------|-----------------------------|------------------------|-----|
+| Single API service owns all writes and enforces tenant scoping in one middleware | SQA-1 needs one auditable choke point; CON-2 favours few moving parts | Per-service authz checks (easy to miss one) | [ADR-2](adr/ADR-2.md) |
+| Redis cache-aside for dashboard aggregates with 15-min TTL | PQA-1 p95 budget; DB alone won't meet it at 500 concurrent | Materialised views (slower to iterate — MQA-1); CDN caching (per-user data) | [ADR-1](adr/ADR-1.md) |
+| Managed PostgreSQL primary/standby, multi-AZ, automated failover | AQA-1 recovery target; CON-5 mandates PostgreSQL; CON-3 low-cost tier still offers this | Self-managed HA (CON-2 time), single instance (fails AQA-1) | [ADR-3](adr/ADR-3.md) |
 
 ---
 
-**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [session log](personal-finance-tracker-session.md) · [Views & Beyond docs](../docs/README.md) · [ATAM](../atam/atam-report.md)
+**Navigation**: [architecture package](../README.md) · [ADRs](adr/ADR-1.md) · [drivers](../drivers/README.md) · [session log](personal-finance-tracker-session.md) · [Views & Beyond docs](../docs/README.md) · [ATAM](../atam/atam-report.md)

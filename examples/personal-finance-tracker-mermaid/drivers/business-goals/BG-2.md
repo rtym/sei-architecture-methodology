@@ -1,7 +1,7 @@
 # BG-2: Sell to employers via SOC 2
 
 - **Statement**: The company needs to pass a SOC 2 Type II audit so that it can sell the app to employers as a staff benefit.
-- **Primary stakeholder**: Founder / Compliance
+- **Primary stakeholder**: ST-1 — Founder / Compliance
 - **SEI business-goal category**: responsibility to society & law
 - **Measure of success**: Clean SOC 2 Type II report before the enterprise sales push
 - **Priority**: high

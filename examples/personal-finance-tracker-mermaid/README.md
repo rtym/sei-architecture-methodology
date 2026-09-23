@@ -10,11 +10,12 @@ prose, drivers, scenarios and decisions are identical; only the diagram notation
 | Path | Produced by | Shows |
 |------|-------------|-------|
 | [`drivers/`](drivers/README.md) | `/drivers` | The drivers **directory** — [`README.md`](drivers/README.md) (ID legend, traceability matrix with no orphans, prioritised list, change log) + a `README.md` index per subdirectory + one file per driver under `business-goals/` (4), `use-cases/` (3), `constraints/` (5), `quality-attributes/` (6) |
+| [`drivers/stakeholders.md`](drivers/stakeholders.md) · [`drivers/concerns/`](drivers/concerns/README.md) | `/drivers` | The **stakeholder register** (`ST-n`, read by QAW / ATAM / V&B) and the **architectural concerns** (`AC-n`, ADD input) — the two ADD 3.0 inputs that used to be re-collected per activity |
 | [`drivers/use-cases/`](drivers/use-cases/README.md) | `/drivers` + `/sei-diagram` | Each use case with its own use case diagram (Mermaid `flowchart` fallback — actors outside the boundary, use cases inside, dashed `include`/`extend`) rendered to `diagrams/UC-<n>.png`, plus an overview diagram |
 | [`drivers/quality-attributes/`](drivers/quality-attributes/README.md) | `/drivers` | Each quality attribute as a **six-part scenario** + its own **horizontal** six-part scenario diagram; [`utility-tree.md`](drivers/quality-attributes/utility-tree.md) — the summary of the QA drivers **as a table** (`(V, R)` per leaf) |
 | [`qaw/qaw-report.md`](qaw/qaw-report.md) | `/qaw` | The SEI 8-step workshop + Step 9 **utility tree** (a table) built from the refined scenarios (handed to `/drivers`) |
-| [`quality-attributes/scenarios.md`](quality-attributes/scenarios.md) | `/quality-attributes` | The dedicated quality-attribute run — six-part scenarios, ISO/IEC 25010, tabular utility tree, prioritised drivers |
-| [`add/`](add/personal-finance-tracker-Architecture.md) | `/add` | An ADD 3.0 session log + companion architecture document — 9 sections; context / container / component / sequence / deployment views in the flowchart-C4 house style (C4 principles); interfaces; ADR-style decisions |
+| [`quality-attributes/scenarios.md`](quality-attributes/scenarios.md) | `/quality-attributes` | **Register-mode** summary — six-part table + links to the per-scenario files and diagrams in `drivers/quality-attributes/`; no duplicated copy |
+| [`add/`](add/personal-finance-tracker-Architecture.md) | `/add` | An ADD 3.0 session log + companion architecture document — 9 sections incl. a module decomposition view and an [`adr/`](add/adr/ADR-1.md) log; context / container / component / sequence / deployment views in the flowchart-C4 house style (C4 principles); interfaces; ADR-style decisions |
 | [`docs/`](docs/README.md) | `/architecture-docs` | A Views-and-Beyond package — roadmap ([`README.md`](docs/README.md)), system overview, one view packet per viewtype (Module / C&C / Allocation), mapping between views, rationale + ADRs, directory, change log |
 | [`reports/`](reports/) | `scripts/build-report.sh` | `architecture-package.*` (drivers + ADD architecture) and `vandb-architecture-description.*` (the `docs/` package ordered per the V&B structure) — self-contained HTML with diagrams embedded, cover page and TOC |
 
@@ -32,12 +33,15 @@ bash skills/sei-diagrams/scripts/render.sh $EX/drivers/quality-attributes/diagra
 # use case diagrams (Mermaid flowchart fallback)
 bash skills/sei-diagrams/scripts/render.sh $EX/drivers/use-cases/diagrams/
 
-# ADD architecture views
+# ADD architecture views (each block carries a `%% name:` so the PNGs are context.png, container.png, …)
 bash skills/sei-diagrams/scripts/render.sh --out $EX/diagrams \
   $EX/add/personal-finance-tracker-Architecture.md
 
-# docs view diagrams
-bash skills/sei-diagrams/scripts/render.sh --out $EX/docs/diagrams $EX/docs/
+# QAW refined-scenario diagrams
+bash skills/sei-diagrams/scripts/render.sh $EX/qaw/diagrams/
+
+# docs view diagrams (blocks named with `%% name:` keep their file name; others are numbered)
+for f in $EX/docs/*.md; do bash skills/sei-diagrams/scripts/render.sh --out $EX/docs/diagrams "$f"; done
 
 # combined report
 scripts/build-report.sh \

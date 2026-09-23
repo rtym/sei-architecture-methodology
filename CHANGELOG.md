@@ -4,6 +4,41 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## 1.10.0 — 2026-09-22
+
+Method-level improvements from a careful read of every skill: hand-offs between activities,
+things a skill promised but never produced, and workflow friction.
+
+### Added
+- **Package index** `architecture/README.md` (`templates/architecture-readme.md`): `/drivers`
+  creates it, every skill registers its output. Sub-package footers link up to it and only to
+  siblings that exist — a drivers-only project used to fail its own quality gate on eight broken
+  navigation links.
+- **Stakeholder register** `architecture/drivers/stakeholders.md` (`ST-<n>`), read by `/qaw`
+  (participants), `/atam` (Phase 2) and `/architecture-docs` (view selection).
+- **Design purpose and architectural concerns** in the drivers register (`README.md` header,
+  `concerns/AC-<n>.md`), so `/add` Step 1 imports all five ADD 3.0 inputs.
+- **`at risk` status**, set by ATAM Step 9 on every scenario with a Risk, with a change-log line
+  in the drivers README and the package index.
+- **ADRs from ADD**: Step 6 writes `architecture/add/adr/ADR-<n>.md` per significant decision;
+  §9 links them; V&B `rationale.md` links instead of re-deriving.
+- **Module decomposition view** in the ADD architecture document (§5 "Component and module views").
+- **ADD Step 7 write-back** of driver statuses to the register.
+- **QAW**: scenario type (use-case / growth / exploratory) at brainstorm time; a hand-off table
+  mapping `CS-`/`AD-` IDs to register IDs; explicit diagram path.
+- **ATAM**: `**Mode**` header; Steps 7–8 marked Full-only; sensitivity/tradeoff IDs renamed
+  `SP-`/`TP-` (no clash with QAW raw scenarios `S-`).
+- **V&B**: the primary C&C view's §2.4 carries one behaviour diagram per architecturally
+  significant use case.
+- **`render.sh`**: a `%% name: <slug>` comment names the PNG of a Mermaid block extracted from
+  Markdown, so inserting a diagram no longer renumbers the rest.
+- **Diagram house patterns** for sequence, state and deployment.
+- Validator checks for all of the above; retired drivers excluded from the coverage check.
+- `/quality-attributes` **register mode**: when `architecture/drivers/` exists it writes the
+  per-scenario files there and `scenarios.md` becomes a linking summary — one source of truth.
+- Worked examples updated throughout (stakeholders, concerns, ADRs, module view, behaviour
+  diagram, QAW types + hand-off, ATAM mode + write-back, named diagram PNGs); reports regenerated.
+
 ## 1.9.0 — 2026-09-22
 
 Gap-analysis release: consistency fixes across skills, templates and examples, tighter validation,

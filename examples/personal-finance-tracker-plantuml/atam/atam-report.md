@@ -4,6 +4,8 @@
 - **Evaluation team**: external reviewer (lead), scenario scribe
 - **Architect(s)**: Eng lead
 - **Architecture evaluated**: `../add/personal-finance-tracker-Architecture.md` (after ADD iteration 1–2)
+- **Mode**: Full ATAM
+- **Stakeholders**: [`../drivers/stakeholders.md`](../drivers/stakeholders.md) (ST-1 … ST-5 in Phase 2)
 - **Status**: Phase 3 complete
 
 > Condensed record exercising the full nine-step structure.
@@ -80,12 +82,12 @@ Scenario analysis in the ATAM template (Fig. 21.1 shape).
 
 | Architectural decision | Sensitivity | Trade-off | Risk | Nonrisk |
 |------------------------|-------------|----------|------|----------|
-| Single tenant-guard middleware (vs. per-endpoint checks) | S-1 | | | |
+| Single tenant-guard middleware (vs. per-endpoint checks) | SP-1 | | | |
 | Import worker builds its own Data Access calls, bypassing the guard | | | R-1 | |
 | Audit-log store — tamper-evidence not yet decided | | | R-2 | |
 | All *interactive* traffic passes exactly one guard | | | | N-1 |
 
-**Reasoning.** S-1: placing the `user_id` scoping in one middleware makes SQA-1 auditable in a
+**Reasoning.** SP-1: placing the `user_id` scoping in one middleware makes SQA-1 auditable in a
 single place; per-query scoping is functionally equivalent but easy to miss on a new endpoint.
 R-1: the import worker shares the Data Access module but not the guard, so a bug there could
 cross tenants — endangers SQA-1 / BG-2. R-2: SOC 2 auditors expect an append-only,
@@ -105,11 +107,11 @@ guard (assumption stated).
 | Managed PostgreSQL primary/standby, automated failover (vendor: 35–70 s, unmeasured) | | | R-3 | |
 | No runbook / automation for a bad-deploy rollback | | | R-4 | |
 | Redis read cache holds strictly derived data | | | | N-2 |
-| Redis aggregate TTL = 15 min | S-2 | T-1 | | |
+| Redis aggregate TTL = 15 min | SP-2 | TP-1 | | |
 
 **Reasoning.** R-3: the vendor's upper bound (70 s) exceeds the 60 s target and it has not been
 game-day-tested — endangers AQA-1. R-4: recovery time for a bad deploy depends on manual steps
-by a one-person team. N-2 holds while the cache stays strictly derived (assumption). S-2 / T-1:
+by a one-person team. N-2 holds while the cache stays strictly derived (assumption). SP-2 / TP-1:
 a higher TTL improves dashboard latency (PQA-1) but worsens data freshness — a performance ↔
 correctness tradeoff.
 
@@ -168,13 +170,13 @@ AA-1 modular monolith · AA-2 security choke point · AA-3 cache-aside · AA-4 s
 ### Sensitivity points
 | ID | Element property | Attribute affected | Direction |
 |----|------------------|--------------------|-----------|
-| S-1 | Tenant-scoping check placement | Security | one place → far fewer miss-a-check defects |
-| S-2 | Redis aggregate TTL | Performance / freshness | TTL up → latency down, staleness up |
+| SP-1 | Tenant-scoping check placement | Security | one place → far fewer miss-a-check defects |
+| SP-2 | Redis aggregate TTL | Performance / freshness | TTL up → latency down, staleness up |
 
 ### Tradeoff points
 | ID | Element property | Attribute A ↑ | Attribute B ↓ |
 |----|------------------|---------------|---------------|
-| T-1 | Redis aggregate TTL | Performance (dashboard latency) | Correctness (dashboard freshness) |
+| TP-1 | Redis aggregate TTL | Performance (dashboard latency) | Correctness (dashboard freshness) |
 
 ### Risk themes
 | Theme | Risks | Business driver(s) endangered | Recommendation |
@@ -192,6 +194,11 @@ Turn the risk themes into a prioritised backlog by rough ROI (utility gained ÷ 
 | 1 | Route the import worker through the tenant guard + choose an append-only audit store (RT-1) | High — closes the SQA-1 / BG-2 gap; unblocks SOC 2 | ~1 ADD iteration (1b) | **highest** |
 | 2 | Game-day the managed-DB failover; write + automate a rollback runbook (RT-2) | High — proves AQA-1; removes a launch blocker | ~2 person-days | high |
 | 3 | Read-replica + repository read/write split; region seam in the data model (RT-3) | Medium — head-room for BG-1 growth and future data-residency | ~1 ADD iteration (3) | medium — defer until growth signal |
+
+### Drivers register write-back
+
+- [SQA-1](../drivers/quality-attributes/SQA-1.md) → `at risk` (R-1, R-2); [AQA-1](../drivers/quality-attributes/AQA-1.md) → `at risk` (R-3, R-4) — set in the files and in the [drivers README](../drivers/README.md) matrix.
+- Change-log line `2026-09-07 · ATAM` appended to the drivers README and the [package index](../README.md).
 
 ### Recommendations / next steps
 - Run `/add` iteration 1b for RT-1 and iteration 3 for RT-3.

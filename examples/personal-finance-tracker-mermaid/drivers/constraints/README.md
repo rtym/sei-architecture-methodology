@@ -13,4 +13,4 @@ Index for `drivers/constraints/`. The authoritative traceability matrix is in th
 
 ---
 
-**Navigation**: [drivers README](../README.md) · [example root](../../README.md)
+**Navigation**: [drivers README](../README.md) · [architecture package](../../README.md)

@@ -1,7 +1,7 @@
 # BG-1: Reach seed-round user metrics
 
 - **Statement**: The founder needs 10 000 active users within 12 months so that the product reaches seed-round metrics.
-- **Primary stakeholder**: Founder
+- **Primary stakeholder**: ST-1 — Founder
 - **SEI business-goal category**: growth & market share
 - **Measure of success**: 10 000 monthly-active users by month 12
 - **Priority**: high

@@ -11,13 +11,15 @@
 
 ### Participants
 
-| Name | Role | Concerns brought |
-|------|------|------------------|
-| Founder | Sponsor / product owner | growth, cost, SOC 2 |
-| Eng lead | Architect / developer | modifiability, delivery speed, team of one |
-| Contractor QA | Tester | testability, usability |
-| Advisor | Security | data isolation, audit logging |
-| Design partner | End-user representative | ease of first use |
+Recorded in the stakeholder register [`../drivers/stakeholders.md`](../drivers/stakeholders.md).
+
+| ID | Name | Role | Concerns brought |
+|----|------|------|------------------|
+| ST-1 | Founder | Sponsor / product owner | growth, cost, SOC 2 |
+| ST-2 | Eng lead | Architect / developer | modifiability, delivery speed, team of one |
+| ST-3 | Contractor QA | Tester | testability, usability |
+| ST-4 | Advisor | Security | data isolation, audit logging |
+| ST-5 | Design partner | End-user representative | ease of first use |
 
 ### Expected outputs
 Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six-part) scenarios.
@@ -55,16 +57,16 @@ Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six
 
 ## Step 5 — Scenario brainstorming (raw, verbatim)
 
-| ID | Scenario (stimulus · environment · response) | Contributor | Driver(s) |
-|----|----------------------------------------------|-------------|-----------|
-| S-1 | "Someone tries to open another person's data and the system says no and writes it down" | Advisor | AD-1 |
-| S-2 | "Lots of people open the dashboard at once and it still comes up fast" | Founder | AD-2 |
-| S-3 | "A data centre goes dark and the app keeps working" | Eng lead | AD-3 |
-| S-4 | "I add a new chart type without breaking the old ones" | Eng lead | AD-4 |
-| S-5 | "A brand-new user adds their first expense and doesn't get stuck" | Design partner | AD-5 |
-| S-6 | "A 5 000-row CSV import doesn't freeze the app for everyone else" | Contractor QA | AD-2 |
-| S-7 | "We can prove every access attempt was logged for the auditor" | Advisor | AD-1, AD-6 |
-| S-8 | "Restoring from backup after a bad deploy takes minutes, not hours" | Eng lead | AD-3 |
+| ID | Scenario (stimulus · environment · response) | Type | Contributor | Driver(s) |
+|----|----------------------------------------------|------|-------------|-----------|
+| S-1 | "Someone tries to open another person's data and the system says no and writes it down" | use-case | Advisor | AD-1 |
+| S-2 | "Lots of people open the dashboard at once and it still comes up fast" | growth | Founder | AD-2 |
+| S-3 | "A data centre goes dark and the app keeps working" | exploratory | Eng lead | AD-3 |
+| S-4 | "I add a new chart type without breaking the old ones" | growth | Eng lead | AD-4 |
+| S-5 | "A brand-new user adds their first expense and doesn't get stuck" | use-case | Design partner | AD-5 |
+| S-6 | "A 5 000-row CSV import doesn't freeze the app for everyone else" | use-case | Contractor QA | AD-2 |
+| S-7 | "We can prove every access attempt was logged for the auditor" | use-case | Advisor | AD-1, AD-6 |
+| S-8 | "Restoring from backup after a bad deploy takes minutes, not hours" | exploratory | Eng lead | AD-3 |
 
 ## Step 6 — Scenario consolidation
 
@@ -200,7 +202,23 @@ design attention. Every refinement has a leaf, so there is no obvious unrecorded
 scenarios become the `<ATTR>QA-n` drivers under
 [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md).
 
-## Next steps
+## Next steps — hand-off to the drivers register
+
+| Workshop ID | Becomes | Notes |
+|-------------|---------|-------|
+| CS-1 | [SQA-1](../drivers/quality-attributes/SQA-1.md) | refined here (Step 8) |
+| CS-2 | [PQA-1](../drivers/quality-attributes/PQA-1.md) | refined in `/drivers` Step 5 |
+| CS-3 | [AQA-1](../drivers/quality-attributes/AQA-1.md) | refined in `/drivers` Step 5 |
+| CS-4 | [MQA-1](../drivers/quality-attributes/MQA-1.md) | refined in `/drivers` Step 5 |
+| CS-5 | [UQA-1](../drivers/quality-attributes/UQA-1.md) | refined here (Step 8) |
+| CS-6 | [PQA-2](../drivers/quality-attributes/PQA-2.md) | refined in `/drivers` Step 5 |
+| AD-1 | SQA-1 | supports BG-2 |
+| AD-2 | PQA-1 | supports BG-1 |
+| AD-3 | AQA-1 | supports BG-1, BG-4 |
+| AD-4 | MQA-1 | supports BG-3 |
+| AD-5 | UQA-1 | supports BG-1 |
+| AD-6 | [CON-4](../drivers/constraints/CON-4.md) | encryption in transit and at rest |
+
 
 - Feed refined scenarios + the utility tree into `/drivers` (they become `SQA-1`, `AQA-1`, …
   under `architecture/drivers/quality-attributes/`), then into `/attribute-driven-design`.

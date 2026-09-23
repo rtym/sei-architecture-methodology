@@ -33,8 +33,8 @@ flowchart TB
     end
   end
   http --> security
-  security --> L3
-  L3 --> persistence
+  security --> txn & categories & reporting & imports
+  txn & categories & reporting & imports --> persistence
   persistence --> platform
   classDef internal fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   class http,security,txn,categories,reporting,imports,persistence,platform internal

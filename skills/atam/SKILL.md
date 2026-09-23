@@ -24,6 +24,7 @@ Ask up front which mode fits (skip the question if `/atam` was invoked with `ful
 
 - **Full ATAM** (this skill's default) — external or cross-team evaluators, two phases, a formal
   report; for high-risk, high-cost, or contentious architectures.
+- Record the choice as `**Mode**: Full ATAM | Lightweight` in the report header.
 - **Lightweight Architecture Evaluation** — the same conceptual steps (business drivers →
   approaches → utility tree → analyse the `(H,H)`/`(H,M)` scenarios → risks / sensitivity /
   tradeoff points → risk themes) run in ~half a day by the internal team, no formal report, no
@@ -47,7 +48,8 @@ schedule, and rank by ROI. See `${CLAUDE_PLUGIN_ROOT}/references/atam-method.md`
   package, C4 diagrams, ADRs, or a description).
 - The **business drivers** / context and, if they exist, quality attribute scenarios
   (`architecture/quality-attributes/scenarios.md` or a QAW report).
-- Who the **stakeholders** are (for Phase 2) — by **name, not just role**.
+- Who the **stakeholders** are (for Phase 2) — by **name, not just role** — from
+  `architecture/drivers/stakeholders.md` (`ST-<n>`) if it exists; otherwise create it there.
 - Three framing questions: **who sees the results** (open vs private)? **which stakeholders
   participate**? **are the business goals captured and prioritised** (if not, budget time for it)?
 
@@ -107,8 +109,9 @@ analyses. Template: `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`.
 1. Walk the architecture and identify which approaches (`AA-n`) are invoked to satisfy it.
 2. Ask analysis **questions** about those approaches — use the **tactics-based questionnaire**
    for the relevant quality attribute (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`) as the question bank.
-3. Record findings as **risks**, **non-risks**, **sensitivity points** (`S-n`), **tradeoff
-   points** (`T-n`). Use the analysis table below.
+3. Record findings as **risks** (`R-n`), **non-risks** (`N-n`), **sensitivity points** (`SP-n`),
+   **tradeoff points** (`TP-n`) — `SP`/`TP`, not `S`/`T`, which the QAW uses for raw scenarios.
+   Use the analysis table below.
 
 Scenario analysis table (one per analysed scenario):
 
@@ -122,11 +125,14 @@ Scenario analysis table (one per analysed scenario):
 |---------|------|--------------------|-----------------------|------|
 | R-1 | Risk | Single Redis node, no replica | Availability | SPOF; AQA-1 requires 99.5% |
 | N-1 | Non-risk | Stateless API replicas behind LB | Availability | valid while sessions stay externalised |
-| S-1 | Sensitivity | Cache TTL vs dashboard freshness | Performance | TTL up → latency down, staleness up |
-| T-1 | Tradeoff | Cache TTL | Performance vs. correctness/consistency | see S-1 |
+| SP-1 | Sensitivity | Cache TTL vs dashboard freshness | Performance | TTL up → latency down, staleness up |
+| TP-1 | Tradeoff | Cache TTL | Performance vs. correctness/consistency | see SP-1 |
 ```
 
-### Phase 2 — Evaluation (with the broader stakeholder group)
+### Phase 2 — Evaluation (with the broader stakeholder group) — Full ATAM only
+
+In **Lightweight** mode skip Steps 7–8 entirely and say so in the report; the analysis of the
+`★` leaves in Step 6 is the whole evaluation.
 
 **Step 7 — Brainstorm and prioritise scenarios.** Round-robin scenario brainstorming with the
 full stakeholder group (use-case, growth, and exploratory scenarios). Then vote-prioritise
@@ -145,7 +151,11 @@ scenarios from Step 7 that were not already covered.
 - the full **risks / non-risks / sensitivity points / tradeoff points** registers,
 - **risk themes** — cluster the risks, name each theme, and map it to the business driver(s)
   (`BG-n`) it threatens,
-- recommendations (often: targeted `/add` iterations to address the top risk themes).
+- recommendations (often: targeted `/add` iterations to address the top risk themes),
+- **drivers register write-back**: every scenario with ≥ 1 Risk is set to `at risk` in its
+  `architecture/drivers/…/<ID>.md` and in the drivers `README.md` matrix; a dated change-log line
+  naming the risk IDs is appended there and to the package index `architecture/README.md`
+  (`/atam` row → done).
 
 ## Rules
 
@@ -159,6 +169,7 @@ scenarios from Step 7 that were not already covered.
   risk) pair; Step 6 analyses the `★` H/H and H/M leaves.
 - The report is written incrementally, section per step.
 - ATAM **evaluates**; it does not redesign. Fixes are recommendations → hand off to `/add`.
+- Findings use `R-` / `N-` / `SP-` / `TP-` / `RT-` prefixes; the report header carries `**Mode**`.
 - **Report format**: `atam-report.md` is the working file. For the deliverable, ask the user
   **Markdown, HTML, or both** and build it with
   `${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh architecture/atam/atam-report.md --format <fmt> --embed-diagrams

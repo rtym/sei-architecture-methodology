@@ -22,7 +22,7 @@ and hands off.
 
 | # | Activity | Skill | Use it to… | Produces |
 |---|----------|-------|------------|----------|
-| 0 | **Architectural drivers** | `architectural-drivers` | Collect & track the four driver kinds — business goals, primary functional requirements (as UML **use cases**), constraints, quality attributes — with a traceability matrix | `architecture/drivers/` (one file per driver) + use-case diagrams |
+| 0 | **Architectural drivers** | `architectural-drivers` | Collect & track the four driver kinds — business goals, primary functional requirements (as UML **use cases**), constraints, quality attributes — plus the design purpose, architectural concerns (`AC-`) and the stakeholder register, with a traceability matrix | `architecture/README.md` (package index) + `architecture/drivers/` (one file per driver) + use-case diagrams |
 | 1 | **Quality attributes** | `quality-attributes` | Turn vague "-ilities" into measurable 6-part quality attribute scenarios (ISO/IEC 25010), each drawn as a UML scenario diagram | `architecture/quality-attributes/scenarios.md` |
 | 2 | **Quality Attribute Workshop (QAW)** | `quality-attribute-workshop` | Facilitate the SEI 8-step stakeholder workshop that elicits, consolidates, prioritises and refines scenarios *before* the architecture exists | `architecture/qaw/qaw-report.md` |
 | 3 | **Attribute-Driven Design (ADD 3.0)** | `attribute-driven-design` | Design or evolve the architecture in driver-focused iterations | `architecture/add/<slug>-session.md` + `<slug>-Architecture.md` |
@@ -82,6 +82,16 @@ Typical engagements:
 - **Working directory**: everything is written under `architecture/` in the current project, one
   sub-folder per activity. Create `architecture/` if it does not exist. Never write outside it
   unless the user gives a path.
+- **Package index.** `architecture/README.md` (template
+  `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`) lists every activity's output and status.
+  `/drivers` creates it; every skill updates its row and appends a change-log line when it
+  finishes. Sub-package Navigation footers link **up** to it and **across** only to packages
+  that already exist — a link to a not-yet-produced sibling fails `validate.py`.
+- **Stakeholders once.** `architecture/drivers/stakeholders.md` (`ST-<n>`) is the single
+  stakeholder register; QAW participants, ATAM Phase 2 stakeholders and the V&B view-selection
+  table are read from it, not re-collected.
+- **Status vocabulary** (drivers, concerns, utility-tree leaves): `open` · `in design` ·
+  `partially` · `addressed` · `at risk` (set by ATAM when a Risk is found) · `retired`.
 - **Markdown is the source of truth.** No database, no server. Update artifact files as you go,
   not only at the end.
 - **Drafts first.** For every step, propose a complete first draft from what you already know,

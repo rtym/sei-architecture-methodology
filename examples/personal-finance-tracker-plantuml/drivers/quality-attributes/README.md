@@ -19,4 +19,4 @@ per leaf; `★` on each `(H, H)` leaf. ISO/IEC 25010:2023.
 
 ---
 
-**Navigation**: [drivers README](../README.md) · [example root](../../README.md)
+**Navigation**: [drivers README](../README.md) · [architecture package](../../README.md)

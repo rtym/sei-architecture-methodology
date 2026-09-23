@@ -35,8 +35,10 @@ On invocation — unless `/add` was given arguments that already answer it — a
 3. **Report** — the session file already *is* the report; give its path.
 
 For a new session get a short **name** (slug) and a one-line **system purpose**, then create both
-files from the templates below. If `architecture/quality-attributes/scenarios.md` or a QAW report
-exists, offer to import its drivers instead of re-entering them.
+files from the templates below. If `architecture/drivers/`, `architecture/quality-attributes/scenarios.md`
+or a QAW report exists, offer to import its drivers instead of re-entering them. Create the
+package index `architecture/README.md` (`${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`) if absent and
+update its `/add` row when the session ends.
 
 ## Session file template
 
@@ -195,7 +197,7 @@ flowchart TB
 ### Description
 <Plain-English explanation.>
 
-## 5. Component diagrams
+## 5. Component and module views
 ### <Container name>
 #### Diagram
 ```mermaid
@@ -220,6 +222,10 @@ flowchart TB
 ```
 #### Description
 <Plain-English explanation.>
+
+### Module decomposition
+<Once the design introduces modules: layers / packages and their allowed-to-use relations —
+the seed of the V&B Module view. Pattern in `${CLAUDE_PLUGIN_ROOT}/templates/architecture-document.md` §5.>
 
 ## 6. Sequence diagrams
 <One per key scenario. Each followed immediately by a plain-English description paragraph.>
@@ -255,9 +261,11 @@ flowchart TB
 |-------|-----------|-----------|-------------|
 
 ## 9. Design decisions
-| Decision | Rationale (cite driver IDs) | Alternatives discarded |
-|----------|-----------------------------|------------------------|
-<!-- records appended by Step 6 -->
+Each significant decision is an ADR in `adr/`; this table is the log.
+
+| Decision | Rationale (cite driver IDs) | Alternatives discarded | ADR |
+|----------|-----------------------------|------------------------|-----|
+<!-- records appended by Step 6; ADR column links adr/ADR-<n>.md -->
 ~~~
 
 ## Process
@@ -267,8 +275,10 @@ Announce each step in one line, then write its result to the session file.
 ### Step 1 — Review inputs (once, before iterations)
 
 - **Design purpose** (choose one): greenfield system · greenfield feature · brownfield replacement
-  · brownfield extension · brownfield migration.
-- **Business goals** (`BG-`) — import from the `architectural-drivers` register if it exists.
+  · brownfield extension · brownfield migration — take it from the drivers `README.md` header if
+  the register exists.
+- **Business goals** (`BG-`) and **stakeholders** (`ST-`, `architecture/drivers/stakeholders.md`)
+  — import from the `architectural-drivers` register if it exists.
 - **Primary functional requirements** — the architecturally significant **use cases** (`UC-`),
   each with primary actor, trigger, and main success scenario.
 - **Quality attribute scenarios** — six-part form, ISO/IEC 25010 classification, attribute-prefixed
@@ -277,6 +287,8 @@ Announce each step in one line, then write its result to the session file.
   `architecture/quality-attributes/scenarios.md` / the QAW report if present.
 - **Constraints** (`CON-`) — business, technical, regulatory.
 - **Architectural concerns** (`AC-`) — extensibility, team skills, tech-stack mandates, etc.
+  Import `architecture/drivers/concerns/AC-*.md` if present; concerns raised during design are
+  written back there as new `AC-<n>` files.
 
 End with a one-line summary of the most architecturally significant drivers.
 
@@ -347,15 +359,23 @@ diagram review** protocol from the `sei-diagrams` skill:
    diagram per the `sei-diagrams` *Embedding in Markdown* rule (Mermaid → fenced block + image
    line; PlantUML → image line + a link to the `.puml` source), relative paths.
 
-Record significant decisions in §9. **Present diagrams + decisions table; wait for review before
-writing to `Architecture.md`.**
+Record significant decisions in §9 **and as ADRs**: each significant decision gets
+`architecture/add/adr/ADR-<n>.md` from `${CLAUDE_PLUGIN_ROOT}/templates/adr.md` (context, decision, rationale
+citing driver IDs, alternatives, consequences), and its §9 row links it in the `ADR` column.
+When the iteration introduces or changes **modules** (layers, packages, allowed-to-use rules),
+add or update the *Module decomposition* diagram in §5 — it seeds the Views-and-Beyond Module
+view. **Present diagrams + decisions table; wait for review before writing to `Architecture.md`.**
 
 ### Step 7 — Analyse and review the iteration goal
 
 Analysis table: each selected driver → **yes / partially / no** + notes. Drive the analysis with
 the **tactics-based questionnaire** for each attribute in play (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`):
 for every relevant tactic, is it used, where, and what is the risk if it is not? State whether
-the goal was achieved and which drivers/concerns remain. Ask whether to run another iteration.
+the goal was achieved and which drivers/concerns remain. **Write back to the register**: for every
+driver analysed, set `**Status**` in its `architecture/drivers/…/<ID>.md` and in the drivers
+`README.md` matrix (`Addressed in` = this iteration; `partially` / `addressed`), and append a
+change-log line there and in the package index `architecture/README.md`. Ask whether to run
+another iteration.
 Yes → Step 2 with remaining drivers. No → set **Status: completed**, print both file paths, and
 offer to run `/architecture-docs` (Views & Beyond) and `/atam` (evaluation).
 
@@ -364,7 +384,9 @@ offer to run `/architecture-docs` (Views & Beyond) and `/atam` (evaluation).
 - IDs are sequential per session: `BG-1`, `UC-1`, `CON-1`, `AC-1`, and attribute-prefixed QA scenarios (`PQA-1`, `SQA-1`, …).
 - Every Step-4 and Step-6 rationale cites ≥ 1 driver ID.
 - The session Markdown stays current — write as you go, never only at the end.
-- Design decisions → `Architecture.md` §9; interfaces → §8; diagrams → their dedicated sections.
+- Design decisions → `Architecture.md` §9 **and** one `adr/ADR-<n>.md` each; interfaces → §8;
+  diagrams → their dedicated sections; module structure → §5 *Module decomposition*.
+- Step 7 writes driver statuses back to `architecture/drivers/` and the package index.
 - Every diagram satisfies the `sei-diagrams` rules: `title` line, aliases without spaces, concrete
   technology on every element, specific relationship labels, ≤ 10 nodes, explicit `Boundary`,
   minimised crossings. Always render in the conversation before writing to the file.

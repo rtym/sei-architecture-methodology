@@ -9,6 +9,7 @@
     - [Business goals — [`business-goals/`](../drivers/business-goals/README.md)](#business-goals--business-goalsbusiness-goalsreadmemd)
     - [Use cases — [`use-cases/`](../drivers/use-cases/README.md)  (primary functional requirements)](#use-cases--use-casesuse-casesreadmemd--primary-functional-requirements)
     - [Constraints — [`constraints/`](../drivers/constraints/README.md)](#constraints--constraintsconstraintsreadmemd)
+    - [Architectural concerns — [`concerns/`](../drivers/concerns/README.md)  (ADD input; not traced to a BG)](#architectural-concerns--concernsconcernsreadmemd--add-input-not-traced-to-a-bg)
     - [Quality attribute scenarios — [`quality-attributes/`](../drivers/quality-attributes/README.md)](#quality-attribute-scenarios--quality-attributesquality-attributesreadmemd)
   - [Traceability matrix](#traceability-matrix)
   - [Prioritised driver list (input to ADD / ATAM)](#prioritised-driver-list-input-to-add--atam)
@@ -25,14 +26,17 @@
   - [4. Container diagram](#4-container-diagram)
     - [Diagram](#diagram-1)
     - [Description](#description-1)
-  - [5. Component diagrams](#5-component-diagrams)
+  - [5. Component and module views](#5-component-and-module-views)
     - [API Service](#api-service)
       - [Diagram](#diagram-2)
       - [Description](#description-2)
+    - [Module decomposition](#module-decomposition)
+      - [Diagram](#diagram-3)
+      - [Description](#description-3)
   - [6. Sequence diagrams](#6-sequence-diagrams)
   - [7. Deployment diagram](#7-deployment-diagram)
-    - [Diagram](#diagram-3)
-    - [Description](#description-3)
+    - [Diagram](#diagram-4)
+    - [Description](#description-4)
   - [8. Interfaces and events](#8-interfaces-and-events)
     - [Interfaces](#interfaces)
     - [`POST /transactions` — full interface spec (the four agreement points)](#post-transactions--full-interface-spec-the-four-agreement-points)
@@ -48,10 +52,13 @@
 - **Owner**: Roman Tymoshuk
 - **Status**: reviewed
 - **QA model**: ISO/IEC 25010:2023
+- **Design purpose**: greenfield system
+- **Stakeholders**: [stakeholders.md](../drivers/stakeholders.md) (ST-1 … ST-6)
 
 > The top aggregate file of `drivers/`. One file per driver lives under
 > [`business-goals/`](../drivers/business-goals/README.md), [`use-cases/`](../drivers/use-cases/README.md),
-> [`constraints/`](../drivers/constraints/README.md), [`quality-attributes/`](../drivers/quality-attributes/README.md);
+> [`constraints/`](../drivers/constraints/README.md), [`quality-attributes/`](../drivers/quality-attributes/README.md),
+> [`concerns/`](../drivers/concerns/README.md);
 > each of those has its own `README.md` index. This file holds the ID legend, the traceability
 > matrix, the coverage check, the prioritised list, and the change log.
 
@@ -85,6 +92,13 @@ Overview use case diagram: [`use-cases/diagrams/overview-core.png`](../drivers/u
 | CON-4 | regulatory | Encryption in transit and at rest | hard | [CON-4](../drivers/constraints/CON-4.md) |
 | CON-5 | technical | PostgreSQL primary datastore | negotiable | [CON-5](../drivers/constraints/CON-5.md) |
 
+### Architectural concerns — [`concerns/`](../drivers/concerns/README.md)  (ADD input; not traced to a BG)
+
+| ID | Concern (short) | Kind | Priority | File |
+|----|-----------------|------|:--------:|------|
+| AC-1 | Keep the SOC 2 surface small | general | high | [AC-1](../drivers/concerns/AC-1.md) |
+| AC-2 | Dashboard iteration speed must stay high | general | medium | [AC-2](../drivers/concerns/AC-2.md) |
+
 ### Quality attribute scenarios — [`quality-attributes/`](../drivers/quality-attributes/README.md)
 | ID | ISO 25010 characteristic / sub | One-line scenario | (V, R) | Diagram | File |
 |----|-------------------------------|-------------------|:------:|---------|------|
@@ -115,10 +129,10 @@ Never `QAS-`.
 | UC-2 | [UC-2](../drivers/use-cases/UC-2.md) | BG-1 | PQA-1, UQA-1 | ADD iter 2 | open |
 | UC-3 | [UC-3](../drivers/use-cases/UC-3.md) | BG-1 | PQA-2 | ADD iter 3 | open |
 | UC-4 | [UC-4](../drivers/use-cases/UC-4.md) | BG-1 | UC-1, UC-3 (`<<include>>`) | ADD iter 1 | in design |
-| AQA-1 | [AQA-1](../drivers/quality-attributes/AQA-1.md) | BG-1, BG-4 | CON-3, CON-5 | ADD iter 1 | open |
+| AQA-1 | [AQA-1](../drivers/quality-attributes/AQA-1.md) | BG-1, BG-4 | CON-3, CON-5 | ADD iter 1 | at risk |
 | PQA-1 | [PQA-1](../drivers/quality-attributes/PQA-1.md) | BG-1 | UC-1, UC-2 | ADD iter 2 | open |
 | PQA-2 | [PQA-2](../drivers/quality-attributes/PQA-2.md) | BG-1 | UC-3 | ADD iter 3 | open |
-| SQA-1 | [SQA-1](../drivers/quality-attributes/SQA-1.md) | BG-2 | CON-4 | ADD iter 1 | in design |
+| SQA-1 | [SQA-1](../drivers/quality-attributes/SQA-1.md) | BG-2 | CON-4 | ADD iter 1 | at risk |
 | MQA-1 | [MQA-1](../drivers/quality-attributes/MQA-1.md) | BG-3 | UC-1 | ADD iter 1 | open |
 | UQA-1 | [UQA-1](../drivers/quality-attributes/UQA-1.md) | BG-1 | UC-2 | ADD iter 2 | open |
 | CON-1 | [CON-1](../drivers/constraints/CON-1.md) | BG-1 | UC-1, UC-2 | ADD iter 1 | open |
@@ -127,7 +141,7 @@ Never `QAS-`.
 | CON-4 | [CON-4](../drivers/constraints/CON-4.md) | BG-2 | SQA-1 | ADD iter 1 | in design |
 | CON-5 | [CON-5](../drivers/constraints/CON-5.md) | BG-1 | AQA-1 | ADD iter 1 | open |
 
-`Status` ∈ open / in design / partially / addressed / retired.
+`Status` ∈ open / in design / partially / addressed / at risk (set by ATAM) / retired.
 
 **Coverage check**: every BG (BG-1…BG-4) is supported by ≥ 1 UC or QA scenario; every UC / QA
 scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
@@ -147,10 +161,12 @@ scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
 | Date | Change |
 |------|--------|
 | 2026-09-06 | initial driver set; reviewed with founder + eng lead; utility tree imported from the QAW |
+| 2026-09-06 | ADD iterations 1–2: UC-1, UC-4, SQA-1 → in design; concerns AC-1, AC-2 recorded |
+| 2026-09-07 | ATAM: SQA-1 (R-1, R-2) and AQA-1 (R-3, R-4) → at risk; see [ATAM report](../atam/atam-report.md) |
 
 ---
 
-**Navigation**: [example root](../README.md) · [quality attribute scenarios](../quality-attributes/scenarios.md) ·
+**Navigation**: [architecture package](../README.md) · [stakeholders](../drivers/stakeholders.md) · [quality attribute scenarios](../quality-attributes/scenarios.md) ·
 [QAW](../qaw/qaw-report.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md) ·
 [ATAM](../atam/atam-report.md) · [Views & Beyond docs](../docs/README.md)
 
@@ -221,7 +237,7 @@ The API service is the single write path and the single place tenant scoping (SQ
 The Redis read cache serves the dashboard (PQA-1); it is a performance element, not a system of
 record, so its loss degrades latency but not correctness (AQA-1).
 
-## 5. Component diagrams
+## 5. Component and module views
 
 ### API Service
 
@@ -235,6 +251,22 @@ Source: [`diagrams/component-api.puml`](../add/diagrams/component-api.puml) · r
 
 Every request passes through the Tenant Guard before any service runs, so cross-tenant access
 (SQA-1) is structurally prevented rather than checked per-endpoint.
+
+### Module decomposition
+
+#### Diagram
+
+![Module decomposition — Personal Finance Tracker API](../add/diagrams/module-decomposition.png)
+
+Source: [`diagrams/module-decomposition.puml`](../add/diagrams/module-decomposition.puml) · rendered + visually verified.
+
+#### Description
+
+Four layers inside the single deployable; a layer may use only the layer below it, and the four
+domain modules may not use one another (a cross-domain need is mediated by `reporting` reading
+through `persistence`). The `security` layer is the one place tenant scoping is applied (SQA-1,
+ADR-2); the `reporting` module's report-type registry is what keeps MQA-1 to a one-day change.
+This is the seed of the Views-and-Beyond [module decomposition view](../docs/view-module-decomposition.md).
 
 ## 6. Sequence diagrams
 
@@ -289,13 +321,15 @@ The one interface `UC-1` and `SQA-1` both run through, specified per `references
 
 ## 9. Design decisions
 
-| Decision | Rationale (cite driver IDs) | Alternatives discarded |
-|----------|-----------------------------|------------------------|
-| Single API service owns all writes and enforces tenant scoping in one middleware | SQA-1 needs one auditable choke point; CON-2 favours few moving parts | Per-service authz checks (easy to miss one) |
-| Redis cache-aside for dashboard aggregates with 15-min TTL | PQA-1 p95 budget; DB alone won't meet it at 500 concurrent | Materialised views (slower to iterate — MQA-1); CDN caching (per-user data) |
-| Managed PostgreSQL primary/standby, multi-AZ, automated failover | AQA-1 recovery target; CON-5 mandates PostgreSQL; CON-3 low-cost tier still offers this | Self-managed HA (CON-2 time), single instance (fails AQA-1) |
+Each significant decision is an ADR in [`adr/`](../add/adr/ADR-1.md); this table is the log.
+
+| Decision | Rationale (cite driver IDs) | Alternatives discarded | ADR |
+|----------|-----------------------------|------------------------|-----|
+| Single API service owns all writes and enforces tenant scoping in one middleware | SQA-1 needs one auditable choke point; CON-2 favours few moving parts | Per-service authz checks (easy to miss one) | [ADR-2](../add/adr/ADR-2.md) |
+| Redis cache-aside for dashboard aggregates with 15-min TTL | PQA-1 p95 budget; DB alone won't meet it at 500 concurrent | Materialised views (slower to iterate — MQA-1); CDN caching (per-user data) | [ADR-1](../add/adr/ADR-1.md) |
+| Managed PostgreSQL primary/standby, multi-AZ, automated failover | AQA-1 recovery target; CON-5 mandates PostgreSQL; CON-3 low-cost tier still offers this | Self-managed HA (CON-2 time), single instance (fails AQA-1) | [ADR-3](../add/adr/ADR-3.md) |
 
 ---
 
-**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [session log](../add/personal-finance-tracker-session.md) · [Views & Beyond docs](../docs/README.md) · [ATAM](../atam/atam-report.md)
+**Navigation**: [architecture package](../README.md) · [ADRs](../add/adr/ADR-1.md) · [drivers](../drivers/README.md) · [session log](../add/personal-finance-tracker-session.md) · [Views & Beyond docs](../docs/README.md) · [ATAM](../atam/atam-report.md)
 

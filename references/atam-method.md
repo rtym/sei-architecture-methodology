@@ -119,7 +119,7 @@ risk** (H/M/L); the decision makers rate its **business importance** (H/M/L). Se
 **Step 6 — Analyze the architectural approaches.** Take the highest-ranked scenarios one at a
 time; the architect explains how the architecture supports each; questioners probe for the
 approaches invoked. For each, document the relevant decisions and catalog risks / non-risks /
-sensitivity points (`S-n`) / tradeoff points (`T-n`). For well-known approaches, ask how the
+sensitivity points (`SP-n`) / tradeoff points (`TP-n`). For well-known approaches, ask how the
 architect overcame the approach's known weaknesses or gained assurance it sufficed. If the
 architect **cannot characterise** a key parameter (e.g. the number of clients, how load
 balancing allocates processes), that inability is itself a risk; where the questions *can* be
@@ -160,7 +160,7 @@ themes and the business goals each threatens.
 | Scenario # + text | `<ATTR>QA-id` — one-line scenario |
 | Attribute(s) | ISO/IEC 25010 characteristic(s) |
 | Environment · Stimulus · Response | the scenario's environment, stimulus, and required response measure |
-| Architectural decisions | one row per relevant decision, each tagged with any of: **Sensitivity `S-n`**, **Tradeoff `T-n`**, **Risk `R-n`**, **Non-risk `N-n`** |
+| Architectural decisions | one row per relevant decision, each tagged with any of: **Sensitivity `SP-n`**, **Tradeoff `TP-n`**, **Risk `R-n`**, **Non-risk `N-n`** |
 | Reasoning | why each decision does/doesn't achieve the response; references to the risks |
 | Architecture diagram | a small diagram of the elements involved |
 

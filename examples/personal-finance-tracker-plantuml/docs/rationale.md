@@ -1,6 +1,8 @@
 # Rationale — Personal Finance Tracker
 
 Cross-cutting architecture rationale and the ADR log. Per-view rationale lives in each view packet.
+The three ADRs were taken during ADD and are canonical there — [`ADR-1`](../add/adr/ADR-1.md),
+[`ADR-2`](../add/adr/ADR-2.md), [`ADR-3`](../add/adr/ADR-3.md); the sections below summarise them.
 
 ## ADR-1: Cache-aside read model for the dashboard
 

@@ -1,4 +1,4 @@
-# Quality Attribute Workshop — <system>
+# Quality Attribute Workshop — <SystemName>
 
 - **Date(s)**: <YYYY-MM-DD>
 - **Facilitator(s)**: <names>
@@ -11,9 +11,11 @@
 
 ### Participants
 
-| Name | Role | Concerns brought |
-|------|------|------------------|
-| | architect / dev / test / integrator / ops / security / product / sponsor / user rep | |
+Imported from [`../drivers/stakeholders.md`](../drivers/stakeholders.md) (create it there if it does not exist yet).
+
+| ID | Name | Role | Concerns brought |
+|----|------|------|------------------|
+| ST-1 | | architect / dev / test / integrator / ops / security / product / sponsor / user rep | |
 
 ### Expected outputs
 Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six-part) scenarios.
@@ -43,9 +45,9 @@ Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six
 
 ## Step 5 — Scenario brainstorming (raw, verbatim)
 
-| ID | Scenario (stimulus · environment · response) | Contributor | Driver(s) |
-|----|----------------------------------------------|-------------|-----------|
-| S-1 | | | AD-1 |
+| ID | Scenario (stimulus · environment · response) | Type (use-case / growth / exploratory) | Contributor | Driver(s) |
+|----|----------------------------------------------|----------------------------------------|-------------|-----------|
+| S-1 | | use-case | | AD-1 |
 
 ## Step 6 — Scenario consolidation
 
@@ -82,7 +84,9 @@ Dissent / notes: <record any objection to a merge>
 - **Relevant quality attributes (ISO/IEC 25010)**: <characteristic / sub>
 - **Six-part scenario diagram**: 
 
-![CS-<id> six-part scenario](diagrams/scenario-CS-<id>.png) — visually verified: y/n
+![CS-<id> six-part scenario](diagrams/scenario-CS-<id>.png)
+
+Rendered to `architecture/qaw/diagrams/scenario-CS-<id>.png` · visually verified: y/n
 - **Questions**: <how would the architecture achieve this?>
 - **Issues / assumptions**: 
 
@@ -98,7 +102,13 @@ A **table** (see `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`). Every refin
 _Reading the tree_: a QA / refinement with no leaf → look for an unrecorded ASR; the `★`
 leaves get the most attention; note which leaves are `addressed` vs `open`.
 
-## Next steps
+## Next steps — hand-off to the drivers register
 
-- Feed refined scenarios into `architectural-drivers` as `<ATTR>QA-n` and into `/attribute-driven-design`.
+| Workshop ID | Becomes | Notes |
+|-------------|---------|-------|
+| CS-<id> | <ATTR>QA-<n> | refined here; six-part detail copied to the register |
+| CS-<id> | <ATTR>QA-<n> | consolidated but not refined — refine in `/drivers` Step 5 |
+| AD-<n> | BG-<n> / UC-<n> / CON-<n> / <ATTR>QA-<n> | every workshop driver maps to a register ID |
+
+- Run `/drivers` to create or update `architecture/drivers/` from this table.
 - Schedule an ATAM once an architecture exists.

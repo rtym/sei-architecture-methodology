@@ -26,6 +26,14 @@ SEI method there are four kinds:
 | **Constraints** | `CON-<n>` | Non-negotiable boundaries: business, technical, regulatory | constraint statements with a rationale/source |
 | **Quality attributes** | `<ATTR>QA-<n>` | Required qualities, measurable | six-part quality attribute scenarios (detail owned by the `quality-attributes` skill) |
 
+ADD 3.0 names two further inputs, which the register also keeps so `/add` never re-collects them:
+
+| Input | ID / place | What it is |
+|-------|------------|------------|
+| **Design purpose** | `README.md` header | greenfield system · greenfield feature · brownfield replacement · extension · migration |
+| **Architectural concerns** | `AC-<n>` → `concerns/AC-<n>.md` | general (team skills, technology mandates), specific (raised by a decision), internal, quality-of-design — not traced to a business goal |
+| **Stakeholders** | `ST-<n>` → `stakeholders.md` | the one stakeholder register the QAW, ATAM and V&B skills read |
+
 ### Quality attribute scenario ID scheme
 
 Every quality attribute scenario gets an **attribute-prefixed code** — the attribute abbreviation
@@ -65,8 +73,13 @@ Drivers grow. Do **not** keep them in a single file — maintain a directory so 
 own artifact, diffable and linkable:
 
 ```
+architecture/README.md            # package index — created here, updated by every skill (architecture-readme template)
 architecture/drivers/
-├── README.md                     # ID legend · traceability matrix · coverage check · prioritised list · change log
+├── README.md                     # design purpose · ID legend · traceability matrix · coverage check · prioritised list · change log
+├── stakeholders.md               # ST-<n> register (stakeholders template)
+├── concerns/
+│   ├── README.md                 # index: one linked row per AC
+│   └── AC-<n>.md                 # one file per architectural concern
 ├── business-goals/
 │   ├── README.md                 # index: one linked row per BG
 │   └── BG-<n>.md                 # one file per business goal
@@ -92,8 +105,9 @@ architecture/drivers/
   `utility-tree.md`.
 - Every path mentioned in prose or a table is a working **relative Markdown link**
   (`[UC-1](use-cases/UC-1.md)`), never a bare backtick path. Each `README.md` ends with a
-  **Navigation** footer (up to the package, across to `../qaw/`, `../add/`, `../atam/`,
-  `../docs/`, and the project root).
+  **Navigation** footer that links **up** to the package index `architecture/README.md` and
+  **across only to sibling packages that already exist** — the index is where the reader finds
+  what has been produced; a link to a missing `../qaw/qaw-report.md` fails the validator.
 - Each **driver file** is self-contained. Add a new driver = add a file + one matrix row in the
   top `README.md` + one row in the subdirectory `README.md`. Never renumber; a retired driver
   keeps its file with `**Status**: retired`.
@@ -103,7 +117,8 @@ architecture/drivers/
   wider set. The drivers directory is always self-sufficient as ADD/ATAM input.
 
 Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`, `${CLAUDE_PLUGIN_ROOT}/references/add-method.md`.
-Templates: `${CLAUDE_PLUGIN_ROOT}/templates/drivers-readme.md`, `${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md`,
+Templates: `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`, `${CLAUDE_PLUGIN_ROOT}/templates/stakeholders.md`,
+`${CLAUDE_PLUGIN_ROOT}/templates/concern.md`, `${CLAUDE_PLUGIN_ROOT}/templates/drivers-readme.md`, `${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md`,
 `${CLAUDE_PLUGIN_ROOT}/templates/business-goal.md`, `${CLAUDE_PLUGIN_ROOT}/templates/use-case.md`, `${CLAUDE_PLUGIN_ROOT}/templates/constraint.md`,
 `${CLAUDE_PLUGIN_ROOT}/templates/quality-attribute-scenario.md`.
 
@@ -113,8 +128,17 @@ Templates: `${CLAUDE_PLUGIN_ROOT}/templates/drivers-readme.md`, `${CLAUDE_PLUGIN
 
 ### Step 1 — Gather source material
 Ask for / read: product brief, PRD, vision doc, backlog, SLAs, an existing requirements list,
-org/regulatory context. Create `architecture/drivers/` and its four sub-directories. If a QAW
-report or `scenarios.md` exists, plan to import (not merely link) it.
+org/regulatory context. Create `architecture/drivers/` and its sub-directories, and — if it does
+not exist — the package index `architecture/README.md` from
+`${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`. Classify the **design purpose** (greenfield
+system / feature, brownfield replacement / extension / migration) and record it in both README
+headers. If a QAW report or `scenarios.md` exists, plan to import (not merely link) it.
+
+### Step 1b — Stakeholders → `stakeholders.md`
+Draft the stakeholder register from `${CLAUDE_PLUGIN_ROOT}/templates/stakeholders.md` — one `ST-<n>` row per
+person or representative, with role, concerns, and which later activities they join (QAW, ATAM
+Phase 2, V&B reader). If a QAW report exists, its participant list is the seed. Business goals
+cite their primary stakeholder's `ST-<n>`.
 
 **Four ways to gather ASRs** (`${CLAUDE_PLUGIN_ROOT}/references/architectural-drivers.md`): (1) *sniff* a requirements
 doc for the architecturally significant categories (usage, time, external elements, networking,
@@ -173,6 +197,13 @@ One file per constraint from `${CLAUDE_PLUGIN_ROOT}/templates/constraint.md`: ty
 the constraint, its source, hard vs negotiable, and any business goal or quality attribute
 scenario it conflicts with.
 
+### Step 4b — Architectural concerns → `concerns/AC-<n>.md`
+Capture the concerns that shape the design but are not requirements: team skills and size,
+technology mandates, process constraints, and concerns raised by earlier design decisions. One
+file per concern from `${CLAUDE_PLUGIN_ROOT}/templates/concern.md` (kind, raised by, priority, related drivers).
+Concerns are ADD Step-1 input and Step-7 analysis rows; they are **not** traced to a business goal
+in the coverage check.
+
 ### Step 5 — Quality attributes → `quality-attributes/<ATTR>QA-<n>.md`
 **Document every quality attribute as a six-part quality attribute scenario, and support it with
 its own scenario diagram.** One file per scenario from `${CLAUDE_PLUGIN_ROOT}/templates/quality-attribute-scenario.md`:
@@ -187,8 +218,10 @@ its own scenario diagram.** One file per scenario from `${CLAUDE_PLUGIN_ROOT}/te
   `![<ATTR>QA-<n> six-part scenario](diagrams/scenario-<ATTR>QA-<n>.png)`; PlantUML → that image
   line + a link to the `.puml` source.
 
-If `scenarios.md` exists, copy each scenario's six-part detail and diagram into its file here and
-add a `> Source: ../../quality-attributes/scenarios.md` line. If not, this is where the detail lives.
+If `/quality-attributes` ran in **register mode** the per-scenario files and diagrams are already
+here — review, do not duplicate. If a **standalone** `scenarios.md` exists, copy each scenario's
+six-part detail and diagram into its file here and add a `> Source: ../../quality-attributes/scenarios.md`
+line. If neither, this is where the detail lives.
 
 **Then build the quality attribute utility tree** — `quality-attributes/utility-tree.md` — as the
 **summary of all quality attributes in the drivers**. **It is a table, not a diagram.** One row
@@ -220,30 +253,33 @@ driver, with the "File" cell a **relative Markdown link**:
 | AQA-1 | [AQA-1](quality-attributes/AQA-1.md) | BG-3 | — | ADD iter 2 | partially |
 | CON-2 | [CON-2](constraints/CON-2.md) | BG-1 | UC-1, UC-4 | — | open |
 
-`Status` ∈ `open` / `in design` / `partially` / `addressed` / `retired`.
+`Status` ∈ `open` / `in design` / `partially` / `addressed` / `at risk` / `retired`.
 **Coverage check (mandatory):** every `BG-` supported by ≥ 1 `UC-` or `<ATTR>QA-`; every
-`UC-` / `<ATTR>QA-` / `CON-` traces up to ≥ 1 `BG-`. Report any gaps explicitly.
+`UC-` / `<ATTR>QA-` / `CON-` traces up to ≥ 1 `BG-`. Rows whose status is `retired` are excluded,
+and `AC-` concerns are not part of the check. Report any gaps explicitly.
 
 ### Step 7 — Prioritised driver list (in `README.md`)
 The ordered list ADD/ATAM consume: `(H,H)` then `(H,M)` quality scenarios, the architecturally
 significant use cases, then the hard constraints — each one line with its ID and a relative link.
 
-### Step 8 — Change log
+### Step 8 — Change log and package index
 Append a dated line to the top `README.md`'s change log for every run: what was added / changed
-/ retired.
+/ retired. Then update the `/drivers` row and the change log of the package index
+`architecture/README.md`.
 
 ## Tracking across the engagement
 
-- `/attribute-driven-design` reads this directory as its Step-1 input and, after each iteration,
-  reports which driver IDs moved to `partially` / `addressed` — update those files' `**Status**`
-  and the `README.md` matrix.
-- `/atam` reads it for business drivers and the utility tree; ATAM risk themes map back to `BG-n`.
+- `/attribute-driven-design` reads this directory (drivers, design purpose, `AC-` concerns) as its
+  Step-1 input and, after each iteration, sets the affected driver files' `**Status**` and the
+  `README.md` matrix to `partially` / `addressed`.
+- `/atam` reads it for business drivers, stakeholders and the utility tree; ATAM risk themes map
+  back to `BG-n`, and every scenario with a Risk is set to `at risk` here.
 - Re-run `/drivers` whenever scope changes; add files, never rewrite history — retire, don't delete.
 
 ## Rules
 
-- Four driver kinds, four ID prefixes: `BG-`, `UC-`, `CON-`, `<ATTR>QA-`. IDs are sequential
-  within their prefix and never reused or renumbered.
+- Four driver kinds, four ID prefixes: `BG-`, `UC-`, `CON-`, `<ATTR>QA-`; plus `AC-` concerns and
+  `ST-` stakeholders. IDs are sequential within their prefix and never reused or renumbered.
 - **One file per driver** under the matching sub-directory; the top `README.md` is the aggregate
   file; each sub-directory has a small `README.md` index. Every cross-reference is a relative
   Markdown link.
