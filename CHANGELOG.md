@@ -4,7 +4,7 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
-## Unreleased
+## 1.11.1 — 2026-09-24
 
 ### Fixed
 - CI's PlantUML "render every example diagram" step asserted a hardcoded count of committed
