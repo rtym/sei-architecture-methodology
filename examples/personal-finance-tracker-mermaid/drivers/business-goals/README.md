@@ -12,4 +12,4 @@ Index for `drivers/business-goals/`. The authoritative traceability matrix is in
 
 ---
 
-**Navigation**: [drivers README](../README.md) · [example root](../../README.md)
+**Navigation**: [drivers README](../README.md) · [architecture package](../../README.md)

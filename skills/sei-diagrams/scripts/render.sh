@@ -6,8 +6,9 @@
 #
 # TARGET may be:
 #   *.mmd / *.mermaid   a Mermaid source file            -> <name>.png
-#   *.md                a Markdown file; each ```mermaid  -> <mdname>-<NN>.png
-#                       fenced block is extracted and rendered
+#   *.md                a Markdown file; each ```mermaid  -> <slug>.png when the block has a
+#                       fenced block is extracted and    `%% name: <slug>` comment, else <mdname>-<NN>.png
+#                       rendered
 #   a directory         every *.mmd / *.mermaid inside it
 #
 # Output goes next to the source unless --out DIR is given.
@@ -94,10 +95,27 @@ dest_for() { # <src-basename-no-ext>
 extract_md() { # <file.md>  -> writes <base>-NN.mmd into TMP_DIR, echoes their paths
   local md="$1" base
   base="$(basename "${md%.*}")"
-  awk -v out="$TMP_DIR" -v base="$base" '
-    /^[[:space:]]*```mermaid[[:space:]]*$/ { inblk=1; n++; fn=sprintf("%s/%s-%02d.mmd", out, base, n); next }
-    inblk && /^[[:space:]]*```[[:space:]]*$/ { inblk=0; close(fn); print fn; next }
-    inblk { print $0 > fn }
+  # A block may name its own output with a `%% name: <slug>` comment (Mermaid ignores the
+  # comment); otherwise blocks are numbered in document order.
+  awk -v out="$TMP_DIR" -v base="$base" -v md="$md" '
+    /^[[:space:]]*```mermaid[[:space:]]*$/ { inblk=1; n++; buf=""; nm=""; next }
+    inblk && /^[[:space:]]*```[[:space:]]*$/ {
+      inblk=0
+      if (nm != "") fn=sprintf("%s/%s.mmd", out, nm); else fn=sprintf("%s/%s-%02d.mmd", out, base, n)
+      if (fn in seen) {
+        printf "ERROR: %s: mermaid blocks %d and %d both resolve to %s — give one a distinct `%%%% name:` slug\n", \
+          md, seen[fn], n, fn > "/dev/stderr"
+        exit 2
+      }
+      seen[fn] = n
+      printf "%s", buf > fn; close(fn); print fn; next
+    }
+    inblk {
+      if (match($0, /^[[:space:]]*%%[[:space:]]*name:[[:space:]]*/)) {
+        nm=substr($0, RLENGTH+1); gsub(/[[:space:]]+$/, "", nm); gsub(/[^A-Za-z0-9._-]/, "-", nm)
+      }
+      buf = buf $0 "\n"
+    }
   ' "$md"
 }
 
@@ -115,13 +133,17 @@ process() { # <path>
       *.mmd|*.mermaid)
         render_one "$path" "$(dest_for "$(basename "${path%.*}")" "$(dirname "$path")")" ;;
       *.md|*.markdown)
-        local any=0
-        while IFS= read -r frag; do
-          [ -n "$frag" ] || continue
-          any=1
-          render_one "$frag" "$(dest_for "$(basename "${frag%.*}")" "$(dirname "$path")")"
-        done < <(extract_md "$path")
-        [ "$any" -eq 1 ] || echo "  (no \`\`\`mermaid blocks in $path)" ;;
+        local any=0 frags
+        if ! frags="$(extract_md "$path")"; then
+          failed=$((failed + 1))
+        else
+          while IFS= read -r frag; do
+            [ -n "$frag" ] || continue
+            any=1
+            render_one "$frag" "$(dest_for "$(basename "${frag%.*}")" "$(dirname "$path")")"
+          done <<< "$frags"
+          [ "$any" -eq 1 ] || echo "  (no \`\`\`mermaid blocks in $path)"
+        fi ;;
       *)
         echo "  skip $path (unknown type; expected .mmd/.mermaid/.md)" ;;
     esac

@@ -14,6 +14,8 @@ Source: [`diagrams/view-cnc-runtime-01.puml`](diagrams/view-cnc-runtime-01.puml)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
+Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
+
 ## 2. Element catalog
 
 ### 2.1 Elements and their properties
@@ -44,7 +46,17 @@ HTTP interface catalogue and events: ADD [`../add/personal-finance-tracker-Archi
 
 ### 2.4 Element behavior
 
-Dashboard read (cache hit / miss) sequence: ADD `Architecture.md` §6.
+One behaviour diagram per architecturally significant use case. UC-2 dashboard load (cache hit /
+miss), the path that realises PQA-1 — re-rendered from the ADD `Architecture.md` §6:
+
+![UC-2 dashboard load — cache hit / miss](diagrams/view-cnc-runtime-behaviour-uc2.png)
+
+Source: [`diagrams/view-cnc-runtime-behaviour-uc2.puml`](diagrams/view-cnc-runtime-behaviour-uc2.puml) · rendered + visually verified.
+
+On a cache hit the Primary Database is not touched; on a miss the API Service recomputes from
+tenant-scoped rows and repopulates the Read Cache, so staleness is bounded by the 15-minute TTL.
+UC-1 (record transaction) and UC-3 (import statement) are straight-line write paths through the
+Tenant Guard and Data Access components and need no separate diagram.
 
 ## 3. Context diagram
 

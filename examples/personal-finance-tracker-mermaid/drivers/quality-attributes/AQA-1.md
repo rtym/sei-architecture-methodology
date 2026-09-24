@@ -1,7 +1,7 @@
 # AQA-1: Survive a single-AZ failure
 
-- **Status**: open
-- **Source**: authored here (kept in sync with `../../scenarios.md`)
+- **Status**: at risk (ATAM R-3, R-4)
+- **Source**: authored here (kept in sync with [`../../quality-attributes/scenarios.md`](../../quality-attributes/scenarios.md))
 
 Documented as a **six-part quality attribute scenario** and supported by its own **horizontal
 six-part scenario diagram**.
@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | Uptime ≥ 99.5 %/month; recovery < 60 s; RPO < 5 min |
 | **Business goals supported** | BG-1, BG-4 |
 | **Priority** | Importance = H · Difficulty = H |
+| **Candidate tactics** | **Availability** — *detect faults*: monitor, health check (ping/echo); *recover, preparation & repair*: active redundancy (stateless API replicas across two AZs), passive redundancy (managed DB primary/standby), retry, rollback; *recover, reintroduction*: state resynchronization |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

@@ -5,7 +5,6 @@ description: >-
   attribute scenarios and a prioritised driver list. Use when the user invokes /quality-attributes
   or asks to define quality attributes, write NFRs / non-functional requirements as scenarios,
   build a utility tree, or produce architectural drivers for an ADD or ATAM run.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 ---
 
@@ -16,6 +15,26 @@ driver list that ADD and ATAM can consume directly.
 
 Output file: `architecture/quality-attributes/scenarios.md` (create the folder).
 Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`.
+
+## Where the output goes — one source of truth
+
+Check whether `architecture/drivers/` exists **before** writing anything:
+
+- **Register mode** (the drivers directory exists): each scenario is written **directly** as
+  `architecture/drivers/quality-attributes/<ATTR>QA-<n>.md` from
+  `${CLAUDE_PLUGIN_ROOT}/templates/quality-attribute-scenario.md`, with its diagram in
+  `architecture/drivers/quality-attributes/diagrams/scenario-<ATTR>QA-<n>.*`; the utility tree goes to
+  `architecture/drivers/quality-attributes/utility-tree.md`; the drivers `README.md` inventory,
+  traceability matrix and change log get their rows. `scenarios.md` is then a **generated
+  summary** — business goals, the one-row-per-scenario table, links to each register file, the
+  prioritised list — with **no** duplicated six-part detail or diagrams. Nothing has to be "kept in
+  sync" because there is only one copy.
+- **Standalone mode** (no register yet): `scenarios.md` carries the full detail and every diagram
+  (in `architecture/quality-attributes/diagrams/`), as the template below shows. `/drivers` imports
+  it later.
+
+Either way, finish by updating the `/quality-attributes` row of the package index
+`architecture/README.md` (create it from `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if absent).
 
 **Keep prompts short.** Draft first, refine second. Offer choices as numbered lists.
 
@@ -96,7 +115,28 @@ the taxonomy. For each, fill all six parts and give:
 - the **ISO/IEC 25010 characteristic and sub-characteristic**,
 - the **business goal(s)** it supports,
 - a **priority pair** `(Importance, Difficulty)` each `H` / `M` / `L` — Importance = to the
-  business; Difficulty = expected architectural/technical challenge (the architect's estimate).
+  business; Difficulty = expected architectural/technical challenge (the architect's estimate),
+- **candidate tactics** — the tactic families this attribute is normally met with, from the table
+  below. This is a *hint for ADD Step 4*, not a decision: it turns "design for availability" into
+  a shortlist the designer can accept, reject or extend, and tells ATAM Step 6 which
+  tactics-based questionnaire to walk. Never let it narrow the scenario itself — the measure is
+  the requirement, the tactic is one way to meet it.
+
+### Candidate tactics by attribute (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`)
+
+| ISO/IEC 25010 characteristic | Tactics-catalog section | Categories to shortlist from |
+|------------------------------|-------------------------|------------------------------|
+| Reliability / availability, fault tolerance, recoverability | **Availability** | detect faults · recover (preparation & repair) · recover (reintroduction) · prevent faults |
+| Performance efficiency | **Performance** | control resource demand · manage resources |
+| Security | **Security** | detect attacks · resist attacks · react to attacks · recover from attacks |
+| Maintainability / modifiability | **Modifiability** | reduce module size · increase cohesion · reduce coupling · defer binding |
+| Maintainability / testability | **Testability** | control and observe state · limit complexity |
+| Interaction capability | **Usability / interaction capability** | support user initiative · support system initiative |
+| Compatibility / interoperability | **Integrability** | limit dependencies · adapt · coordinate |
+| Flexibility / scalability | **Energy efficiency, scalability, portability** | statelessness · partitioning · elastic pools · load balancing · async processing |
+| Flexibility / installability (deployability) | **Deployability** | manage the deployment pipeline · manage the deployed system |
+| Flexibility / adaptability, replaceability (portability) | **Energy efficiency, scalability, portability** | intermediary · portability layer · defer binding to the platform · adhere to standards |
+| Safety | **Safety** | detect unsafe state · contain / recover · prevent unsafe state |
 
 Present as a table. Tell the user which parts you guessed so they correct the right cells.
 
@@ -114,12 +154,20 @@ measure* — is visible at a glance. Use the `sei-diagrams` skill's **"Quality a
 diagram pattern (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/SKILL.md`, section *Quality attribute scenario diagram*).
 
 For each `<ATTR>QA-n`:
-1. Render the Mermaid `flowchart LR` for that scenario, filled with its six parts, using the
-   shared theme. Show it in the conversation.
-2. On request, batch-render all scenario diagrams to PNG into
-   `architecture/quality-attributes/diagrams/<ATTR>QA-<n>.png` with `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh`.
-3. Embed the diagram (or a link to the PNG) directly under the scenario's row/section in
-   `scenarios.md`.
+1. Write the six-part diagram source — Mermaid `flowchart LR` (default) or the PlantUML pattern —
+   to `architecture/quality-attributes/diagrams/scenario-<ATTR>QA-<n>.mmd|.puml`, filled with the
+   scenario's six parts, using the shared theme. Show the source in the conversation.
+2. **Render it to PNG** (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh` or
+   `render-plantuml.sh`) as `diagrams/scenario-<ATTR>QA-<n>.png`, then **`Read` the PNG and
+   visually cross-verify** it (six boxes left-to-right, artifact inside the environment, labels
+   intact, no crossings). Rendering is not optional — the quality gate below requires it.
+3. Embed it in `scenarios.md` directly under the scenario's `### <ATTR>QA-<n> — scenario diagram`
+   heading per the `sei-diagrams` *Embedding in Markdown* rule: Mermaid → the fenced block **plus**
+   `![<ATTR>QA-<n> six-part scenario](diagrams/scenario-<ATTR>QA-<n>.png)`; PlantUML → that image
+   line plus a link to the `.puml` source. Never a bare backtick path.
+
+The same file names (`scenario-<ATTR>QA-<n>.*`) are what `/drivers` copies into
+`architecture/drivers/quality-attributes/diagrams/`, so the two stay in sync by construction.
 
 ### Step 6 — Build the utility tree (optional but recommended)
 
@@ -135,9 +183,13 @@ Emit the final **architectural drivers** section: the `(H,H)` and `(H,M)` scenar
 are what ADD iterations and ATAM analysis target. List functional requirements with architectural
 impact — recorded as use cases (`UC-n`) — and constraints (`CON-n`) alongside.
 
-### Step 8 — Write the file
+### Step 8 — Write the file(s)
 
-Write `architecture/quality-attributes/scenarios.md` from the template below. Confirm the path.
+**Register mode**: write / update the per-scenario files, diagrams, utility tree and README rows
+in `architecture/drivers/quality-attributes/`, then write `scenarios.md` as the summary (the
+template below minus the per-scenario diagram sections; each table row's ID links to
+`../drivers/quality-attributes/<ATTR>QA-<n>.md`). **Standalone mode**: write
+`architecture/quality-attributes/scenarios.md` from the full template below. Confirm the paths.
 
 ## Output template
 
@@ -147,6 +199,7 @@ Write `architecture/quality-attributes/scenarios.md` from the template below. Co
 - **Date**: <YYYY-MM-DD>
 - **Source material**: <brief / PRD / interview>
 - **Status**: draft | reviewed | baselined
+- **Mode**: standalone | register (per-scenario files in `../drivers/quality-attributes/`)
 
 ## Business goals
 
@@ -164,7 +217,24 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ### PQA-1 — scenario diagram
 
-<Mermaid six-part scenario diagram, or link to architecture/quality-attributes/diagrams/PQA-1.png>
+```mermaid
+flowchart LR
+  %% Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour
+  src["<b>Source of stimulus</b><br/>Registered user"]
+  stim["<b>Stimulus</b><br/>Loads the dashboard (500 concurrent users)"]
+  subgraph env["Environment: Normal operation"]
+    art["<b>Artifact</b><br/>Dashboard service"]
+  end
+  resp["<b>Response</b><br/>Renders charts and recent activity"]
+  meas["<b>Response measure</b><br/>Interactive &lt; 1.5 s at p95"]
+  src -->|generates| stim --> art
+  art --> resp -->|measured by| meas
+  class src,stim source
+  class art artifact
+  class resp,meas response
+```
+
+![PQA-1 six-part scenario](diagrams/scenario-PQA-1.png)
 
 
 ## Primary functional requirements — use cases with architectural impact
@@ -200,20 +270,24 @@ leaves get the most attention.
 - Every scenario has all six parts **and** a numeric response measure.
 - Every scenario is classified against **ISO/IEC 25010:2023** (characteristic + sub-characteristic);
   note in the header if the 2011 model is used instead.
-- Every scenario is visualised as a six-part UML scenario diagram (Step 5) and the diagram is
-  embedded or linked next to the scenario.
+- Every scenario is visualised as a six-part UML scenario diagram (Step 5), rendered to
+  `diagrams/scenario-<ATTR>QA-<n>.png`, visually verified, and embedded (fenced block + image line,
+  or image line + `.puml` link) directly under its `### <ATTR>QA-<n> — scenario diagram` heading.
 - IDs: `BG-`, `UC-` (use cases), `CON-`, and attribute-prefixed QA scenarios (`AQA-`, `SQA-`, `PQA-`, … — see the architectural-drivers skill). Sequential within each prefix; never reused.
 - Every scenario cites ≥ 1 business goal.
 - Priority is the `(Importance, Difficulty)` pair, not a single word.
+- Every scenario names its **candidate tactics** (category + specific tactics) from the catalog —
+  a shortlist for ADD Step 4, never a design decision taken here.
 - Keep the total set small enough to act on: 8–15 scenarios; more than 20 means the net is too wide.
-- The file is the source of truth — write it before declaring the activity done.
+- One copy of each scenario: in register mode the per-scenario file in `architecture/drivers/`
+  is the source of truth and `scenarios.md` only links to it; in standalone mode `scenarios.md`
+  is. Write it before declaring the activity done.
 
 ## Quality gate — cross-check the output before you're done
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/quality-attributes/scenarios.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/quality-attributes/scenarios.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

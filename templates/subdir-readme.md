@@ -1,4 +1,4 @@
-# <Business goals | Use cases | Constraints | Quality attribute scenarios>
+# <Business goals | Use cases | Constraints | Quality attribute scenarios | Architectural concerns>
 
 Index for `architecture/drivers/<subdir>/`. One linked row per file. The authoritative
 traceability matrix is in the [drivers README](../README.md).
@@ -20,6 +20,11 @@ Overview diagram: [overview-core](diagrams/overview-core.png)
 |----|------|--------------------|:------:|:------:|
 | [CON-1](CON-1.md) | technical | <one line> | hard | open |
 
+<!-- concerns/README.md -->
+| ID | Concern (short) | Kind | Priority | Status |
+|----|-----------------|------|:--------:|:------:|
+| [AC-1](AC-1.md) | <one line> | general | high | open |
+
 <!-- quality-attributes/README.md — MUST also link the utility tree -->
 Grouped by ISO/IEC 25010 characteristic (same order as the [utility tree](utility-tree.md)).
 
@@ -32,4 +37,4 @@ Grouped by ISO/IEC 25010 characteristic (same order as the [utility tree](utilit
 
 ---
 
-**Navigation**: [drivers README](../README.md) · [project root](../../../README.md)
+**Navigation**: [drivers README](../README.md) · [architecture package](../../README.md)

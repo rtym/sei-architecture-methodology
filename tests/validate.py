@@ -75,7 +75,7 @@ def check_diagram(block: str, label: str) -> list[str]:
         if not line2.startswith("title"):
             errs.append(f"{label}: sequenceDiagram needs 'title …' on the next line")
     else:  # flowchart / classDiagram / stateDiagram-v2 / mindmap / erDiagram
-        if not re.search(r"^\s*(%%|title\b)", block, re.MULTILINE):
+        if not re.search(r"^\s*(%%(?!\s*name:)|title\b)", block, re.MULTILINE):
             errs.append(f"{label}: {dtype} needs a title in a leading '%% …' comment")
 
     # Rule 2 — aliases have no spaces
@@ -111,7 +111,7 @@ def check_diagram(block: str, label: str) -> list[str]:
             errs.append(f"{label}: Rel(...) without a label — {m.group(0)[:60]}")
 
     title_comment = ""
-    tc = re.search(r"^\s*%%\s*(.+)$", block, re.MULTILINE)
+    tc = re.search(r"^\s*%%(?!\s*name:)\s*(.+)$", block, re.MULTILINE)
     if tc:
         title_comment = tc.group(1).lower()
 
@@ -179,15 +179,19 @@ def _traceability_orphans(text: str, bgs: set, ucs: set, qas: set, cons: set) ->
         return errs
     supported_bgs: set = set()
     traced_children: set = set()
+    retired: set = set()
     for r in tr_rows:
         row_ids = set(re.findall(r"\b(BG-\d+|UC-\d+|CON-\d+|[A-Z]{1,4}QA-\d+)\b", " ".join(r)))
+        if any(c.strip().lower() == "retired" for c in r):
+            retired |= row_ids          # a retired driver is not an orphan
+            continue
         child = {i for i in row_ids if not i.startswith("BG-")}
         bg_here = {i for i in row_ids if i.startswith("BG-")}
         if child and bg_here:
             traced_children |= child
             supported_bgs |= bg_here
-    orphan_bgs = bgs - supported_bgs
-    orphan_children = (ucs | qas | cons) - traced_children
+    orphan_bgs = bgs - supported_bgs - retired
+    orphan_children = (ucs | qas | cons) - traced_children - retired
     if orphan_bgs:
         errs.append(f"business goals with no UC/QA support in the matrix: {', '.join(sorted(orphan_bgs))}")
     if orphan_children:
@@ -220,6 +224,10 @@ def check_architecture(path: Path) -> list[str]:
             errs.append(f"§9 decision row cites no driver ID: {joined[:70]!r}")
     if "## 9." in text and not dec_rows:
         errs.append("§9 Design decisions has no decision rows")
+    if (path.parent / "adr").is_dir():
+        for r in dec_rows:
+            if not re.search(r"ADR-\d+", " ".join(r)):
+                errs.append(f"§9 decision row has no ADR link although adr/ exists: {' '.join(r)[:60]!r}")
     # best practice: no leftover placeholders
     if re.search(r"<name>|<one line>|<Plain-English explanation\.>|TODO", text):
         errs.append("contains unfilled template placeholders (<name>, <one line>, TODO, …)")
@@ -433,7 +441,12 @@ def check_drivers_dir(root: Path) -> list[str]:
         "use-cases": re.compile(r"UC-\d+\.md$"),
         "constraints": re.compile(r"CON-\d+\.md$"),
         "quality-attributes": re.compile(r"[A-Z]{1,4}QA-\d+\.md$"),
+        "concerns": re.compile(r"AC-\d+\.md$"),          # optional kind: ADD architectural concerns
     }
+    # the package index every sub-package's Navigation footer links up to
+    if not (root.parent / "README.md").is_file():
+        errs.append(f"{root.parent}/README.md (architecture package index) is missing — /drivers "
+                    f"creates it from templates/architecture-readme.md; footers link up to it")
     present = {}
     for sub, pat in kinds.items():
         d = root / sub
@@ -472,14 +485,31 @@ def check_scenarios(path: Path) -> list[str]:
         errs.append("uses deprecated flat 'QAS-<n>' IDs")
     rows = _table_rows(text, "Response measure")
     n = len([r for r in rows if re.search(r"[A-Z]{1,4}QA-\d+", " ".join(r))])
-    if rows and not (4 <= n <= 25):
-        errs.append(f"{n} quality attribute scenarios — expected roughly 8–15 (min 5, max ~20)")
+    if rows and not (5 <= n <= 20):
+        errs.append(f"{n} quality attribute scenarios — expected 8–15 (min 5, max 20)")
     for r in rows:
         joined = " ".join(r)
         if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not NUM_RE.search(joined):
             errs.append(f"scenario row has no numeric response measure: {joined[:80]!r}")
     if rows and "25010" not in text:
         errs.append("no ISO/IEC 25010 classification anywhere in the file")
+    # every scenario is drawn: an image line to diagrams/scenario-<ID>.png (both notations) —
+    # a fenced mermaid block alone is not enough, the PNG is what was visually verified
+    images = " ".join(re.findall(r"^!\[[^\]]*\]\(([^)]+)\)\s*$", text, re.MULTILINE))
+    for r in rows:
+        m = re.search(r"\b([A-Z]{1,4}QA-\d+)\b", " ".join(r))
+        if not m:
+            continue
+        sid = m.group(1)
+        # standalone mode: the diagram is embedded here; register mode: the row links the
+        # per-scenario file in architecture/drivers/quality-attributes/ which carries it
+        linked = re.search(r"\]\([^)]*\b" + re.escape(sid) + r"\.md\)", text)
+        if f"scenario-{sid}." not in images and not linked:
+            errs.append(f"{sid}: no embedded scenario diagram and no link to its register file — "
+                        f"add ![{sid} six-part scenario](diagrams/scenario-{sid}.png) or link "
+                        f"../drivers/quality-attributes/{sid}.md")
+    for m in re.finditer(r"`[^`\n]*diagrams/[^`\n]+\.(?:png|svg)`", text):
+        errs.append(f"diagram referenced as a bare backtick path, not an image line: {m.group(0)}")
     for j, blk in enumerate(diagrams_in_markdown(text), 1):
         errs += check_diagram(blk, f"scenario diagram #{j}")
     return errs
@@ -487,7 +517,34 @@ def check_scenarios(path: Path) -> list[str]:
 
 def check_qaw(path: Path) -> list[str]:
     errs: list[str] = []
-    text = path.read_text(encoding="utf-8").lower()
+    raw = path.read_text(encoding="utf-8")
+    text = raw.lower()
+    # Step 8 — every refined scenario carries its rendered six-part diagram
+    m = re.search(r"^##[^\n]*refine[^\n]*$(.*?)(?=^##\s|\Z)", raw, re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    if m:
+        refined = re.findall(r"^###\s+(\S+)", m.group(1), re.MULTILINE)
+        images = " ".join(re.findall(r"^!\[[^\]]*\]\(([^)]+\.(?:png|svg))\)\s*$", m.group(1), re.MULTILINE))
+        for rid in refined:
+            sid = rid.rstrip(":")
+            if f"scenario-{sid}." not in images:
+                errs.append(f"refined scenario {rid} has no embedded six-part scenario diagram "
+                            f"(![...](diagrams/scenario-{rid}.png))")
+        # every refined scenario is handed off to a register ID somewhere in the report
+        for rid in refined:
+            rid = rid.rstrip(":")
+            if rid.startswith("CS-") and not re.search(
+                    r"^.*\b" + re.escape(rid) + r"\b.*\b[A-Z]{1,4}QA-\d+\b.*$", raw, re.MULTILINE):
+                errs.append(f"{rid} is never mapped to a <ATTR>QA-<n> register ID (add the hand-off table)")
+    # Step 5 raw scenarios carry their type (use-case / growth / exploratory)
+    bm = re.search(r"^##[^\n]*brainstorm[^\n]*$(.*?)(?=^##\s|\Z)", raw, re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    if bm:
+        header = re.search(r"^\|[^\n]*\|\s*$", bm.group(1), re.MULTILINE)
+        if header and "type" not in header.group(0).lower():
+            errs.append("brainstormed-scenario table has no Type column (use-case / growth / exploratory)")
+    for mm in re.finditer(r"`[^`\n]*diagrams/[^`\n]+\.(?:png|svg)`", raw):
+        errs.append(f"diagram referenced as a bare backtick path, not an image line: {mm.group(0)}")
+    for j, blk in enumerate(diagrams_in_markdown(raw), 1):
+        errs += check_diagram(blk, f"QAW diagram #{j}")
     for kw in ("introduction", "business", "architectural plan", "architectural driver",
                "brainstorm", "consolidat", "prioriti", "refine"):
         if kw not in text:
@@ -514,6 +571,8 @@ def check_atam(path: Path) -> list[str]:
                "sensitivity point", "tradeoff point", "risk theme"):
         if kw not in low:
             errs.append(f"ATAM report missing a '{kw}' section")
+    if not re.search(r"\*\*mode\*\*", low):
+        errs.append("ATAM report has no **Mode** header (Full ATAM | Lightweight)")
     if "utility tree" in low and "(h" not in low.replace(" ", ""):
         errs.append("utility-tree leaves should carry a (V, R) pair like (H, M)")
     if "utility tree" in low and "mindmap" in low:
@@ -543,8 +602,62 @@ def check_view_packet(path: Path) -> list[str]:
             errs.append(f"view packet missing the '{sect}' section")
     if not DRIVER_RE.search(text.split("Rationale", 1)[-1]):
         errs.append("view rationale cites no driver ID")
+    # the primary C&C view documents behaviour: a rendered diagram per significant use case
+    vt = re.search(r"^\s*-\s*\*\*Viewtype\*\*:\s*(.+)$", text, re.MULTILINE)
+    if vt and re.search(r"component-and-connector|c&c", vt.group(1), re.IGNORECASE):
+        bm = re.search(r"^###\s*2\.4[^\n]*$(.*?)(?=^##\s|^###\s|\Z)", text, re.MULTILINE | re.DOTALL)
+        beh = bm.group(1) if bm else ""
+        if not (_has_image_line(beh) or "```mermaid" in beh):
+            errs.append("C&C view §2.4 Element behavior has no rendered behaviour diagram "
+                        "(one per architecturally significant UC-<n>)")
+        elif not re.search(r"\bUC-\d+\b", beh):
+            errs.append("C&C view §2.4 behaviour diagram(s) cite no UC-<n>")
     for j, blk in enumerate(diagrams_in_markdown(text), 1):
         errs += check_diagram(blk, f"view diagram #{j}")
+    return errs
+
+
+def check_mapping(path: Path) -> list[str]:
+    """mapping-between-views.md is how a V&B package proves internal consistency — it must
+    contain real cross-view tables, not a placeholder."""
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    n_rows = sum(len(_table_rows(text, h)) for h in ("Module", "Runtime", "Component", "Driver", "Element"))
+    if n_rows == 0:
+        errs.append("mapping-between-views has no populated mapping table")
+    views = set(re.findall(r"\bview-[a-z0-9-]+", text))
+    if len(views) < 2:
+        errs.append(f"mapping-between-views names {len(views)} view file(s) — it must cross-reference "
+                    f"at least two views (view-<name>.md)")
+    if re.search(r"<[a-z][^>]*>|\bTODO\b|\bTBD\b", text):
+        errs.append("mapping-between-views contains placeholders (<…>, TODO, TBD)")
+    return errs
+
+
+def check_ac_file(path: Path) -> list[str]:
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    low = text.lower()
+    if not re.search(r"\bAC-\d+\b", text):
+        errs.append("no AC-<n> id in the file")
+    if "concern" not in low:
+        errs.append("architectural concern file does not state the concern")
+    if "**status**" not in low:
+        errs.append("no Status field")
+    return errs
+
+
+def check_stakeholders(path: Path) -> list[str]:
+    """architecture/drivers/stakeholders.md — the one ST-<n> register QAW / ATAM / V&B read."""
+    errs: list[str] = []
+    text = path.read_text(encoding="utf-8")
+    if not re.search(r"\bST-\d+\b", text):
+        errs.append("stakeholder register has no ST-<n> ids")
+    rows = _table_rows(text, "Role")
+    if not rows:
+        errs.append("stakeholder register has no table with a Role column")
+    if re.search(r"<name>|<growth", text):
+        errs.append("stakeholder register still contains template placeholders")
     return errs
 
 
@@ -633,12 +746,18 @@ def validate_file(path: Path) -> list[str] | None:
         return _md(check_drivers_index(path))
     if name == "utility-tree.md":
         return _md(check_utility_tree(path))
+    if name == "mapping-between-views.md":
+        return _md(check_mapping(path))
     if parent == "business-goals" and re.match(r"BG-\d+\.md$", name):
         return _md(check_bg_file(path))
     if parent == "use-cases" and re.match(r"UC-\d+\.md$", name):
         return _md(check_uc_file(path))
     if parent == "constraints" and re.match(r"CON-\d+\.md$", name):
         return _md(check_con_file(path))
+    if parent == "concerns" and re.match(r"AC-\d+\.md$", name):
+        return _md(check_ac_file(path))
+    if name == "stakeholders.md":
+        return _md(check_stakeholders(path))
     if parent == "quality-attributes" and re.match(r"[A-Z]{1,4}QA-\d+\.md$", name):
         return _md(check_qa_file(path))
     if name == "scenarios.md":
@@ -878,6 +997,40 @@ def check_self() -> list[str]:
         elif not re.search(r"^description:\s*\S", cfm.group(1), re.MULTILINE):
             errs.append(f"{cmd.relative_to(ROOT)}: front-matter has no 'description'")
 
+    # One picker entry per activity: a skill either shares its name with a commands/*.md (the
+    # collision collapses them) or is hidden from the / menu with `user-invocable: false` while
+    # staying model-invocable. Otherwise every activity shows up twice in the slash-command list.
+    cmd_names = {c.stem for c in cmds}
+    for sf in skill_files:
+        fm = re.match(r"^---\n(.*?)\n---\n", sf.read_text(encoding="utf-8"), re.DOTALL)
+        if not fm or sf.parent.name in cmd_names:
+            continue
+        if not re.search(r"^user-invocable:\s*false\s*$", fm.group(1), re.MULTILINE):
+            errs.append(f"{sf.parent.relative_to(ROOT).as_posix()}: has a differently-named "
+                        f"command alias, so it needs 'user-invocable: false' or it appears twice "
+                        f"in the slash-command menu")
+        if re.search(r"^version:", fm.group(1), re.MULTILINE):
+            errs.append(f"{sf.parent.relative_to(ROOT).as_posix()}: 'version' is not a SKILL.md "
+                        f"front-matter field — the plugin version lives in plugin.json")
+
+    # The version is asserted in three places; they must agree or `/plugin marketplace update`
+    # and the plugin manager disagree about what is installed.
+    try:
+        mp = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
+        versions = {
+            "plugin.json": data.get("version"),
+            "marketplace.json metadata.version": mp.get("metadata", {}).get("version"),
+        }
+        for i, pl in enumerate(mp.get("plugins", [])):
+            versions[f"marketplace.json plugins[{i}].version"] = pl.get("version")
+            if pl.get("name") != data.get("name"):
+                errs.append(f"marketplace.json plugins[{i}].name {pl.get('name')!r} != "
+                            f"plugin.json name {data.get('name')!r}")
+        if len(set(versions.values())) != 1:
+            errs.append("version drift: " + ", ".join(f"{k}={v}" for k, v in versions.items()))
+    except Exception as e:
+        errs.append(f"marketplace.json unreadable: {e}")
+
     # skills must be able to revise what they wrote, not just overwrite it
     for sf in skill_files:
         fm = re.match(r"^---\n(.*?)\n---\n", sf.read_text(encoding="utf-8"), re.DOTALL)
@@ -898,13 +1051,20 @@ def check_self() -> list[str]:
     BARE_PATH_RE = re.compile(
         r"(?<![/{\w-])(references|templates|assets)/[A-Za-z0-9_./-]+"
         r"|(?<![/{\w-])scripts/(?:build-report|render|render-plantuml|setup)\.sh"
-        r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md")
+        r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md"
+        r"|(?<![/{\w-])tests/validate\.py")
     template_files = sorted((ROOT / "templates").glob("*.md"))
     reference_files = sorted((ROOT / "references").glob("*.md"))
     for md in [*cmds, *skill_files, *template_files, *reference_files]:
         for m in BARE_PATH_RE.finditer(md.read_text(encoding="utf-8")):
             errs.append(f"{md.relative_to(ROOT)}: path '{m.group(0)}' is not "
                         f"anchored to ${{CLAUDE_PLUGIN_ROOT}}")
+
+    # a reference nobody can find from the index is a reference that does not exist
+    ref_index = (ROOT / "references" / "README.md").read_text(encoding="utf-8")
+    for rf in sorted((ROOT / "references").glob("*.md")):
+        if rf.name != "README.md" and f"({rf.name})" not in ref_index:
+            errs.append(f"references/{rf.name}: not linked from references/README.md")
 
     errs += check_plantuml_includes()
     errs += check_vendored_c4()

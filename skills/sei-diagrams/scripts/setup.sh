@@ -17,7 +17,7 @@ echo "  node:      $(node -v)"
 
 if command -v mmdc >/dev/null 2>&1; then
   echo "  mmdc already on PATH ($(command -v mmdc)) — nothing to install."
-  echo "  (setup will still add a pinned local copy so renders are reproducible.)"
+  echo "  (setup will still install the lockfile-pinned local copy so renders are reproducible.)"
 fi
 
 cd "$SKILL_DIR"
@@ -37,7 +37,12 @@ JSON
 fi
 
 echo "  installing @mermaid-js/mermaid-cli (+ layout-elk) ... this downloads a headless Chromium once."
-npm install --no-audit --no-fund
+if [ -f package-lock.json ]; then
+  # The committed lockfile pins the exact renderer versions: same PNGs on every machine and in CI.
+  npm ci --no-audit --no-fund
+else
+  npm install --no-audit --no-fund
+fi
 
 if [ -x "$SKILL_DIR/node_modules/.bin/mmdc" ]; then
   echo "OK: $("$SKILL_DIR/node_modules/.bin/mmdc" --version 2>/dev/null || echo 'mmdc installed')"

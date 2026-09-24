@@ -1,6 +1,6 @@
-# Rendering toolchain (installed by skills/sei-diagrams/scripts/setup.sh)
+# Rendering toolchain (installed by skills/sei-diagrams/scripts/setup.sh).
+# package-lock.json IS committed: it pins the renderer so every clone renders identically.
 skills/sei-diagrams/node_modules/
-skills/sei-diagrams/package-lock.json
 
 # Artifacts produced by running the skills in a target project
 /architecture/

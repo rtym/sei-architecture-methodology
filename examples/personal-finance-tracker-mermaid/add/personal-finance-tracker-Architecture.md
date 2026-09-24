@@ -18,6 +18,7 @@ Drivers: [`../drivers/README.md`](../drivers/README.md).
 ```mermaid
 flowchart TB
   %% Context — Personal Finance Tracker (C4 level 1)
+  %% name: context
   user(["Registered user<br/><i>mobile browser</i>"])
   mail["Email provider<br/><i>external · SMTP/TLS</i>"]
   subgraph sys["Personal Finance Tracker"]
@@ -33,7 +34,7 @@ flowchart TB
   class core internal
 ```
 
-![Context — Personal Finance Tracker](../diagrams/personal-finance-tracker-Architecture-01.png)
+![Context — Personal Finance Tracker](../diagrams/context.png)
 
 ### Description
 
@@ -71,6 +72,7 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 ```mermaid
 flowchart TB
   %% Container diagram — Personal Finance Tracker (C4 level 2)
+  %% name: container
   user(["Registered user<br/><i>mobile browser</i>"])
   mail["Email provider<br/><i>external · SMTP/TLS</i>"]
   subgraph sys["Personal Finance Tracker"]
@@ -95,7 +97,7 @@ flowchart TB
   class db,cache datastore
 ```
 
-![Container diagram — Personal Finance Tracker](../diagrams/personal-finance-tracker-Architecture-02.png)
+![Container diagram — Personal Finance Tracker](../diagrams/container.png)
 
 ### Description
 
@@ -103,7 +105,7 @@ The API service is the single write path and the single place tenant scoping (SQ
 The Redis read cache serves the dashboard (PQA-1); it is a performance element, not a system of
 record, so its loss degrades latency but not correctness (AQA-1).
 
-## 5. Component diagrams
+## 5. Component and module views
 
 ### API Service
 
@@ -112,6 +114,7 @@ record, so its loss degrades latency but not correctness (AQA-1).
 ```mermaid
 flowchart TB
   %% Component diagram — API Service (C4 level 3)
+  %% name: component-api
   spa(["Web App<br/><i>React 18 / TS</i>"])
   subgraph svc["API Service"]
     direction TB
@@ -137,18 +140,66 @@ flowchart TB
   class db datastore
 ```
 
-![Component diagram — API Service](../diagrams/personal-finance-tracker-Architecture-03.png)
+![Component diagram — API Service](../diagrams/component-api.png)
 
 #### Description
 
 Every request passes through the Tenant Guard before any service runs, so cross-tenant access
 (SQA-1) is structurally prevented rather than checked per-endpoint.
 
+### Module decomposition
+
+#### Diagram
+
+```mermaid
+flowchart TB
+  %% Module decomposition — Personal Finance Tracker API (layered)
+  %% name: module-decomposition
+  subgraph api["api-service (deployable)"]
+    direction TB
+    subgraph L1["edge layer"]
+      http["http<br/><i>routing, request/response DTOs</i>"]
+    end
+    subgraph L2["admission layer"]
+      security["security<br/><i>auth, tenant-guard</i>"]
+    end
+    subgraph L3["domain layer"]
+      direction LR
+      txn["transactions<br/><i>UC-1: create/edit/delete</i>"]
+      categories["categories<br/><i>user categories</i>"]
+      reporting["reporting<br/><i>UC-2: aggregates + report-type registry</i>"]
+      imports["imports<br/><i>UC-3: CSV parse + map + bulk insert</i>"]
+    end
+    subgraph L4["infrastructure layer"]
+      direction LR
+      persistence["persistence<br/><i>tenant-scoped repositories, migrations</i>"]
+      platform["platform<br/><i>config, logging, audit-log client</i>"]
+    end
+  end
+  http --> security
+  security --> txn & categories & reporting & imports
+  txn & categories & reporting & imports --> persistence
+  persistence --> platform
+  classDef internal fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  class http,security,txn,categories,reporting,imports,persistence,platform internal
+```
+
+![Module decomposition — Personal Finance Tracker API](../diagrams/module-decomposition.png)
+
+#### Description
+
+Four layers inside the single deployable; a layer may use only the layer below it, and the four
+domain modules may not use one another (a cross-domain need is mediated by `reporting` reading
+through `persistence`). The `security` layer is the one place tenant scoping is applied (SQA-1,
+ADR-2); the `reporting` module's report-type registry is what keeps MQA-1 to a one-day change.
+This is the seed of the Views-and-Beyond [module decomposition view](../docs/view-module-decomposition.md).
+
 ## 6. Sequence diagrams
 
 ```mermaid
 sequenceDiagram
   title UC-2 dashboard load — realises PQA-1
+  %% name: sequence-dashboard
   autonumber
   participant U as Web App
   participant A as API Service
@@ -166,7 +217,7 @@ sequenceDiagram
   A-->>U: 200 dashboard JSON
 ```
 
-![UC-2 dashboard load — realises PQA-1](../diagrams/personal-finance-tracker-Architecture-04.png)
+![UC-2 dashboard load — realises PQA-1](../diagrams/sequence-dashboard.png)
 
 On a cache hit the database is not touched, which is the common path and keeps p95 under the
 1.5 s budget (PQA-1). On a miss the API recomputes from tenant-scoped rows and repopulates the
@@ -179,6 +230,7 @@ cache; a stale cache is bounded by the 15-minute TTL.
 ```mermaid
 flowchart TB
   %% Deployment — Personal Finance Tracker (production, eu-west-1, 2 AZs)
+  %% name: deployment
   subgraph cloud["Managed cloud — eu-west-1 (2 AZs)"]
     subgraph edge["CDN + static hosting"]
       spa["Web App<br/><i>React 18 build — static assets</i>"]
@@ -200,7 +252,7 @@ flowchart TB
   class db,cache datastore
 ```
 
-![Deployment — Personal Finance Tracker](../diagrams/personal-finance-tracker-Architecture-05.png)
+![Deployment — Personal Finance Tracker](../diagrams/deployment.png)
 
 ### Description
 
@@ -237,12 +289,14 @@ The one interface `UC-1` and `SQA-1` both run through, specified per `references
 
 ## 9. Design decisions
 
-| Decision | Rationale (cite driver IDs) | Alternatives discarded |
-|----------|-----------------------------|------------------------|
-| Single API service owns all writes and enforces tenant scoping in one middleware | SQA-1 needs one auditable choke point; CON-2 favours few moving parts | Per-service authz checks (easy to miss one) |
-| Redis cache-aside for dashboard aggregates with 15-min TTL | PQA-1 p95 budget; DB alone won't meet it at 500 concurrent | Materialised views (slower to iterate — MQA-1); CDN caching (per-user data) |
-| Managed PostgreSQL primary/standby, multi-AZ, automated failover | AQA-1 recovery target; CON-5 mandates PostgreSQL; CON-3 low-cost tier still offers this | Self-managed HA (CON-2 time), single instance (fails AQA-1) |
+Each significant decision is an ADR in [`adr/`](adr/ADR-1.md); this table is the log.
+
+| Decision | Rationale (cite driver IDs) | Alternatives discarded | ADR |
+|----------|-----------------------------|------------------------|-----|
+| Single API service owns all writes and enforces tenant scoping in one middleware | SQA-1 needs one auditable choke point; CON-2 favours few moving parts | Per-service authz checks (easy to miss one) | [ADR-2](adr/ADR-2.md) |
+| Redis cache-aside for dashboard aggregates with 15-min TTL | PQA-1 p95 budget; DB alone won't meet it at 500 concurrent | Materialised views (slower to iterate — MQA-1); CDN caching (per-user data) | [ADR-1](adr/ADR-1.md) |
+| Managed PostgreSQL primary/standby, multi-AZ, automated failover | AQA-1 recovery target; CON-5 mandates PostgreSQL; CON-3 low-cost tier still offers this | Self-managed HA (CON-2 time), single instance (fails AQA-1) | [ADR-3](adr/ADR-3.md) |
 
 ---
 
-**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [session log](personal-finance-tracker-session.md) · [Views & Beyond docs](../docs/README.md) · [ATAM](../atam/atam-report.md)
+**Navigation**: [architecture package](../README.md) · [ADRs](adr/ADR-1.md) · [drivers](../drivers/README.md) · [session log](personal-finance-tracker-session.md) · [Views & Beyond docs](../docs/README.md) · [ATAM](../atam/atam-report.md)

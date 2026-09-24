@@ -6,8 +6,8 @@ description: >-
   /sei-diagram, asks to draw / render / export a diagram to PNG, or when any other SEI skill needs a
   context / container / component / sequence / deployment / class / state / quality-attribute-
   scenario diagram.
-version: 1.1.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # SEI diagrams — clean UML / C4, rendered to PNG
@@ -44,7 +44,8 @@ syntax and the render script differ.
 
 ## Workflow
 
-1. Pick the diagram type (table below) and confirm the **notation** (Mermaid or PlantUML — ask).
+1. Pick the diagram type (table below) and confirm the **notation** (Mermaid or PlantUML — ask,
+   unless `/sei-diagram` was given a type / notation argument or the calling skill fixed it).
 2. Write the source file to `architecture/diagrams/<name>.mmd` (Mermaid) or `<name>.puml` (PlantUML).
 3. **Show the diagram source in the conversation** (a fenced ```mermaid or ```plantuml block) and
    get review.
@@ -118,7 +119,8 @@ Deployment — **must follow C4 principles** regardless of which drawing tool pr
    vs `datastore` vs `source`).
 6. **One diagram = one question.** Keep it to ≤ ~10 elements; if a system has more containers,
    split by concern and add a parent context diagram.
-7. Diagrams are **self-explanatory**: a title, and a legend when notation isn't obvious.
+7. Diagrams are **self-explanatory**: a title, and a legend when notation isn't obvious — see
+   *The legend* below.
 
 ### Notation: flowchart-C4 (house style) or C4-PlantUML
 
@@ -212,6 +214,143 @@ Rel(api, ext, "Sends notifications", "SMTP")
 **Sequence** in PlantUML: `!include plantuml-theme.puml`, then `autonumber`, declare
 all `participant`s at the top, `->` for calls and `-->` for returns, `alt` / `group` for
 branches — one message per line, no `;` in message text.
+
+## The legend
+
+Colour and shape are **semantic** in this house style (internal · external · person · datastore ·
+emphasis — `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/palette.md`), so every structural diagram needs a key. Do
+**not** paste one into each diagram: a legend costs nodes against the ≤ 10 budget and repeats.
+
+**Render the legend once per package** as its own diagram — `architecture/diagrams/legend.png`
+(or `docs/diagrams/legend.png` for a Views-and-Beyond package) — and **reference** it from the
+roadmap `README.md` and from any view packet whose §1 says "legend: see …". A view packet's
+"Include or reference a legend" is satisfied by the reference.
+
+```mermaid
+flowchart LR
+  %% Legend — what shape and colour mean (SEI palette)
+  %% name: legend
+  person(["Person / role"])
+  internal["Internal element<br/><i>technology</i>"]
+  external["External system<br/><i>third party</i>"]
+  store[("Datastore")]
+  queue[["Queue / bus"]]
+  emph["Under discussion / risk"]
+  %% invisible links (~~~) only: they lay the key out in two rows of three instead of
+  %% one tall column — unconnected flowchart nodes do not flow left-to-right on their own
+  person ~~~ internal ~~~ external
+  store ~~~ queue ~~~ emph
+  classDef source    fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef external  fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  classDef emphasis  fill:#F6E4E4,stroke:#B04A46,color:#1F2933;
+  class person source
+  class internal internal
+  class external external
+  class store,queue datastore
+  class emph emphasis
+```
+
+Same key in **PlantUML** (coloured rectangles always render; a bare `legend` block may not):
+
+```plantuml
+@startuml legend
+!include plantuml-theme.puml
+hide stereotype
+left to right direction
+title Legend — what shape and colour mean (SEI palette)
+rectangle "Person / role" as P #E7E3F3
+rectangle "Internal element" as I #EDF2F8
+rectangle "External system" as E #F5EEE3
+rectangle "Datastore / queue" as D #E4F0E9
+rectangle "Under discussion / risk" as R #F6E4E4
+@enduml
+```
+
+**Inline key** — only when a diagram must stand completely alone (a slide, an issue comment):
+add a `subgraph legend["Legend"]` holding **just the roles that diagram uses**, and remember it
+counts toward the node budget. In PlantUML the native `legend top left … endlegend` block adds a
+key inside an existing diagram without adding elements.
+
+Keep the legend and the palette in step: the `classDef` lines above are the ones in
+`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/classdefs.md`; the meanings are in `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/palette.md`.
+A legend that lists a role the palette does not define is a bug in one of the two.
+
+## Sequence, state and deployment — house patterns
+
+**Sequence** (UML, Mermaid): participants declared up front in call order, `autonumber` when
+more than four steps, `->>` call / `-->>` return / `-)` async, `alt`/`opt` for branches, and a
+plain-English paragraph immediately below the diagram.
+
+```mermaid
+sequenceDiagram
+  title UC-2 dashboard load — realises PQA-1
+  %% name: sequence-dashboard
+  autonumber
+  participant U as Web App
+  participant A as API Service
+  participant C as Read Cache
+  participant D as Primary Database
+  U->>A: GET /dashboard (month)
+  A->>C: GET aggregates(user, month)
+  alt cache hit
+    C-->>A: aggregates
+  else cache miss
+    A->>D: SELECT aggregate rows (tenant-scoped)
+    D-->>A: rows
+    A->>C: SET aggregates TTL 15 min
+  end
+  A-->>U: 200 dashboard JSON
+```
+
+**State** (UML, Mermaid): one element's modes; every transition labelled with its trigger
+(`event [guard] / action`); `[*]` start and end.
+
+```mermaid
+stateDiagram-v2
+  %% State — Import job lifecycle (UC-3)
+  %% name: state-import-job
+  [*] --> Queued : file uploaded
+  Queued --> Parsing : worker picks job
+  Parsing --> Mapping : rows parsed
+  Parsing --> Failed : malformed file / reject + notify
+  Mapping --> Committing : categories resolved
+  Committing --> Done : bulk insert committed
+  Committing --> Failed : constraint violation / roll back
+  Failed --> [*]
+  Done --> [*]
+```
+
+**Deployment** (C4 deployment, Mermaid): nested `subgraph`s for region → platform → node, the
+containers as leaves with replica counts and the datastore shape for stores; labelled edges.
+
+```mermaid
+flowchart TB
+  %% Deployment — <SystemName> (production topology)
+  %% name: deployment
+  subgraph region["Cloud region — 2 availability zones"]
+    subgraph edge["CDN + static hosting"]
+      web["Web App<br/><i>static build</i>"]
+    end
+    subgraph cluster["Container platform (multi-AZ)"]
+      api["API Service<br/><i>2+ replicas, stateless</i>"]
+      worker["Import Worker<br/><i>1+ replicas</i>"]
+    end
+    subgraph data["Managed data tier"]
+      db[("PostgreSQL 15<br/><i>primary + standby, auto-failover</i>")]
+      cache[("Redis 7<br/><i>primary + replica</i>")]
+    end
+  end
+  web -->|"Calls REST API (HTTPS)"| api
+  api -->|"SQL / TLS"| db
+  api -->|"GET/SET aggregates"| cache
+  worker -->|"Bulk insert (SQL / TLS)"| db
+  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
+  class web,api,worker internal
+  class db,cache datastore
+```
 
 ## Quality attribute scenario diagram
 
@@ -349,7 +488,9 @@ are dashed `<<…>>` dependencies, and there are no avoidable crossings — iter
 
 1. **Title.** Every diagram starts with a title: native `C4*` diagrams use a `title` line right
    after the keyword; `sequenceDiagram` uses `title …` on line 2; `flowchart` / `classDiagram` /
-   `stateDiagram` put the title in a top `%%` comment; PlantUML uses a `title` line.
+   `stateDiagram` put the title in a top `%%` comment; PlantUML uses a `title` line. A
+   `%% name: <slug>` comment follows the title when the block lives in a Markdown file (it names
+   the rendered PNG).
 2. **Aliases** are `camelCase` or `snake_case` — never contain spaces (`apiService`, not `api service`).
 3. **Descriptions.** Every element carries a specific role/description — a last string argument in
    native C4, an `<i>…</i>` line in flowchart-C4.
@@ -482,7 +623,10 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/ad
 
 `render.sh` applies `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/mermaid-theme.json` (palette + `themeCSS`), renders at scale 3 (crisp
 PNG), white background, width 1600. Output PNG sits next to the source unless `--out` is given.
-It also extracts and renders every ```mermaid block from a `.md` file (`<mdname>-01.png`, …).
+It also extracts and renders every ```mermaid block from a `.md` file. **Name each block** with a
+`%% name: <slug>` comment (on the line after the title comment) so the PNG is `diagrams/<slug>.png`
+and the `![](diagrams/<slug>.png)` line stays valid when blocks are inserted or reordered;
+unnamed blocks fall back to `<mdname>-01.png`, `-02.png`, ….
 
 **PlantUML** (only if the user needs full UML): `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh
 architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the script prints the
@@ -505,6 +649,7 @@ architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the s
 - Apply all ten rules and the layout playbook to every diagram — including quick ones.
 - Colour is semantic and comes only from the theme + the `classDef` lines in `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/classdefs.md`;
   no ad-hoc inline colour.
+- One **legend** per package, rendered once and referenced — not pasted into every diagram.
 - Keep the `.mmd` / `.puml` source **and** the rendered `.png` in a `diagrams/` sub-folder next to
   the Markdown that uses them, so diagrams are re-renderable, diff-able, and the relative image
   path resolves on GitHub / GitLab.
@@ -512,7 +657,7 @@ architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the s
   ```mermaid fenced block **plus** a `![title](diagrams/<name>.png)` image line; PlantUML = the
   image line **plus** a link to the `.puml` source (no pasted `@startuml` block).
 - Re-render **and re-verify** the PNG whenever the source changes; never hand-edit a PNG.
-- `python tests/validate.py` checks every `.mmd` file and every fenced mermaid block against the
+- `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py` checks every `.mmd` file and every fenced mermaid block against the
   rules — run it and fix reported issues.
 
 ## Appendix — native Mermaid C4 syntax (inline sketches only)

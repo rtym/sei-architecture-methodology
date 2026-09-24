@@ -1,13 +1,15 @@
-# Architectural Drivers — `drivers/README.md`: <system>
+# Architectural Drivers — `drivers/README.md`: <SystemName>
 
 - **Date**: <YYYY-MM-DD>
 - **Owner**: <name>
 - **Status**: draft | reviewed | baselined
 - **QA model**: ISO/IEC 25010:2023  (or 2011 — state which)
+- **Design purpose**: greenfield system | greenfield feature | brownfield replacement | brownfield extension | brownfield migration
+- **Stakeholders**: [stakeholders.md](stakeholders.md)
 
 > The top aggregate file of `architecture/drivers/` (GitHub renders it on directory browse).
 > One file per driver lives under `business-goals/`, `use-cases/`, `constraints/`,
-> `quality-attributes/`, and each of those has its own small `README.md` index
+> `quality-attributes/` and `concerns/`, and each of those has its own small `README.md` index
 > (`${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md`). This file holds the ID legend, the traceability matrix, the
 > coverage check, the prioritised list, and the change log. **Every path below is a working
 > relative Markdown link.**
@@ -30,6 +32,11 @@ Overview use case diagram(s): [`use-cases/diagrams/overview-<group>.png`](use-ca
 | ID | Type | Constraint (short) | Hard / negotiable | File |
 |----|------|--------------------|-------------------|------|
 | CON-1 | technical \| business \| regulatory | <one line> | hard | [CON-1](constraints/CON-1.md) |
+
+### Architectural concerns — [`concerns/`](concerns/README.md)  (ADD input; not traced to a BG)
+| ID | Concern (short) | Kind | Priority | File |
+|----|-----------------|------|:--------:|------|
+| AC-1 | <one line> | general | high | [AC-1](concerns/AC-1.md) |
 
 ### Quality attribute scenarios — [`quality-attributes/`](quality-attributes/README.md)
 | ID | ISO 25010 characteristic / sub | One-line scenario | (V, R) | Diagram | File |
@@ -57,10 +64,11 @@ FQA functional-suitability. Coin a new `<MNEMONIC>QA` and record it here if need
 | AQA-1 | [AQA-1](quality-attributes/AQA-1.md) | BG-1 | — | — | open |
 | CON-1 | [CON-1](constraints/CON-1.md) | BG-2 | UC-1 | — | open |
 
-`Status` ∈ open / in design / partially / addressed / retired.
+`Status` ∈ open / in design / partially / addressed / at risk (set by ATAM) / retired.
 
 **Coverage check**: every BG supported by ≥ 1 UC or QA scenario; every UC / QA scenario / CON
-traces up to ≥ 1 BG. Gaps found: <list or "none">.
+traces up to ≥ 1 BG. Retired drivers and architectural concerns (`AC-`) are excluded. Gaps
+found: <list or "none">.
 
 ## Prioritised driver list (input to ADD / ATAM)
 
@@ -77,7 +85,6 @@ traces up to ≥ 1 BG. Gaps found: <list or "none">.
 
 ---
 
-**Navigation**: [project root](../../README.md) ·
-[quality attribute scenarios](../scenarios.md) · [QAW](../qaw/qaw-report.md) ·
-[ADD architecture](../add/) · [ATAM](../atam/atam-report.md) ·
-[Views & Beyond docs](../docs/README.md)
+**Navigation**: [architecture package](../README.md) · [stakeholders](stakeholders.md)
+<!-- link a sibling package (../qaw/, ../add/, ../atam/, ../docs/) here only once it exists —
+     the package index ../README.md is the place that lists what has been produced -->

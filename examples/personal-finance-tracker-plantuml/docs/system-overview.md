@@ -24,7 +24,7 @@ Source: [`diagrams/system-overview-01.puml`](diagrams/system-overview-01.puml) �
 
 ## Driving quality attribute scenarios
 
-See [`../scenarios.md`](../scenarios.md) for the six-part detail. The architecture is shaped mainly by:
+See [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md) for the six-part detail. The architecture is shaped mainly by:
 
 - `SQA-1` (security / confidentiality) — cross-user access rejected and logged; 0 successful reads.
 - `AQA-1` (reliability / availability) — survive a single-AZ failure, recover < 60 s, ≥ 99.5 %/mo.

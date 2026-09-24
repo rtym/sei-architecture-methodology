@@ -1,7 +1,7 @@
 # Reference — Best-practices quality gate
 
 Every skill runs this checklist against its own output **before declaring the activity done**, and
-runs `python tests/validate.py <artifact>` (the automated subset). Report each item as
+runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated subset). Report each item as
 `ok` / `fix: …`. Fix, re-check, repeat.
 
 ---
@@ -49,7 +49,8 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 - [ ] Each constraint has a type (business / technical / regulatory), a source, and hard/negotiable.
 - [ ] **Each quality attribute is documented as a six-part quality attribute scenario** with a
       **numeric** response measure and an ISO/IEC 25010 classification (characteristic + sub),
-      **and its own horizontal (`flowchart LR`) six-part scenario diagram**, verified and embedded.
+      **and its own horizontal (`flowchart LR`) six-part scenario diagram**, verified and embedded,
+      **and its candidate tactics** named from the tactics catalog.
 - [ ] `quality-attributes/utility-tree.md` exists — the summary of the QA drivers as a
       **table** (columns: Quality attribute · Refinement · Leaf scenario · Priority (V, R) ·
       Status), one leaf per row, `★` on each `(H, H)` leaf, plus a "Reading the tree" note.
@@ -62,6 +63,8 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 
 - [ ] 8–15 scenarios (more than ~20 → the net is too wide; fewer than ~5 → probably incomplete).
 - [ ] Every scenario: six parts + numeric measure + ISO/IEC 25010 class + priority pair `(Imp,Diff)`.
+- [ ] Every scenario names **candidate tactics** (category + specific tactics from the catalog) as
+      a shortlist for ADD Step 4 — not as a design decision.
 - [ ] Generic sources ("the user", "the system") replaced with specific roles/systems.
 - [ ] Every scenario visualised as a six-part UML scenario diagram (verified).
 - [ ] Every scenario cites ≥ 1 business goal.
@@ -80,7 +83,8 @@ runs `python tests/validate.py <artifact>` (the automated subset). Report each i
 - [ ] Design purpose classified (greenfield / brownfield variant).
 - [ ] Iteration plan covers **every** driver ID from Step 1 in ≥ 1 iteration row.
 - [ ] Each iteration: goal is one sentence; selected drivers favour high-importance × high-difficulty.
-- [ ] Each design concept evaluated against ≥ 1 alternative; rationale cites driver IDs.
+- [ ] Each design concept evaluated against ≥ 1 alternative; rationale cites driver IDs; the
+      driver's candidate tactics were considered (accepted, rejected or extended — say which).
 - [ ] Every instantiated element has a single clear responsibility and defined interfaces.
 - [ ] Architecture.md has all 9 sections; each diagram obeys the ten rules and is verified.
 - [ ] Every sequence diagram is followed by a plain-English description paragraph.

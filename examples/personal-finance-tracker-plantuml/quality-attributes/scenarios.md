@@ -4,6 +4,7 @@
 - **Source material**: product brief + founder/eng-lead interview
 - **Status**: reviewed
 - **QA model**: ISO/IEC 25010:2023
+- **Mode**: register — the per-scenario files and diagrams live in [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md); this file is the summary
 
 ## Business goals
 
@@ -27,13 +28,16 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 | MQA-1 | Maintainability / modifiability | Developer | Adds a new dashboard report type | Business logic + read model | During a sprint | Change isolated to the reporting module and its tests | ≤ 1 person-day; ≤ 3 modules touched; 0 regressions | BG-3 | M | M |
 | UQA-1 | Interaction capability / operability | First-time user | Records their first transaction | Transaction form | Normal operation | User completes entry without consulting help | ≥ 85 % task-completion rate in a 10-person usability test | BG-1 | M | M |
 
-### PQA-1 — scenario diagram
+### Scenario files and diagrams (register)
 
-`diagrams/scenario-PQA-1.png` (visually verified: yes)
-
-### SQA-1 — scenario diagram
-
-![SQA-1 six-part scenario](diagrams/scenario-SQA-1.png)
+| Scenario | Six-part diagram (rendered + visually verified) |
+|----------|--------------------------------------------------|
+| [PQA-1](../drivers/quality-attributes/PQA-1.md) | [scenario-PQA-1.png](../drivers/quality-attributes/diagrams/scenario-PQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-1.puml) |
+| [PQA-2](../drivers/quality-attributes/PQA-2.md) | [scenario-PQA-2.png](../drivers/quality-attributes/diagrams/scenario-PQA-2.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-2.puml) |
+| [SQA-1](../drivers/quality-attributes/SQA-1.md) | [scenario-SQA-1.png](../drivers/quality-attributes/diagrams/scenario-SQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-SQA-1.puml) |
+| [AQA-1](../drivers/quality-attributes/AQA-1.md) | [scenario-AQA-1.png](../drivers/quality-attributes/diagrams/scenario-AQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-AQA-1.puml) |
+| [MQA-1](../drivers/quality-attributes/MQA-1.md) | [scenario-MQA-1.png](../drivers/quality-attributes/diagrams/scenario-MQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-MQA-1.puml) |
+| [UQA-1](../drivers/quality-attributes/UQA-1.md) | [scenario-UQA-1.png](../drivers/quality-attributes/diagrams/scenario-UQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-UQA-1.puml) |
 
 ## Primary functional requirements — use cases with architectural impact
 
@@ -55,7 +59,7 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ## Utility tree
 
-A **table** (see [`drivers/quality-attributes/utility-tree.md`](drivers/quality-attributes/utility-tree.md)
+A **table** (see [`drivers/quality-attributes/utility-tree.md`](../drivers/quality-attributes/utility-tree.md)
 for the full version with per-leaf status). `(V, R)` = (business value, technical risk); `★` =
 architecturally significant `(H, H)`.
 
@@ -79,4 +83,4 @@ architecturally significant `(H, H)`.
 
 ---
 
-**Navigation**: [example root](README.md) · [drivers](drivers/README.md) · [QAW](qaw/qaw-report.md) · [ADD](add/personal-finance-tracker-Architecture.md)
+**Navigation**: [example root](../README.md) · [drivers](../drivers/README.md) · [QAW](../qaw/qaw-report.md) · [ADD](../add/personal-finance-tracker-Architecture.md)

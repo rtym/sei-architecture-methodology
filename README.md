@@ -4,7 +4,7 @@ A pluggable Claude Code skill set that automates the **SEI (Carnegie Mellon Soft
 Institute)** software-architecture practice end to end — from eliciting architectural drivers to
 evaluating the finished architecture — and renders clean, verified UML / C4 diagrams to PNG.
 
-It packages six activities as separate skills behind one router:
+It packages seven activities as separate skills behind one router:
 
 | Command | Skill | What it does | Output under `architecture/` |
 |---------|-------|--------------|------------------------------|
@@ -21,7 +21,9 @@ Every skill:
 
 - **drafts first**, then refines with you — it doesn't interview you question by question;
 - writes **Markdown** artifacts under `architecture/` as the single source of truth;
-- keeps **traceability** — decisions and findings cite driver IDs;
+- keeps **traceability** — decisions and findings cite driver IDs; ADD writes an ADR per decision,
+  ATAM marks scenarios `at risk`, and both write statuses back to the drivers register;
+- registers its output in `architecture/README.md`, the package index;
 - routes every diagram through `sei-diagrams`: **rendered to PNG and visually verified** (the
   model opens the image and checks correctness + edge crossings) before it is embedded anywhere;
 - can emit its report as **Markdown or HTML** (`scripts/build-report.sh`).
@@ -112,7 +114,8 @@ bash skills/sei-diagrams/scripts/setup.sh
 ```
 
 Installs `@mermaid-js/mermaid-cli` (+ `@mermaid-js/layout-elk`) locally under the skill and
-downloads a headless Chromium once (~150 MB). Needs Node 18+. **PlantUML** (used for true-UML
+downloads a headless Chromium once (~150 MB). Needs Node 18+. The versions are pinned by the
+committed `package-lock.json`, so every clone renders identically. **PlantUML** (used for true-UML
 use-case diagrams and canonical C4) needs a Java runtime plus PlantUML itself —
 `brew install openjdk plantuml`, or `sudo apt-get install plantuml`;
 `scripts/render-plantuml.sh` auto-detects a keg-only Homebrew JDK.
@@ -311,7 +314,8 @@ with the SEI palette, with a cover page and table of contents. Example:
   `skills/sei-diagrams/assets/` (`mermaid-theme.json`, `palette.md`, `plantuml-theme.puml`).
 - **Every diagram is rendered to PNG and visually cross-verified** (`Read` the image), then
   embedded in Markdown as **both** the ```mermaid/```plantuml source **and** a relative
-  `![](diagrams/x.png)` image line so it renders on GitHub and GitLab.
+  `![](diagrams/x.png)` image line so it renders on GitHub and GitLab. A `%% name: x` comment in
+  a Mermaid block names its PNG, so inserting a diagram never renumbers the others.
 
 ---
 
@@ -322,8 +326,9 @@ sei-architecture-methodology/
 ├── .claude-plugin/
 │   ├── plugin.json                    # plugin manifest (8 skills)
 │   └── marketplace.json               # one-plugin marketplace (for /plugin marketplace add)
+├── commands/                          # /sei /drivers /quality-attributes /qaw /add /atam /architecture-docs /sei-diagram
 ├── .claude/
-│   └── commands/                      # /sei /drivers /quality-attributes /qaw /add /atam /architecture-docs /sei-diagram
+│   └── commands -> ../commands        # symlink so the slash commands load when hacking on the plugin in place
 │                                      # (settings.local.json — personal model pin / permissions — is gitignored)
 ├── skills/
 │   ├── sei-architecture/              # router
@@ -338,7 +343,8 @@ sei-architecture-methodology/
 │       │   └── c4/                    #   vendored C4-PlantUML 2.10.0 (MIT) + sei-c4-palette.puml (offline)
 │       │       ├── LICENSE            #     upstream MIT notice, verbatim
 │       │       └── README.md          #     provenance: upstream, pinned version, unmodified
-│       └── scripts/                   # setup.sh, render.sh, render-plantuml.sh
+│       ├── scripts/                   # setup.sh, render.sh, render-plantuml.sh
+│       └── package-lock.json          # pins the Mermaid renderer (npm ci in setup.sh)
 ├── references/                        # deep method notes + tactics catalog + patterns + checklist
 ├── templates/                         # blank artifact templates (one per driver kind, per report, per view)
 ├── scripts/
@@ -351,6 +357,8 @@ sei-architecture-methodology/
 │   ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability)
 │   ├── test_mdreport.py               # mdreport unit tests
 │   └── run.sh                         # full suite
+├── CHANGELOG.md                       # release notes per version
+├── CLAUDE.md                          # contributor notes: tests, conventions, release checklist
 ├── LICENSE                            # Apache-2.0 (provisional — see Licensing)
 └── NOTICE                             # third-party attribution (vendored C4-PlantUML, MIT)
 ```
@@ -358,8 +366,11 @@ sei-architecture-methodology/
 ### The drivers directory
 
 ```
+architecture/README.md                # package index — every activity registers its output here
 architecture/drivers/
-├── README.md                         # ID legend · traceability matrix · coverage check · prioritised list · change log
+├── README.md                         # design purpose · ID legend · traceability matrix · coverage check · prioritised list · change log
+├── stakeholders.md                   # ST-<n> — the one stakeholder register (QAW, ATAM, V&B read it)
+├── concerns/README.md + AC-<n>.md    # architectural concerns (ADD input)
 ├── business-goals/README.md + BG-<n>.md
 ├── use-cases/README.md + UC-<n>.md   # + use-cases/diagrams/UC-<n>.puml|.mmd|.png  (proper UML use case diagram, one per use case)
 ├── constraints/README.md + CON-<n>.md
@@ -370,7 +381,8 @@ architecture/drivers/
     └── diagrams/
 ```
 
-Every `README.md` links its files with relative Markdown links and ends with a Navigation footer.
+Every `README.md` links its files with relative Markdown links and ends with a Navigation footer
+that links up to the package index and only to sibling packages that exist.
 
 ---
 
@@ -389,7 +401,14 @@ diagram in the shipped docs and examples obeys the ten rules; the deprecated fla
 never appears; the license actually grants something and `LICENSE` / `plugin.json` / `NOTICE`
 agree; the vendored C4-PlantUML ships its MIT notice and its pinned version matches everywhere
 it is asserted; `mdreport.py` converts a representative document correctly; the example
-artifacts validate; a Mermaid diagram and a PlantUML diagram each render to PNG.
+artifacts validate; a Mermaid diagram and a PlantUML diagram each render to PNG. Since 1.9.0 it
+also checks that `plugin.json` and `marketplace.json` agree on the version; that every skill
+aliased by a command is hidden from the slash menu (one picker entry per activity); that every
+scenario in `scenarios.md` and every refined QAW scenario embeds a rendered diagram; and that
+`mapping-between-views.md` contains real cross-view tables. Since 1.10.0: the package index
+exists, retired drivers are excluded from the coverage check, `stakeholders.md` and `concerns/`
+validate, refined QAW scenarios map to register IDs and raw ones carry a type, ATAM reports
+declare their mode, §9 decisions link their ADRs, and the C&C view documents behaviour per use case.
 
 Validate produced artifacts in a target project:
 
@@ -421,13 +440,20 @@ happens to resolve here — and nowhere else.
 
 ## Deep method notes
 
+For an **existing** system, `/sei brownfield` reads the repository first — docs and ADRs, build
+manifests, entry points, integrations, deployment config, cross-cutting tactics, observability,
+git history — and pre-drafts the drivers and as-built views with an evidence trail, so `/drivers`
+starts from a draft to correct. Code shows the architecture, never the requirement: every derived
+driver stays marked *derived — confirm*, and a missing tactic is an `/atam` finding, not a driver.
+
 `references/` holds the encoded body of knowledge each skill draws on — see
 [`references/README.md`](references/README.md) for the index and
 [`references/glossary.md`](references/glossary.md) for the terminology. It covers architecture
 fundamentals, the quality-attribute taxonomy + per-attribute general scenarios + tactics
 catalog + patterns, ASR elicitation, ADD 3.0, ATAM + Lightweight Architecture Evaluation +
 lightweight design reviews, Views-and-Beyond documentation, interfaces, architecture debt /
-Agile / the architect's role, and runtime environments (virtualization / cloud / mobile).
+Agile / the architect's role, runtime environments (virtualization / cloud / mobile), and the
+brownfield intake procedure.
 
 ## Sources
 

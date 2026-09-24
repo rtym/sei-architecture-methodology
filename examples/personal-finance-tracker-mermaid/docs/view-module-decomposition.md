@@ -33,8 +33,8 @@ flowchart TB
     end
   end
   http --> security
-  security --> L3
-  L3 --> persistence
+  security --> txn & categories & reporting & imports
+  txn & categories & reporting & imports --> persistence
   persistence --> platform
   classDef internal fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   class http,security,txn,categories,reporting,imports,persistence,platform internal
@@ -47,6 +47,8 @@ flowchart TB
 ![View: Module decomposition](diagrams/view-module-decomposition-01.png)
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
+
+Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
 ## 2. Element catalog
 

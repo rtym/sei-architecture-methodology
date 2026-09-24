@@ -6,8 +6,8 @@ description: >-
   run an architecture assessment / architecture vision and is not sure which activity (quality
   attributes, QAW, ADD, ATAM, documentation, diagrams) they need. Explains the workflow and hands
   off to the matching sub-skill.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # SEI Architecture Methodology — router
@@ -22,7 +22,7 @@ and hands off.
 
 | # | Activity | Skill | Use it to… | Produces |
 |---|----------|-------|------------|----------|
-| 0 | **Architectural drivers** | `architectural-drivers` | Collect & track the four driver kinds — business goals, primary functional requirements (as UML **use cases**), constraints, quality attributes — with a traceability matrix | `architecture/drivers/` (one file per driver) + use-case diagrams |
+| 0 | **Architectural drivers** | `architectural-drivers` | Collect & track the four driver kinds — business goals, primary functional requirements (as UML **use cases**), constraints, quality attributes — plus the design purpose, architectural concerns (`AC-`) and the stakeholder register, with a traceability matrix | `architecture/README.md` (package index) + `architecture/drivers/` (one file per driver) + use-case diagrams |
 | 1 | **Quality attributes** | `quality-attributes` | Turn vague "-ilities" into measurable 6-part quality attribute scenarios (ISO/IEC 25010), each drawn as a UML scenario diagram | `architecture/quality-attributes/scenarios.md` |
 | 2 | **Quality Attribute Workshop (QAW)** | `quality-attribute-workshop` | Facilitate the SEI 8-step stakeholder workshop that elicits, consolidates, prioritises and refines scenarios *before* the architecture exists | `architecture/qaw/qaw-report.md` |
 | 3 | **Attribute-Driven Design (ADD 3.0)** | `attribute-driven-design` | Design or evolve the architecture in driver-focused iterations | `architecture/add/<slug>-session.md` + `<slug>-Architecture.md` |
@@ -57,7 +57,8 @@ and hands off.
 Typical engagements:
 
 - **Architecture vision / greenfield**: 0 → 1 (or 2) → 3 → 5 → 6.
-- **Architecture assessment of an existing system**: 0 → 1 → 4 → (targeted 3 to fix risk themes) → 5.
+- **Architecture assessment of an existing system**: **brownfield intake** (below) → 0 → 1 → 4 →
+  (targeted 3 to fix risk themes) → 5.
 - **Just need drivers / scenarios**: 0 and/or 1.
 - **Just need a diagram rendered**: 6.
 
@@ -77,11 +78,46 @@ Typical engagements:
    - "draw", "diagram", "render", "PNG", "UML", "C4" → **sei-diagrams**
 4. State which skill you're using in one line, then follow that skill's `SKILL.md` exactly.
 
+## Brownfield intake (an existing system, before activity 0)
+
+The assessment path assumes drivers exist. For a system that is already built they usually do
+not — but the repository, its configuration and its history answer much of the question. When the
+user asks to assess / document / evaluate an **existing** system, or says `brownfield`, or the
+working directory is plainly a codebase rather than an empty project, **offer the intake first**:
+
+> "There's a codebase here. I can read it first and pre-draft the drivers and an as-built
+> container view, then we correct them together — or skip straight to `/drivers`."
+
+On yes, follow `${CLAUDE_PLUGIN_ROOT}/references/brownfield-intake.md`: read the repository in the documented
+order (docs and ADRs → manifests → source layout → entry points → integrations → persistence →
+deployment and CI config → runtime config → cross-cutting tactics → tests → observability →
+git history), then write `architecture/brownfield-intake.md` — an evidence table
+(claim · file path · confidence) plus a first draft of the use cases, constraints, quality
+attribute scenarios, architectural concerns, an as-built container view and module decomposition,
+and a separate **gap list**.
+
+**The rule that governs the whole procedure**: code shows the architecture, never the requirement.
+A cache proves someone cared about latency; it does not supply the number. Every derived driver is
+a hypothesis marked *derived — confirm* until a stakeholder confirms it, response measures come
+from observability config or from people rather than from inference, and a **missing** tactic is a
+finding for `/atam`, not a driver. Then hand the note to `/drivers`, which turns the confirmed
+hypotheses into the register.
+
 ## Shared conventions (all sub-skills follow these)
 
 - **Working directory**: everything is written under `architecture/` in the current project, one
   sub-folder per activity. Create `architecture/` if it does not exist. Never write outside it
   unless the user gives a path.
+- **Package index.** `architecture/README.md` (template
+  `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`) lists every activity's output and status.
+  `/drivers` creates it; every skill updates its row and appends a change-log line when it
+  finishes. Sub-package Navigation footers link **up** to it and **across** only to packages
+  that already exist — a link to a not-yet-produced sibling fails `validate.py`.
+- **Stakeholders once.** `architecture/drivers/stakeholders.md` (`ST-<n>`) is the single
+  stakeholder register; QAW participants, ATAM Phase 2 stakeholders and the V&B view-selection
+  table are read from it, not re-collected.
+- **Status vocabulary** (drivers, concerns, utility-tree leaves): `open` · `in design` ·
+  `partially` · `addressed` · `at risk` (set by ATAM when a Risk is found) · `retired`.
 - **Markdown is the source of truth.** No database, no server. Update artifact files as you go,
   not only at the end.
 - **Drafts first.** For every step, propose a complete first draft from what you already know,
@@ -101,7 +137,8 @@ Typical engagements:
   `${CLAUDE_PLUGIN_ROOT}/references/README.md` for the index. Core: `architecture-fundamentals.md` (structures,
   views, the "good architecture" rules of thumb), `architectural-drivers.md`,
   `quality-attribute-taxonomy.md`, `tactics-catalog.md`, `architecture-patterns.md`,
-  `design-concepts.md`, `qaw-method.md`, `add-method.md`, `atam-method.md`,
+  `design-concepts.md`, `brownfield-intake.md` (reverse-engineering drivers from a repository),
+  `qaw-method.md`, `add-method.md`, `atam-method.md`,
   `design-reviews.md`, `views-and-beyond.md`, `interfaces.md`,
   `architecture-in-the-lifecycle.md` (debt, Agile, distributed dev),
   `runtime-environments.md` (virtualization, cloud, mobile). Read the relevant one when a step

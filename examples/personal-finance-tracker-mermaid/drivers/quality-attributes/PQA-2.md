@@ -1,7 +1,7 @@
 # PQA-2: Bulk import stays responsive
 
 - **Status**: open
-- **Source**: authored here (kept in sync with `../../scenarios.md`)
+- **Source**: authored here (kept in sync with [`../../quality-attributes/scenarios.md`](../../quality-attributes/scenarios.md))
 
 Documented as a **six-part quality attribute scenario** and supported by its own **horizontal
 six-part scenario diagram**.
@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | Import completes < 30 s; dashboard p95 stays < 1.8 s during the import |
 | **Business goals supported** | BG-1 |
 | **Priority** | Importance = M · Difficulty = M |
+| **Candidate tactics** | **Performance** — *control resource demand*: manage work requests (bound the arrival rate), prioritize events, bound execution times; *manage resources*: introduce concurrency (asynchronous import worker), bound queue sizes, schedule resources |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

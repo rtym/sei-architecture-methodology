@@ -4,10 +4,15 @@
 - **Owner**: Roman Tymoshuk
 - **Status**: reviewed
 - **QA model**: ISO/IEC 25010:2023
+- **Design purpose**: greenfield system
+- **Stakeholders**: [stakeholders.md](stakeholders.md) (ST-1 … ST-6)
+- **Design purpose**: greenfield system
+- **Stakeholders**: [stakeholders.md](stakeholders.md) (ST-1 … ST-6)
 
 > The top aggregate file of `drivers/`. One file per driver lives under
 > [`business-goals/`](business-goals/README.md), [`use-cases/`](use-cases/README.md),
-> [`constraints/`](constraints/README.md), [`quality-attributes/`](quality-attributes/README.md);
+> [`constraints/`](constraints/README.md), [`quality-attributes/`](quality-attributes/README.md),
+> [`concerns/`](concerns/README.md);
 > each of those has its own `README.md` index. This file holds the ID legend, the traceability
 > matrix, the coverage check, the prioritised list, and the change log.
 
@@ -41,6 +46,13 @@ Overview use case diagram: [`use-cases/diagrams/overview-core.png`](use-cases/di
 | CON-4 | regulatory | Encryption in transit and at rest | hard | [CON-4](constraints/CON-4.md) |
 | CON-5 | technical | PostgreSQL primary datastore | negotiable | [CON-5](constraints/CON-5.md) |
 
+### Architectural concerns — [`concerns/`](concerns/README.md)  (ADD input; not traced to a BG)
+
+| ID | Concern (short) | Kind | Priority | File |
+|----|-----------------|------|:--------:|------|
+| AC-1 | Keep the SOC 2 surface small | general | high | [AC-1](concerns/AC-1.md) |
+| AC-2 | Dashboard iteration speed must stay high | general | medium | [AC-2](concerns/AC-2.md) |
+
 ### Quality attribute scenarios — [`quality-attributes/`](quality-attributes/README.md)
 | ID | ISO 25010 characteristic / sub | One-line scenario | (V, R) | Diagram | File |
 |----|-------------------------------|-------------------|:------:|---------|------|
@@ -71,10 +83,10 @@ Never `QAS-`.
 | UC-2 | [UC-2](use-cases/UC-2.md) | BG-1 | PQA-1, UQA-1 | ADD iter 2 | open |
 | UC-3 | [UC-3](use-cases/UC-3.md) | BG-1 | PQA-2 | ADD iter 3 | open |
 | UC-4 | [UC-4](use-cases/UC-4.md) | BG-1 | UC-1, UC-3 (`<<include>>`) | ADD iter 1 | in design |
-| AQA-1 | [AQA-1](quality-attributes/AQA-1.md) | BG-1, BG-4 | CON-3, CON-5 | ADD iter 1 | open |
+| AQA-1 | [AQA-1](quality-attributes/AQA-1.md) | BG-1, BG-4 | CON-3, CON-5 | ADD iter 1 | at risk |
 | PQA-1 | [PQA-1](quality-attributes/PQA-1.md) | BG-1 | UC-1, UC-2 | ADD iter 2 | open |
 | PQA-2 | [PQA-2](quality-attributes/PQA-2.md) | BG-1 | UC-3 | ADD iter 3 | open |
-| SQA-1 | [SQA-1](quality-attributes/SQA-1.md) | BG-2 | CON-4 | ADD iter 1 | in design |
+| SQA-1 | [SQA-1](quality-attributes/SQA-1.md) | BG-2 | CON-4 | ADD iter 1 | at risk |
 | MQA-1 | [MQA-1](quality-attributes/MQA-1.md) | BG-3 | UC-1 | ADD iter 1 | open |
 | UQA-1 | [UQA-1](quality-attributes/UQA-1.md) | BG-1 | UC-2 | ADD iter 2 | open |
 | CON-1 | [CON-1](constraints/CON-1.md) | BG-1 | UC-1, UC-2 | ADD iter 1 | open |
@@ -83,7 +95,7 @@ Never `QAS-`.
 | CON-4 | [CON-4](constraints/CON-4.md) | BG-2 | SQA-1 | ADD iter 1 | in design |
 | CON-5 | [CON-5](constraints/CON-5.md) | BG-1 | AQA-1 | ADD iter 1 | open |
 
-`Status` ∈ open / in design / partially / addressed / retired.
+`Status` ∈ open / in design / partially / addressed / at risk (set by ATAM) / retired.
 
 **Coverage check**: every BG (BG-1…BG-4) is supported by ≥ 1 UC or QA scenario; every UC / QA
 scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
@@ -103,9 +115,11 @@ scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
 | Date | Change |
 |------|--------|
 | 2026-09-06 | initial driver set; reviewed with founder + eng lead; utility tree imported from the QAW |
+| 2026-09-06 | ADD iterations 1–2: UC-1, UC-4, SQA-1 → in design; concerns AC-1, AC-2 recorded |
+| 2026-09-07 | ATAM: SQA-1 (R-1, R-2) and AQA-1 (R-3, R-4) → at risk; see [ATAM report](../atam/atam-report.md) |
 
 ---
 
-**Navigation**: [example root](../README.md) · [quality attribute scenarios](../scenarios.md) ·
+**Navigation**: [architecture package](../README.md) · [stakeholders](stakeholders.md) · [quality attribute scenarios](../quality-attributes/scenarios.md) ·
 [QAW](../qaw/qaw-report.md) · [ADD architecture](../add/personal-finance-tracker-Architecture.md) ·
 [ATAM](../atam/atam-report.md) · [Views & Beyond docs](../docs/README.md)

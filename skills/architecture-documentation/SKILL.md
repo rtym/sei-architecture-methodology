@@ -6,8 +6,8 @@ description: >-
   views, rationale, directory). Use when the user invokes /architecture-docs or asks to document an
   architecture, write an architecture description / SAD, create architecture views, or prepare an
   architecture hand-off / vision document.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # Architecture documentation — Views and Beyond (V&B)
@@ -30,13 +30,17 @@ Diagrams: the `sei-diagrams` skill (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/S
   need (PM, developer, tester/integrator, interoperating-system designer, maintainer, end user,
   analyst, infrastructure support, future architect — see the reference's stakeholder table).
 - **Least-formal-that-removes-ambiguity notation**, always with a key/legend: informal
-  boxes-and-lines → semi-formal (C4 for structure, UML for behaviour) → formal ADL (rare).
+  boxes-and-lines → semi-formal (C4 for structure, UML for behaviour) → formal ADL (rare). Render
+  **one** legend for the package (`docs/diagrams/legend.png`, pattern in the `sei-diagrams` skill)
+  and reference it from `README.md` and from each view packet's §1.
 - **Document the relevant views + beyond-views.** All three structural viewtypes must be
   covered; add **quality views** (security / communications / error-handling / reliability /
   performance) when a concern is pervasive and spread across structures.
 - **Document behaviour**, not just structure — trace-oriented (use cases, sequence,
   communication, activity) for a path; comprehensive (state machine) for all paths. Each
-  behaviour diagram gets a plain-English paragraph.
+  behaviour diagram gets a plain-English paragraph. **Coverage rule**: the primary C&C view's
+  §2.4 carries one behaviour diagram per architecturally significant use case (`UC-<n>`) in the
+  drivers register — reuse the ADD `Architecture.md` §6 diagrams, re-rendered into `docs/diagrams/`.
 - **Combine views** only as legible overlays (C&C+C&C; deployment+C&C-with-processes;
   decomposition+work-assignment/impl/uses/layered).
 - **Record rationale as you design it** — the two-column table (*decision + location* |
@@ -78,8 +82,8 @@ The description **must** cover all three V&B viewtypes. Minimum set:
 | **Allocation** | deployment | install, implementation (code→file), or work-assignment matter |
 
 Procedure:
-1. List the **stakeholders** and their concerns (architect, devs, testers, integrators, ops,
-   security, project manager, sponsor, new joiners).
+1. List the **stakeholders** and their concerns — from `architecture/drivers/stakeholders.md`
+   (`ST-<n>`) when it exists; add reader roles it lacks (new joiners, future architect) there.
 2. Propose the view set: the required views above plus any extra view a stakeholder concern
    demands. It is always acceptable to add views; it is not acceptable to drop a viewtype.
 3. Map each stakeholder concern → the view(s) that address it. Present the **view selection
@@ -139,7 +143,8 @@ architecture/docs/
 `README.md` (GitHub renders it on directory browse) also carries the **view selection table**
 and a scenario-based "where do I look to answer X" guide for each stakeholder. Every file
 reference in the package is a working **relative Markdown link**, and `README.md` ends with a
-Navigation footer linking every view packet and the sibling packages.
+Navigation footer linking every view packet, the package index `../README.md`, and only those
+sibling packages that exist.
 
 ## Documentation beyond views
 
@@ -148,9 +153,9 @@ Create these supporting files in `architecture/docs/`:
 | File | V&B part | Contents |
 |------|----------|----------|
 | `README.md` | Roadmap + organisation | What documentation exists, how it's organised, how each stakeholder should read it, the view-selection table, and a scenario-based "how to find" guide. |
-| `system-overview.md` | System overview | What the system does, its context, major functional requirements (use cases), and the driving quality attribute scenarios (link to `../drivers/README.md` / `../scenarios.md`). |
+| `system-overview.md` | System overview | What the system does, its context, major functional requirements (use cases), and the driving quality attribute scenarios (link to `../drivers/README.md` / `../quality-attributes/scenarios.md`). |
 | `mapping-between-views.md` | Mapping between views | Tables mapping elements across views (module → runtime component → deployment node). This is where internal consistency is demonstrated. |
-| `rationale.md` | Rationale | Cross-cutting architecture rationale and the ADR log (`${CLAUDE_PLUGIN_ROOT}/templates/adr.md` per decision). |
+| `rationale.md` | Rationale | Cross-cutting architecture rationale and the ADR log. If `/add` produced `../add/adr/ADR-<n>.md`, **link them — do not re-derive or duplicate**; write new ADRs (`${CLAUDE_PLUGIN_ROOT}/templates/adr.md`) only for decisions taken here. |
 | `directory.md` | Directory | Index, glossary, acronym list. |
 | `change-log.md` | — | Dated list of revisions to the architecture description. |
 
@@ -181,8 +186,10 @@ page and a table of contents that follows the V&B section order.
    Present each view packet; refine; write the file.
 4. Write the **beyond-views** files. The `mapping-between-views.md` is mandatory — it is how the
    package proves internal consistency.
-5. Write `README.md` last, once the view set is stable; end it with a Navigation footer.
-6. Run `python tests/validate.py architecture/docs/*.md` and fix any reported issues, including
+5. Write `README.md` last, once the view set is stable; end it with a Navigation footer. Update
+   the `/architecture-docs` row and change log of the package index `architecture/README.md`,
+   creating it from `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if it does not exist.
+6. Run `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` and fix any reported issues, including
    broken relative links.
 
 ## Notation, combining views, behaviour
@@ -214,6 +221,8 @@ Deep guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`:
   first, and if it stays vague, the architecture decision is missing, not the doc.
 - Every view packet has all five sections; "Variability guide" may state "none" but must be present.
 - Every rationale cites ≥ 1 driver ID (`<ATTR>QA-`, `UC-`, `CON-`).
+- The primary C&C view packet's §2.4 has a behaviour diagram for every architecturally
+  significant `UC-<n>`; `rationale.md` links existing ADD ADRs instead of restating them.
 - All diagrams follow the `sei-diagrams` rules and are rendered in-conversation before being saved.
 - `mapping-between-views.md` must actually cross-reference the views you produced — no placeholders.
 - Keep each primary presentation to ≤ ~10 elements; split rather than crowd.
@@ -222,8 +231,7 @@ Deep guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`:
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/docs/*.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

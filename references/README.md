@@ -16,6 +16,7 @@ carries. Nothing here is executable; it is the encoded SEI body of knowledge.
 | File | Covers |
 |------|--------|
 | [`architectural-drivers.md`](architectural-drivers.md) | the four driver kinds; ASR criteria and sources; 7-part PALM business-goal scenario; the tabular utility tree |
+| [`brownfield-intake.md`](brownfield-intake.md) | reverse-engineering a first draft of the drivers and the as-built views from an existing repository — what to read, what to produce, and why a tactic in the code is never a requirement |
 | [`quality-attribute-taxonomy.md`](quality-attribute-taxonomy.md) | ISO/IEC 25010; the six-part scenario; general-scenario "portions" summary; tactics-based-questionnaire framing |
 | [`quality-attribute-scenarios.md`](quality-attribute-scenarios.md) | the full general-scenario portion table for all 10 attributes + a worked concrete example each |
 | [`qaw-method.md`](qaw-method.md) | the SEI 8-step Quality Attribute Workshop |

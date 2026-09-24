@@ -1,7 +1,7 @@
 # BG-3: Keep feature pace with competitors
 
 - **Statement**: Engineering needs to ship new report types weekly so that the product keeps pace with competitor feature velocity.
-- **Primary stakeholder**: Eng lead
+- **Primary stakeholder**: ST-2 — Eng lead
 - **SEI business-goal category**: process quality
 - **Measure of success**: ≥ 1 new report type released per week, sustained
 - **Priority**: high

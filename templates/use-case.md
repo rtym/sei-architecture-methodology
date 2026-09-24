@@ -10,7 +10,7 @@
 - **Preconditions**: <what must be true before>
 - **Postconditions (minimal guarantee / success guarantee)**: <what is true after>
 - **Priority**: high | medium | low
-- **Status**: open | in design | partially | addressed | retired
+- **Status**: open | in design | partially | addressed | at risk | retired
 
 ## Main success scenario
 
@@ -39,7 +39,7 @@ human actors as stick figures and system actors as a `«system»`-stereotyped re
 **outside** the system boundary rectangle, ellipse use cases **inside** it, solid association
 lines, dashed `..>` dependencies stereotyped `<<include>>` (always) / `<<extend>>` (conditional).
 A supporting actor that is a system (an external API, service, or batch job — anything without a
-goal of its own) is **not** an `actor`: model it as a `rectangle "<name>" <<system>>` so it reads
+goal of its own) is **not** an `actor`: model it as a `rectangle "<name>" << system >>` so it reads
 as a system, not a person. Rendered to `diagrams/UC-<n>.png` and visually cross-verified.
 
 **PlantUML (UML notation — default):**
@@ -50,7 +50,7 @@ as a system, not a person. Rendered to `diagrams/UC-<n>.png` and visually cross-
 skinparam actorStyle awesome
 left to right direction
 actor "<Primary actor>" as actor1
-rectangle "<Supporting system>" <<system>> as supp
+rectangle "<Supporting system>" << system >> as supp
 rectangle "<system name>" {
   usecase "UC-<n>\n<name>" as uc
   usecase "UC-<n>a\n<included sub-use-case>" as sub

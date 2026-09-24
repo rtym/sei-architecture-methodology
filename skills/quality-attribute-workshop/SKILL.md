@@ -5,8 +5,8 @@ description: >-
   that elicits, brainstorms, consolidates, prioritises and refines quality attribute scenarios
   before a software architecture exists. Use when the user invokes /qaw or asks to run a QAW,
   facilitate a quality attribute workshop, or elicit scenarios with stakeholders.
-version: 1.0.0
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+user-invocable: false
 ---
 
 # Quality Attribute Workshop (QAW)
@@ -35,8 +35,9 @@ should be"*). Report template: `${CLAUDE_PLUGIN_ROOT}/templates/qaw-report.md`.
 
 ### Step 1 — QAW presentation and introductions
 State the QAW purpose, the eight steps, and the expected outputs (raw scenarios, prioritised
-scenarios, refined scenarios). Capture the **participant list** with each person's role and the
-concerns they bring. Write it to the report.
+scenarios, refined scenarios). Take the **participant list** from `architecture/drivers/stakeholders.md`
+(`ST-<n>`, role, concerns) if it exists; otherwise capture it here **and** create that file from
+`${CLAUDE_PLUGIN_ROOT}/templates/stakeholders.md` so the later activities reuse it. Write it to the report.
 
 ### Step 2 — Business / mission drivers
 The sponsor's representative presents: system context, business goals, key functional
@@ -56,7 +57,10 @@ mapped to business goals.
 
 ### Step 5 — Scenario brainstorming (round-robin)
 Go around the participants; each contributes **one scenario per turn**. A scenario names a
-stimulus, an environment, and a response. Aim for coverage across the step-4 drivers. Keep going
+stimulus, an environment, and a response, and is tagged with its **type**: *use-case* (an
+anticipated use), *growth* (an anticipated change — load, features, platforms) or *exploratory*
+(an extreme, stress or failure situation that exposes limits). Aim for coverage across the
+step-4 drivers **and** across the three types. Keep going
 for multiple passes until ideas are exhausted (typically 2–3× the number of participants).
 Number them `S-1, S-2, …` verbatim — do **not** polish yet.
 
@@ -86,7 +90,9 @@ Take the **top scenarios** (as many as time allows, usually 4–6). For each, pr
 - the **relevant quality attributes**, classified against **ISO/IEC 25010:2023**
   (characteristic + sub-characteristic — see `${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md`);
 - a **six-part UML scenario diagram** — **horizontal `flowchart LR`** (use the `sei-diagrams`
-  skill's *Quality attribute scenario diagram* pattern), rendered to PNG and visually verified;
+  skill's *Quality attribute scenario diagram* pattern), source and PNG in
+  `architecture/qaw/diagrams/scenario-CS-<id>.*`, rendered, visually verified and embedded as an
+  image line;
 - **questions** raised about how the architecture would achieve it;
 - **issues** / concerns / assumptions surfaced during discussion.
 
@@ -110,6 +116,14 @@ Refinement (concern / sub-characteristic) · Leaf scenario (ID + response measur
 Hand this tree to `/drivers` — it populates `architecture/drivers/quality-attributes/utility-tree.md`
 and is referenced from the drivers `README.md`. ATAM step 5 reuses the same structure.
 
+### Step 10 — Hand-off table and package index
+Close the report with a **hand-off table**: every `CS-<id>` (refined or merely consolidated) →
+the `<ATTR>QA-<n>` it becomes, and every `AD-<n>` → the register ID (`BG-` / `UC-` / `CON-` /
+`<ATTR>QA-`) it maps to. Workshop IDs never leave the report otherwise, and the register would
+carry no trace of where a scenario came from. Then update the `/qaw` row and change log of the
+package index `architecture/README.md` (create it from
+`${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if absent).
+
 ## Outputs (all in the report)
 
 1. Participant list with roles.
@@ -121,13 +135,16 @@ and is referenced from the drivers `README.md`. ATAM step 5 reuses the same stru
 7. **Prioritised scenarios** — vote table + ranked list.
 8. **Refined scenarios** — six-part form + horizontal scenario diagram + questions + issues.
 9. **Quality attribute utility tree** — a table, one leaf per row, every leaf `(V, R)` + status.
-10. Next steps (feed refined scenarios + utility tree into `/drivers`, then ADD; schedule ATAM).
+10. **Hand-off table** — `CS-<id>` → `<ATTR>QA-<n>`, `AD-<n>` → register IDs.
+11. Next steps (run `/drivers` from the hand-off table, then ADD; schedule ATAM).
 
 ## Rules
 
 - Facilitator stays neutral on scenario *content*; drives *process* only.
 - Never discard or merge a scenario without stakeholder agreement — record dissent.
-- Raw scenario wording from step 5 is preserved verbatim; refinement happens only in step 8.
+- Raw scenario wording from step 5 is preserved verbatim, each tagged use-case / growth /
+  exploratory; refinement happens only in step 8.
+- Every `CS-` and `AD-` ID appears in the hand-off table mapped to a register ID.
 - Every refined scenario has a numeric response measure and cites ≥ 1 business goal.
 - Vote budget is 30 % of consolidated count, rounded up — state the number explicitly.
 - Write the report incrementally; each step appends its section.
@@ -142,8 +159,7 @@ and is referenced from the drivers `README.md`. ATAM step 5 reuses the same stru
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python tests/validate.py architecture/qaw/qaw-report.md` — exits 0 (from the plugin root, or point at
-   the plugin's `tests/validate.py`). It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/qaw/qaw-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

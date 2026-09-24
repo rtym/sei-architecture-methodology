@@ -1,7 +1,7 @@
 # PQA-1: Dashboard fast under load
 
 - **Status**: open
-- **Source**: authored here (kept in sync with `../../scenarios.md`)
+- **Source**: authored here (kept in sync with [`../../quality-attributes/scenarios.md`](../../quality-attributes/scenarios.md))
 
 Documented as a **six-part quality attribute scenario** and supported by its own **horizontal
 six-part scenario diagram**.
@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | Fully interactive < 1.5 s at p95 |
 | **Business goals supported** | BG-1 |
 | **Priority** | Importance = H · Difficulty = M |
+| **Candidate tactics** | **Performance** — *manage resources*: maintain multiple copies of computations (cache-aside), introduce concurrency, increase resources; *control resource demand*: reduce overhead, bound execution times |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

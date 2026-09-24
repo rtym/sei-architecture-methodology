@@ -8,7 +8,8 @@
 ## 1. Primary presentation
 
 <The main diagram — via the `sei-diagrams` skill. Mermaid: a ```mermaid block then the image line below. PlantUML: the image line + a `Source: [diagrams/view-<name>.puml](...)` link (no inlined ```plantuml block).
-≤ ~10 elements; split into sub-views if larger. Include or reference a legend.>
+≤ ~10 elements; split into sub-views if larger. Reference the package legend —
+[`diagrams/legend.png`](diagrams/legend.png) — rather than repeating a key in every view.>
 
 ![View: <name>](diagrams/view-<name>.png)
 
@@ -33,7 +34,9 @@ Reference the ADD `Architecture.md` §8 if it exists rather than duplicating.>
 
 ### 2.4 Element behavior
 
-<Sequence / state diagrams for behavior not evident from structure — via `sei-diagrams`.>
+<Sequence / state diagrams for behavior not evident from structure — via `sei-diagrams`. In the
+primary **C&C** view: one behaviour diagram per architecturally significant use case (`UC-<n>`)
+from the drivers register — reuse the ADD `Architecture.md` §6 diagrams, re-rendered here.>
 
 ## 3. Context diagram
 

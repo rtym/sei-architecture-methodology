@@ -5,7 +5,7 @@
 - **Source**: <who imposed it — contract, regulation, platform team, budget, …>
 - **Nature**: hard (cannot change) | negotiable (with cost / approval)
 - **Priority**: high | medium | low
-- **Status**: open | in design | partially | addressed | retired
+- **Status**: open | in design | partially | addressed | at risk | retired
 
 ## Rationale
 

@@ -2,7 +2,7 @@
 
 _Views-and-Beyond architecture description_
 
-> Generated 2026-09-12 · 10 source file(s)
+> Generated 2026-09-23 · 10 source file(s)
 
 ## Contents
 
@@ -93,6 +93,9 @@ renders it on directory browse). Every diagram in this package is PlantUML / C4-
 | [`directory.md`](../docs/directory.md) | Directory | look up a term, an acronym, or where an element is defined |
 | [`change-log.md`](../docs/change-log.md) | — | revision history of this description |
 
+Every view in this package shares one key — [`diagrams/legend.png`](../docs/diagrams/legend.png) ([source](../docs/diagrams/legend.puml)) — rendered once and referenced from each view packet's
+§1 rather than repeated inside every diagram.
+
 Only a stub view set is included in this example (one view per viewtype). A real package adds a
 uses/layered module view, more C&C views, and install / work-assignment allocation views as
 stakeholder concerns require.
@@ -118,7 +121,7 @@ stakeholder concerns require.
 ## Related artifacts
 
 - Drivers register: [`../drivers/README.md`](../drivers/README.md)
-- Quality attribute scenarios: [`../scenarios.md`](../scenarios.md)
+- Quality attribute scenarios: [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md)
 - ADD working architecture: [`../add/personal-finance-tracker-Architecture.md`](../add/personal-finance-tracker-Architecture.md)
 - ATAM evaluation: [`../atam/atam-report.md`](../atam/atam-report.md)
 
@@ -156,7 +159,7 @@ Source: [`diagrams/system-overview-01.puml`](../docs/diagrams/system-overview-01
 
 ## Driving quality attribute scenarios
 
-See [`../scenarios.md`](../scenarios.md) for the six-part detail. The architecture is shaped mainly by:
+See [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md) for the six-part detail. The architecture is shaped mainly by:
 
 - `SQA-1` (security / confidentiality) — cross-user access rejected and logged; 0 successful reads.
 - `AQA-1` (reliability / availability) — survive a single-AZ failure, recover < 60 s, ≥ 99.5 %/mo.
@@ -190,6 +193,8 @@ Source: [`diagrams/view-module-decomposition-01.puml`](../docs/diagrams/view-mod
 > (§2.2 lists them). Domain modules must not use one another.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
+
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
 ## 2. Element catalog
 
@@ -275,6 +280,8 @@ Source: [`diagrams/view-cnc-runtime-01.puml`](../docs/diagrams/view-cnc-runtime-
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
 
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
+
 ## 2. Element catalog
 
 ### 2.1 Elements and their properties
@@ -305,7 +312,17 @@ HTTP interface catalogue and events: ADD [`../add/personal-finance-tracker-Archi
 
 ### 2.4 Element behavior
 
-Dashboard read (cache hit / miss) sequence: ADD `Architecture.md` §6.
+One behaviour diagram per architecturally significant use case. UC-2 dashboard load (cache hit /
+miss), the path that realises PQA-1 — re-rendered from the ADD `Architecture.md` §6:
+
+![UC-2 dashboard load — cache hit / miss](../docs/diagrams/view-cnc-runtime-behaviour-uc2.png)
+
+Source: [`diagrams/view-cnc-runtime-behaviour-uc2.puml`](../docs/diagrams/view-cnc-runtime-behaviour-uc2.puml) · rendered + visually verified.
+
+On a cache hit the Primary Database is not touched; on a miss the API Service recomputes from
+tenant-scoped rows and repopulates the Read Cache, so staleness is bounded by the 15-minute TTL.
+UC-1 (record transaction) and UC-3 (import statement) are straight-line write paths through the
+Tenant Guard and Data Access components and need no separate diagram.
 
 ## 3. Context diagram
 
@@ -350,6 +367,8 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 Source: [`diagrams/view-allocation-deployment-01.puml`](../docs/diagrams/view-allocation-deployment-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
+
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
 ## 2. Element catalog
 
@@ -425,6 +444,8 @@ Outside this view: the user's device/network and the email provider's infrastruc
 Source: [`diagrams/view-security-01.puml`](../docs/diagrams/view-security-01.puml) · rendered + visually verified.
 
 _visually verified: yes · relative path renders on GitHub / GitLab_
+
+Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
 ## 2. Element catalog
 
@@ -540,6 +561,8 @@ between them and so internal consistency is demonstrable.
 # Rationale — Personal Finance Tracker
 
 Cross-cutting architecture rationale and the ADR log. Per-view rationale lives in each view packet.
+The three ADRs were taken during ADD and are canonical there — [`ADR-1`](../add/adr/ADR-1.md),
+[`ADR-2`](../add/adr/ADR-2.md), [`ADR-3`](../add/adr/ADR-3.md); the sections below summarise them.
 
 ## ADR-1: Cache-aside read model for the dashboard
 

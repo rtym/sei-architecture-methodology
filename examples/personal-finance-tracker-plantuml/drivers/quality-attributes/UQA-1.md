@@ -1,7 +1,7 @@
 # UQA-1: First transaction without help
 
 - **Status**: open
-- **Source**: authored here (kept in sync with `../../scenarios.md`)
+- **Source**: authored here (kept in sync with [`../../quality-attributes/scenarios.md`](../../quality-attributes/scenarios.md))
 
 Documented as a **six-part quality attribute scenario** and supported by its own **horizontal
 six-part scenario diagram**.
@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | ≥ 85 % task-completion rate in a 10-person moderated usability test |
 | **Business goals supported** | BG-1 |
 | **Priority** | Importance = M · Difficulty = M |
+| **Candidate tactics** | **Usability** — *support system initiative*: maintain task model, maintain user model (sensible defaults, progress feedback); *support user initiative*: cancel, undo |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

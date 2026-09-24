@@ -1,7 +1,7 @@
 # BG-4: Preserve runway at launch scale
 
 - **Statement**: Operations needs the monthly infrastructure bill to stay under budget at launch scale so that runway is preserved.
-- **Primary stakeholder**: Founder
+- **Primary stakeholder**: ST-1 — Founder
 - **SEI business-goal category**: financial
 - **Measure of success**: Infra spend ≤ budget at 10 000 users
 - **Priority**: high

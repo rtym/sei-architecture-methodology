@@ -1,7 +1,7 @@
 # SQA-1: No cross-user data access
 
-- **Status**: open
-- **Source**: authored here (kept in sync with `../../scenarios.md`)
+- **Status**: at risk (ATAM R-1, R-2)
+- **Source**: authored here (kept in sync with [`../../quality-attributes/scenarios.md`](../../quality-attributes/scenarios.md))
 
 Documented as a **six-part quality attribute scenario** and supported by its own **horizontal
 six-part scenario diagram**.
@@ -19,6 +19,7 @@ six-part scenario diagram**.
 | **Response measure** | 0 successful cross-user reads; 100 % of attempts logged; alert < 1 min |
 | **Business goals supported** | BG-2 |
 | **Priority** | Importance = H · Difficulty = H |
+| **Candidate tactics** | **Security** — *resist attacks*: identify / authenticate / authorize actors, limit access (least privilege), encrypt data, validate input; *recover from attacks*: maintain audit trail; *detect attacks*: detect intrusion |
 | **Type** | concrete |
 
 ## Six-part scenario diagram

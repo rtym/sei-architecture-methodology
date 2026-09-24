@@ -3,7 +3,7 @@
 - **System**: <one line>
 - **Date**: <YYYY-MM-DD>
 - **Session**: `<slug>-session.md`
-- **Drivers**: `../drivers/drivers.md`
+- **Drivers**: [`../drivers/README.md`](../drivers/README.md)
 
 > Companion document produced by `/attribute-driven-design`. For a full Views-and-Beyond
 > description, run `/architecture-docs`; this document is the ADD working architecture.
@@ -81,7 +81,7 @@ flowchart TB
 ### Description
 <Plain-English explanation.>
 
-## 5. Component diagrams
+## 5. Component and module views
 ### <Container name>
 #### Diagram
 ```mermaid
@@ -106,6 +106,35 @@ flowchart TB
 ```
 #### Description
 <Plain-English explanation.>
+
+### Module decomposition
+<Add once the design introduces modules (typically iteration 2+). The implementation-unit
+structure ADD Step 5 allocates responsibilities to — layers / packages and their allowed-to-use
+relations. This is the seed of the Views-and-Beyond Module view.>
+#### Diagram
+```mermaid
+flowchart TB
+  %% Module decomposition — <name> (layered; allowed-to-use is downward)
+  %% name: module-decomposition
+  subgraph app["<deployable unit>"]
+    direction TB
+    subgraph L1["edge layer"]
+      http["http<br/><i>routing, DTOs</i>"]
+    end
+    subgraph L2["domain layer"]
+      domain["<domain module><br/><i>UC-1 …</i>"]
+    end
+    subgraph L3["infrastructure layer"]
+      persistence["persistence<br/><i>repositories, migrations</i>"]
+    end
+  end
+  http --> L2
+  L2 --> persistence
+  classDef internal fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  class http,domain,persistence internal
+```
+#### Description
+<Plain-English explanation: layers, ownership, the allowed-to-use rule.>
 
 ## 6. Sequence diagrams
 <One per key scenario. Each followed immediately by a plain-English description paragraph.>
@@ -141,5 +170,8 @@ flowchart TB
 |-------|-----------|-----------|-------------|
 
 ## 9. Design decisions
-| Decision | Rationale (cite driver IDs) | Alternatives discarded |
-|----------|-----------------------------|------------------------|
+Each significant decision is an ADR in `adr/` (`${CLAUDE_PLUGIN_ROOT}/templates/adr.md`); this table is the log.
+
+| Decision | Rationale (cite driver IDs) | Alternatives discarded | ADR |
+|----------|-----------------------------|------------------------|-----|
+| <decision> | <cites BG-/UC-/CON-/<ATTR>QA- IDs> | <alternatives> | [ADR-1](adr/ADR-1.md) |

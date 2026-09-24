@@ -35,6 +35,8 @@ IDs are attribute-prefixed (see [`../drivers/README.md`](../drivers/README.md)).
 
 ### Architectural Concerns
 
+Register files: [AC-1](../drivers/concerns/AC-1.md), [AC-2](../drivers/concerns/AC-2.md).
+
 | ID | Concern |
 |----|---------|
 | AC-1 | Keep the SOC 2 surface small — few external dependencies |

@@ -1,9 +1,11 @@
-# ATAM Evaluation — <system>
+# ATAM Evaluation — <SystemName>
 
 - **Date(s)**: <YYYY-MM-DD>
 - **Evaluation team**: <names / roles>
 - **Architect(s)**: <names>
 - **Architecture evaluated**: <path / version>
+- **Mode**: Full ATAM | Lightweight Architecture Evaluation (Steps 7–8 omitted)
+- **Stakeholders**: [`../drivers/stakeholders.md`](../drivers/stakeholders.md)
 - **Status**: Phase 1 | Phase 2 | Phase 3 complete
 
 ---
@@ -68,10 +70,10 @@ leaves get the most analysis. The `★` and `(H,M)` leaves are what Step 6 analy
 |---------|------|--------------------|-----------------------|------|
 | R-1 | Risk | | | |
 | N-1 | Non-risk | | | assumption: … |
-| S-1 | Sensitivity point | | | |
-| T-1 | Tradeoff point | | <attr A> vs <attr B> | |
+| SP-1 | Sensitivity point | | | |
+| TP-1 | Tradeoff point | | <attr A> vs <attr B> | |
 
-## Step 7 — Brainstorm and prioritise scenarios (Phase 2)
+## Step 7 — Brainstorm and prioritise scenarios (Phase 2 — Full ATAM only; omit in Lightweight mode)
 
 **Vote budget** = ceil(0.30 × <count>) = **<N>** per stakeholder.
 
@@ -81,7 +83,7 @@ leaves get the most analysis. The `★` and `(H,M)` leaves are what Step 6 analy
 
 Ranked: P-3 (8) > P-1 (5) > … · Agreement with utility tree: <notes>
 
-## Step 8 — Analyse architectural approaches (Phase 2 scenarios)
+## Step 8 — Analyse architectural approaches (Phase 2 scenarios — Full ATAM only)
 
 <repeat the Step 6 analysis structure for the top Phase 2 scenarios not already covered>
 
@@ -113,3 +115,7 @@ Ranked: P-3 (8) > P-1 (5) > … · Agreement with utility tree: <notes>
 
 ### Recommendations / next steps
 - <targeted ADD iterations, spikes, monitoring, doc updates>
+
+### Drivers register write-back
+- Scenarios with ≥ 1 Risk set to `at risk` in [`../drivers/README.md`](../drivers/README.md): <ATTR>QA-<n> (R-…), …
+- Change-log line appended to the drivers README and to the package index `../README.md`.
