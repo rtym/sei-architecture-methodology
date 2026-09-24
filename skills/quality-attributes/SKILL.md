@@ -131,11 +131,11 @@ the taxonomy. For each, fill all six parts and give:
 | Security | **Security** | detect attacks · resist attacks · react to attacks · recover from attacks |
 | Maintainability / modifiability | **Modifiability** | reduce module size · increase cohesion · reduce coupling · defer binding |
 | Maintainability / testability | **Testability** | control and observe state · limit complexity |
-| Interaction capability | **Usability** | support user initiative · support system initiative |
+| Interaction capability | **Usability / interaction capability** | support user initiative · support system initiative |
 | Compatibility / interoperability | **Integrability** | limit dependencies · adapt · coordinate |
-| Flexibility / scalability | **Scalability** | statelessness · partitioning · elastic pools · load balancing · async processing |
+| Flexibility / scalability | **Energy efficiency, scalability, portability** | statelessness · partitioning · elastic pools · load balancing · async processing |
 | Flexibility / installability (deployability) | **Deployability** | manage the deployment pipeline · manage the deployed system |
-| Flexibility / adaptability, replaceability (portability) | **Portability** | intermediary · portability layer · defer binding to the platform · adhere to standards |
+| Flexibility / adaptability, replaceability (portability) | **Energy efficiency, scalability, portability** | intermediary · portability layer · defer binding to the platform · adhere to standards |
 | Safety | **Safety** | detect unsafe state · contain / recover · prevent unsafe state |
 
 Present as a table. Tell the user which parts you guessed so they correct the right cells.

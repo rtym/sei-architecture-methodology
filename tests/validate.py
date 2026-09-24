@@ -111,7 +111,7 @@ def check_diagram(block: str, label: str) -> list[str]:
             errs.append(f"{label}: Rel(...) without a label — {m.group(0)[:60]}")
 
     title_comment = ""
-    tc = re.search(r"^\s*%%\s*(?!name:)(.+)$", block, re.MULTILINE)
+    tc = re.search(r"^\s*%%(?!\s*name:)\s*(.+)$", block, re.MULTILINE)
     if tc:
         title_comment = tc.group(1).lower()
 
@@ -525,7 +525,8 @@ def check_qaw(path: Path) -> list[str]:
         refined = re.findall(r"^###\s+(\S+)", m.group(1), re.MULTILINE)
         images = " ".join(re.findall(r"^!\[[^\]]*\]\(([^)]+\.(?:png|svg))\)\s*$", m.group(1), re.MULTILINE))
         for rid in refined:
-            if rid.rstrip(":") not in images:
+            sid = rid.rstrip(":")
+            if f"scenario-{sid}." not in images:
                 errs.append(f"refined scenario {rid} has no embedded six-part scenario diagram "
                             f"(![...](diagrams/scenario-{rid}.png))")
         # every refined scenario is handed off to a register ID somewhere in the report

@@ -10,6 +10,19 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 - CI's PlantUML "render every example diagram" step asserted a hardcoded count of committed
   `.puml` files (29) that drifted stale after the 1.10.0 diagram dedup left 26. Now derived from
   `git ls-files` at run time so it can't drift again.
+- `render.sh`'s Markdown extractor silently overwrote a mermaid block's output when two blocks
+  shared the same `%% name:` slug, discarding the first diagram with no error. Now fails loudly
+  and renders nothing for that file, naming the colliding blocks.
+- `validate.py`'s QAW refined-scenario diagram check and its Mermaid title-comment extraction
+  each had an anchoring bug (unanchored substring containment; a lookahead defeated by
+  backtracking) that let a numeric-ID prefix collision or a `%% name:` comment mask a real
+  problem. Both now match the delimiter-safe pattern already used elsewhere in the file.
+- `skills/quality-attributes/SKILL.md`'s candidate-tactics table pointed at `tactics-catalog.md`
+  sections ("Scalability", "Portability") that don't exist as standalone headings; corrected to
+  the actual heading names.
+- Both worked examples' root `README.md` now carry the package-index shape
+  (`templates/architecture-readme.md`'s Activities-and-outputs table + change log) that
+  `/drivers` creates and every other skill updates, closing a regression-fixture gap from 1.10.0.
 
 ## 1.11.0 — 2026-09-23
 

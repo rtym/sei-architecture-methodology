@@ -7,6 +7,35 @@ drawn entirely in **PlantUML / C4-PlantUML** is at
 [`../personal-finance-tracker-plantuml/`](../personal-finance-tracker-plantuml/README.md) — the
 prose, drivers, scenarios and decisions are identical; only the diagram notation differs.
 
+This file also doubles as the **architecture package index** every sub-package's Navigation
+footer links up to (`/drivers` creates it from `templates/architecture-readme.md`).
+
+## Activities and outputs
+
+| Activity | Command | Output | Status |
+|----------|---------|--------|--------|
+| Quality Attribute Workshop | `/qaw` | [qaw/qaw-report.md](qaw/qaw-report.md) | done 2026-08-20 |
+| Architectural drivers | `/drivers` | [drivers/README.md](drivers/README.md) | done 2026-09-06 |
+| Quality attribute scenarios | `/quality-attributes` | [quality-attributes/scenarios.md](quality-attributes/scenarios.md) | done 2026-09-06 |
+| ADD 3.0 design | `/add` | [add/personal-finance-tracker-Architecture.md](add/personal-finance-tracker-Architecture.md) + [add/adr/](add/adr/ADR-1.md) | done 2026-09-06 |
+| ATAM evaluation | `/atam` | [atam/atam-report.md](atam/atam-report.md) | done 2026-09-05 |
+| Views and Beyond documentation | `/architecture-docs` | [docs/README.md](docs/README.md) | done 2026-09-06 |
+| Deliverable reports | `build-report.sh` | [reports/](reports/) | done 2026-09-06 |
+
+## Change log
+
+| Date | Activity | Change |
+|------|----------|--------|
+| 2026-08-20 | `/qaw` | workshop run; refined scenarios handed off |
+| 2026-09-05 | `/atam` | evaluation of the ADD 3.0 architecture |
+| 2026-09-06 | `/drivers` | package created; initial driver set |
+| 2026-09-06 | `/quality-attributes` | register-mode scenario summary added |
+| 2026-09-06 | `/add` | architecture designed; ADR log started |
+| 2026-09-06 | `/architecture-docs` | Views-and-Beyond package written |
+| 2026-09-06 | `build-report.sh` | HTML/Markdown reports generated |
+
+## Package contents
+
 | Path | Produced by | Shows |
 |------|-------------|-------|
 | [`drivers/`](drivers/README.md) | `/drivers` | The drivers **directory** — [`README.md`](drivers/README.md) (ID legend, traceability matrix with no orphans, prioritised list, change log) + a `README.md` index per subdirectory + one file per driver under `business-goals/` (4), `use-cases/` (3), `constraints/` (5), `quality-attributes/` (6) |
