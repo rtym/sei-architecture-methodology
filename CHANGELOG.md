@@ -4,6 +4,32 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## Unreleased
+
+### Added
+- `references/writing-style.md` — how artifacts are written for human readers (plain voice, no
+  filler, an orientation paragraph up front, notation explained at first use); every
+  artifact-producing skill now points at it from its Rules.
+- Validator prose checks on every produced artifact: filler phrases are rejected, unfilled
+  template placeholders fail, and a duplicated header bullet fails. `--self` also lints the
+  plugin's own commands/skills/templates/references for filler and checks example diagram
+  hygiene (every `.mmd`/`.puml` has its committed render; no orphan PNGs).
+- `tests/test_validate.py` — unit tests for the new prose checks, wired into `tests/run.sh`.
+- `scripts/render-all.sh` — re-render every `*.mmd` / `*.puml` under a directory in place, in
+  one deterministic pass; both example READMEs use it in their regenerate instructions.
+
+### Changed
+- The drivers `README.md` template (and both worked examples) opens with a plain-language
+  reader's paragraph instead of template meta-commentary, and its QA ID legend lists only the
+  prefixes in use (the full table stays in the taxonomy reference). Template guidance now lives
+  in HTML comments so it cannot leak into artifacts.
+
+### Fixed
+- Duplicated `Design purpose` / `Stakeholders` header lines in the Mermaid example's drivers
+  README and a duplicated `Mode` line in its `scenarios.md`.
+- Removed the orphaned `examples/personal-finance-tracker-plantuml/diagrams/container.png`
+  (nothing referenced it; the PlantUML example README's regenerate commands no longer produce it).
+
 ## 1.11.1 — 2026-09-24
 
 ### Fixed
