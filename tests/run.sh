@@ -26,6 +26,9 @@ step "3. plugin structure — validate.py --self"
 step "4. mdreport converter unit test"
 "$PY" tests/test_mdreport.py && ok "test_mdreport" || bad "test_mdreport"
 
+step "4b. validator prose-check unit tests"
+"$PY" tests/test_validate.py && ok "test_validate" || bad "test_validate"
+
 step "5. example artifacts validate"
 if [ -d examples ]; then
   # drivers/ directories get the cross-file check + every file

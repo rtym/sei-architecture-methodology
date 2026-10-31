@@ -717,6 +717,56 @@ def broken_links(path: Path) -> list[str]:
     return errs
 
 
+# Filler phrases that mark machine-padded prose. Artifacts are read by people; a sentence
+# that needs one of these is better rewritten (see references/writing-style.md, which is the
+# one file allowed to name them).
+FILLER_RE = re.compile(
+    r"\b(leverag(?:es|ed|ing)|seamless(?:ly)?|cutting-edge|state-of-the-art|best-in-class"
+    r"|world-class|game-chang\w*|revolutioniz\w*|delv(?:e|es|ed|ing)|utili[sz](?:e|es|ed|ing)"
+    r"|holistic\w*|synerg\w*|it is worth noting|it is important to note|in conclusion"
+    r"|in today'?s fast)\b",
+    re.IGNORECASE)
+
+# Tokens that exist only in templates/. One of these in a finished artifact means a template
+# was copied without being filled in.
+PLACEHOLDER_TOKENS = (
+    "<YYYY-MM-DD>", "<SystemName>", "<System name>", "<name>", "<one line>", "<slug>",
+    "<role>", "<short title>", "<who needs", "<goal-phrased",
+    "<One or two plain sentences", "<Two or three plain sentences",
+)
+
+_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+
+
+def _without_code(text: str) -> str:
+    return _FENCE_RE.sub("", text)
+
+
+def prose_errors(path: Path) -> list[str]:
+    """Human-readability checks shared by every produced Markdown artifact."""
+    errs: list[str] = []
+    try:
+        text = path.read_text(encoding="utf-8")
+    except Exception:
+        return errs
+    prose = _without_code(text)
+    for m in sorted({m.group(0).lower() for m in FILLER_RE.finditer(prose)}):
+        errs.append(f"filler phrase {m!r} — rewrite plainly (references/writing-style.md)")
+    for tok in PLACEHOLDER_TOKENS:
+        if tok in prose:
+            errs.append(f"unfilled template placeholder {tok!r}")
+    # duplicated '- **Key**:' bullets in the header block (before the first '## ') are
+    # copy-paste bugs: one Date, one Status, one Owner …
+    head = text.split("\n## ", 1)[0]
+    seen: dict[str, int] = {}
+    for m in re.finditer(r"^- \*\*([^*]+)\*\*:", head, re.MULTILINE):
+        seen[m.group(1)] = seen.get(m.group(1), 0) + 1
+    for key, n in seen.items():
+        if n > 1:
+            errs.append(f"header bullet '**{key}**' appears {n} times — remove the duplicate")
+    return errs
+
+
 def check_generic_md(path: Path) -> list[str]:
     errs: list[str] = []
     text = path.read_text(encoding="utf-8")
@@ -734,7 +784,7 @@ def validate_file(path: Path) -> list[str] | None:
     parent = path.parent.name
 
     def _md(res: list[str]) -> list[str]:
-        return res + broken_links(path)
+        return res + broken_links(path) + prose_errors(path)
 
     if name.endswith("-Architecture.md"):
         return _md(check_architecture(path))
@@ -1085,6 +1135,46 @@ def check_self() -> list[str]:
                *sorted((ROOT / "references").glob("*.md"))]:
         if BARE_QAS_RE.search(md.read_text(encoding="utf-8")):
             errs.append(f"{md.relative_to(ROOT)}: contains deprecated flat 'QAS-<n>' ID")
+
+    # the plugin's own prose honours the writing-style rules it imposes on artifacts
+    # (writing-style.md itself is the one file allowed to name the banned phrases)
+    for md in [*cmds, *skill_files, *template_files, *reference_files]:
+        if md.name == "writing-style.md":
+            continue
+        hits = sorted({m.group(0).lower()
+                       for m in FILLER_RE.finditer(_without_code(md.read_text(encoding="utf-8")))})
+        for h in hits:
+            errs.append(f"{md.relative_to(ROOT)}: filler phrase {h!r}")
+
+    # examples/ diagram hygiene: every source has its committed render, and every committed
+    # render is reachable — referenced from some Markdown file or sitting beside its source.
+    ex_root = ROOT / "examples"
+    if ex_root.is_dir():
+        referenced: set[Path] = set()
+        for md in ROOT.rglob("*.md"):
+            if "node_modules" in md.parts:
+                continue
+            try:
+                text = md.read_text(encoding="utf-8")
+            except Exception:
+                continue
+            for m in _LINK_RE.finditer(text):
+                target = m.group(1).strip().lstrip("<").rstrip(">")
+                target = target.split("#", 1)[0].split("?", 1)[0]
+                if not target or target.startswith(("http://", "https://", "mailto:", "data:")):
+                    continue
+                try:
+                    referenced.add((md.parent / target).resolve())
+                except OSError:
+                    pass
+        for src in sorted([*ex_root.rglob("*.mmd"), *ex_root.rglob("*.puml")]):
+            if not src.with_suffix(".png").is_file():
+                errs.append(f"{src.relative_to(ROOT)}: diagram source has no rendered .png beside it")
+        for png in sorted(ex_root.rglob("*.png")):
+            has_source = png.with_suffix(".mmd").is_file() or png.with_suffix(".puml").is_file()
+            if png.resolve() not in referenced and not has_source:
+                errs.append(f"{png.relative_to(ROOT)}: orphan render — nothing references it "
+                            f"and it has no source beside it")
 
     # shell scripts parse
     import subprocess
