@@ -5,10 +5,15 @@
 - **Design purpose**: greenfield system | greenfield feature | brownfield replacement | brownfield extension | brownfield migration
 - **Stakeholders**: [drivers/stakeholders.md](drivers/stakeholders.md)
 
-> The index of `architecture/`. Every SEI activity registers its output here, so each sub-package's
-> Navigation footer links **up** to this file and only **across** to packages that already exist.
-> `/drivers` creates this file; every other skill updates its row and appends to the change log.
-> Never link an output that has not been produced yet — `validate.py` fails on the broken link.
+<!-- Template notes (do not copy into the artifact):
+     This is the index of architecture/. Every SEI activity registers its output here, so each
+     sub-package's Navigation footer links UP to this file and only ACROSS to packages that
+     already exist. /drivers creates this file; every other skill updates its row and appends to
+     the change log. Never link an output that has not been produced yet — validate.py fails on
+     the broken link. Replace the paragraph below with plain sentences for the human reader. -->
+
+<One or two plain sentences for the reader: what system this package describes and that the
+table below lists each activity's output with its status.>
 
 ## Activities and outputs
 

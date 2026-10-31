@@ -7,12 +7,18 @@
 - **Design purpose**: greenfield system | greenfield feature | brownfield replacement | brownfield extension | brownfield migration
 - **Stakeholders**: [stakeholders.md](stakeholders.md)
 
-> The top aggregate file of `architecture/drivers/` (GitHub renders it on directory browse).
-> One file per driver lives under `business-goals/`, `use-cases/`, `constraints/`,
-> `quality-attributes/` and `concerns/`, and each of those has its own small `README.md` index
-> (`${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md`). This file holds the ID legend, the traceability matrix, the
-> coverage check, the prioritised list, and the change log. **Every path below is a working
-> relative Markdown link.**
+<!-- Template notes (do not copy into the artifact):
+     This is the top aggregate file of architecture/drivers/ — GitHub renders it on directory
+     browse. One file per driver lives under business-goals/, use-cases/, constraints/,
+     quality-attributes/ and concerns/; each of those gets its own small README.md index
+     (${CLAUDE_PLUGIN_ROOT}/templates/subdir-readme.md). This file holds the ID legend, the
+     traceability matrix, the coverage check, the prioritised list, and the change log.
+     Every path below must be a working relative Markdown link.
+     Replace the paragraph below with two or three plain sentences for the human reader. -->
+
+<Two or three plain sentences for the reader: what this register covers (counts of goals, use
+cases, constraints, scenarios), that each driver links to its own file, and where to start —
+the prioritised list for what matters most, the traceability matrix for how drivers connect.>
 
 ## Driver inventory
 
@@ -50,11 +56,13 @@ per row, `★` on each `(H, H)` leaf. `(V, R)` = business value and technical ri
 Importance`, `R ≈ Difficulty`). Built from the QAW (its Step 9) when one was run; ATAM step 5
 reuses it.
 
-**QA ID legend** (attribute → prefix): AQA availability · RQA reliability(other) · PQA performance
-· SQA security · SFQA safety · MQA modifiability · MNQA maintainability(other) · TQA testability ·
-UQA usability · IQA interoperability · CQA compatibility · SCQA scalability · DQA deployability ·
-PTQA portability · ADQA adaptability · OQA observability · EQA energy · INQA integrability ·
-FQA functional-suitability. Coin a new `<MNEMONIC>QA` and record it here if needed. Never `QAS-`.
+**QA ID legend** — scenario IDs are prefixed by attribute, numbered within each prefix. Used in
+this register: <only the prefixes that actually appear, e.g. AQA availability · SQA security>.
+A scenario for a new attribute gets its own prefix, recorded here (the full prefix table is in
+the plugin's quality-attribute taxonomy reference). Never the flat `QAS-`.
+<!-- List only the prefixes in use — the full 19-prefix table lives in
+     ${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md and the
+     architectural-drivers SKILL.md; dumping it here buries the reader. -->
 
 ## Traceability matrix
 

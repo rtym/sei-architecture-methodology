@@ -217,6 +217,12 @@ Deep guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`:
 
 ## Rules
 
+- **Write for the human reader** — follow `${CLAUDE_PLUGIN_ROOT}/references/writing-style.md`:
+  open every artifact with one to three plain sentences saying what it covers and where to start,
+  explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
+  use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
+  HTML comments, never in the artifact's visible text.
+
 - Never document a view whose elements/relations you cannot name concretely — draft the diagram
   first, and if it stays vague, the architecture decision is missing, not the doc.
 - Every view packet has all five sections; "Variability guide" may state "none" but must be present.

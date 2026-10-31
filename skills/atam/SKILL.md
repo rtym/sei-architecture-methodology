@@ -165,6 +165,12 @@ scenarios from Step 7 that were not already covered.
 
 ## Rules
 
+- **Write for the human reader** — follow `${CLAUDE_PLUGIN_ROOT}/references/writing-style.md`:
+  open every artifact with one to three plain sentences saying what it covers and where to start,
+  explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
+  use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
+  HTML comments, never in the artifact's visible text.
+
 - Every risk, non-risk, sensitivity, and tradeoff cites the element/decision and the affected
   quality attribute(s) (ISO/IEC 25010 characteristic).
 - A **non-risk** always records the assumption under which it is safe.
