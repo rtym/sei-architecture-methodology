@@ -349,13 +349,15 @@ sei-architecture-methodology/
 ├── templates/                         # blank artifact templates (one per driver kind, per report, per view)
 ├── scripts/
 │   ├── mdreport.py                    # dependency-free Markdown → Markdown/HTML report builder (mermaid + plantuml embed)
-│   └── build-report.sh
+│   ├── build-report.sh
+│   └── render-all.sh                  # re-render every *.mmd / *.puml under a directory, in place
 ├── examples/
 │   ├── personal-finance-tracker-mermaid/    # the full worked example, every diagram in Mermaid
 │   └── personal-finance-tracker-plantuml/   # the same example, every diagram in PlantUML / C4-PlantUML
 ├── tests/
-│   ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability)
+│   ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability, prose)
 │   ├── test_mdreport.py               # mdreport unit tests
+│   ├── test_validate.py               # validator prose-check unit tests
 │   └── run.sh                         # full suite
 ├── CHANGELOG.md                       # release notes per version
 ├── CLAUDE.md                          # contributor notes: tests, conventions, release checklist
@@ -409,6 +411,10 @@ scenario in `scenarios.md` and every refined QAW scenario embeds a rendered diag
 exists, retired drivers are excluded from the coverage check, `stakeholders.md` and `concerns/`
 validate, refined QAW scenarios map to register IDs and raw ones carry a type, ATAM reports
 declare their mode, §9 decisions link their ADRs, and the C&C view documents behaviour per use case.
+Since 1.11.1 the validator also reads artifacts as a human would: filler phrases ("seamless",
+"leverages", "delve", …) are rejected, an unfilled template placeholder (`<SystemName>`,
+`<YYYY-MM-DD>`) fails, a duplicated header bullet fails, every example diagram source must have
+its committed render, and an orphan PNG that nothing references fails the self-check.
 
 Validate produced artifacts in a target project:
 
