@@ -5,7 +5,6 @@
 - **Status**: reviewed
 - **QA model**: ISO/IEC 25010:2023
 - **Mode**: register — the per-scenario files and diagrams live in [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md); this file is the summary
-- **Mode**: register — the per-scenario files and diagrams live in [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md); this file is the summary
 
 ## Business goals
 
