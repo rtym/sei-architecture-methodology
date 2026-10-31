@@ -56,18 +56,12 @@ bash skills/sei-diagrams/scripts/setup.sh          # one-time (Mermaid renderer)
 
 EX=examples/personal-finance-tracker-mermaid
 
-# quality-attribute scenario diagrams (Mermaid)
-bash skills/sei-diagrams/scripts/render.sh $EX/drivers/quality-attributes/diagrams/
-
-# use case diagrams (Mermaid flowchart fallback)
-bash skills/sei-diagrams/scripts/render.sh $EX/drivers/use-cases/diagrams/
+# every standalone .mmd in the tree (drivers, QAW, docs legend), rendered beside its source
+bash scripts/render-all.sh $EX
 
 # ADD architecture views (each block carries a `%% name:` so the PNGs are context.png, container.png, …)
 bash skills/sei-diagrams/scripts/render.sh --out $EX/diagrams \
   $EX/add/personal-finance-tracker-Architecture.md
-
-# QAW refined-scenario diagrams
-bash skills/sei-diagrams/scripts/render.sh $EX/qaw/diagrams/
 
 # docs view diagrams (blocks named with `%% name:` keep their file name; others are numbered)
 for f in $EX/docs/*.md; do bash skills/sei-diagrams/scripts/render.sh --out $EX/docs/diagrams "$f"; done

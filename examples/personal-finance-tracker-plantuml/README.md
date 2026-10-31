@@ -56,10 +56,8 @@ footer links up to (`/drivers` creates it from `templates/architecture-readme.md
 # from the plugin root — PlantUML needs a Java runtime (brew install openjdk)
 EX=examples/personal-finance-tracker-plantuml
 
-bash skills/sei-diagrams/scripts/render-plantuml.sh $EX/drivers/use-cases/diagrams/
-bash skills/sei-diagrams/scripts/render-plantuml.sh $EX/drivers/quality-attributes/diagrams/
-bash skills/sei-diagrams/scripts/render-plantuml.sh --out $EX/diagrams $EX/add/diagrams/
-bash skills/sei-diagrams/scripts/render-plantuml.sh --out $EX/docs/diagrams $EX/docs/diagrams/
+# every .puml in the tree, rendered beside its source, in one pass
+bash scripts/render-all.sh $EX
 
 scripts/build-report.sh \
   $EX/drivers/README.md \
