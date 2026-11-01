@@ -4,7 +4,7 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
-## Unreleased
+## 1.12.1 — 2026-11-01
 
 ### Changed
 - Mermaid renderer bumped to `@mermaid-js/mermaid-cli` 12 (+ `@mermaid-js/layout-elk` 1).
