@@ -27,6 +27,13 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 - `.github/PULL_REQUEST_TEMPLATE.md` — the CLAUDE.md contributor checklist at review time —
   and `.github/dependabot.yml`, grouping weekly npm updates for the pinned Mermaid renderer and
   GitHub Actions updates (the vendored C4-PlantUML stays a manual, reviewed bump).
+- Test dashboard on GitHub: `tests/run.sh` mirrors every check (pass / fail / skipped) into the
+  Actions job summary when `GITHUB_STEP_SUMMARY` is set, and the README carries the workflow
+  status badge.
+
+### Maintenance
+- All 54 example diagrams re-rendered with the pinned toolchain and visually re-reviewed; the
+  regenerated example reports pick up the reader-voice drivers README.
 
 ### Changed
 - The drivers `README.md` template (and both worked examples) opens with a plain-language

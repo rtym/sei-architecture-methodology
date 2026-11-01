@@ -1,5 +1,7 @@
 # SEI Architecture Methodology
 
+[![tests](https://github.com/rtym/sei-architecture-methodology/actions/workflows/tests.yml/badge.svg)](https://github.com/rtym/sei-architecture-methodology/actions/workflows/tests.yml)
+
 A pluggable Claude Code skill set that automates the **SEI (Carnegie Mellon Software Engineering
 Institute)** software-architecture practice end to end — from eliciting architectural drivers to
 evaluating the finished architecture — and renders clean, verified UML / C4 diagrams to PNG.

@@ -8,9 +8,15 @@ cd "$ROOT"
 PY="$(command -v python3 || command -v python)"
 QUICK=0; [ "${1:-}" = "--quick" ] && QUICK=1
 fails=0
-step() { printf '\n=== %s ===\n' "$1"; }
-ok()   { echo "PASS  $1"; }
-bad()  { echo "FAIL  $1"; fails=$((fails+1)); }
+# When run under GitHub Actions, mirror every check into the job summary
+# ($GITHUB_STEP_SUMMARY) so the run page shows a per-check results table.
+SUMMARY="${GITHUB_STEP_SUMMARY:-}"
+sum()  { if [ -n "$SUMMARY" ]; then printf '%s\n' "$1" >> "$SUMMARY"; fi; }
+step() { printf '\n=== %s ===\n' "$1"
+         sum ""; sum "### $1"; sum ""; sum "| Check | Result |"; sum "|-------|--------|"; }
+ok()   { echo "PASS  $1"; sum "| \`$1\` | ✅ pass |"; }
+bad()  { echo "FAIL  $1"; fails=$((fails+1)); sum "| \`$1\` | ❌ **FAIL** |"; }
+skip() { echo "$1"; sum "| _${1}_ | ⏭️ skipped |"; }
 
 step "1. plugin.json is valid JSON"
 "$PY" -c "import json,sys; json.load(open('.claude-plugin/plugin.json')); print('ok')" && ok "plugin.json" || bad "plugin.json"
@@ -70,7 +76,7 @@ fi
 
 step "7. diagram render smoke test"
 if [ "$QUICK" = "1" ]; then
-  echo "(skipped: --quick)"
+  skip "(skipped: --quick)"
 elif command -v mmdc >/dev/null 2>&1 || [ -x skills/sei-diagrams/node_modules/.bin/mmdc ]; then
   tmp="$(mktemp -d)"
   cat > "$tmp/t.mmd" <<'EOF'
@@ -82,7 +88,7 @@ EOF
     && ok "render.sh -> PNG" || bad "render.sh -> PNG"
   rm -rf "$tmp"
 else
-  echo "(skipped: mermaid CLI not installed — run: bash skills/sei-diagrams/scripts/setup.sh)"
+  skip "(skipped: mermaid CLI not installed — run: bash skills/sei-diagrams/scripts/setup.sh)"
 fi
 
 step "8. PlantUML render smoke test (from OUTSIDE the plugin)"
@@ -90,11 +96,11 @@ step "8. PlantUML render smoke test (from OUTSIDE the plugin)"
 # resolve through PLANTUML_INCLUDE_PATH, and a '../'-traversal regression would still pass if
 # we rendered from within this repo (where ../../skills/... happens to exist).
 if [ "$QUICK" = "1" ]; then
-  echo "(skipped: --quick)"
+  skip "(skipped: --quick)"
 elif ! command -v java >/dev/null 2>&1 && [ -z "${PLANTUML_JAR:-}" ]; then
-  echo "(skipped: no Java — install a JRE to exercise the PlantUML renderer)"
+  skip "(skipped: no Java — install a JRE to exercise the PlantUML renderer)"
 elif ! command -v plantuml >/dev/null 2>&1 && [ -z "${PLANTUML_JAR:-}" ]; then
-  echo "(skipped: plantuml not installed — brew install plantuml / apt-get install plantuml)"
+  skip "(skipped: plantuml not installed — brew install plantuml / apt-get install plantuml)"
 else
   tmp="$(mktemp -d)"
   mkdir -p "$tmp/architecture/diagrams"
@@ -167,4 +173,11 @@ EOF
 fi
 
 printf '\n===============================\n'
-if [ "$fails" -eq 0 ]; then echo "ALL PASS"; exit 0; else echo "$fails FAILURE(S)"; exit 1; fi
+sum ""
+if [ "$fails" -eq 0 ]; then
+  sum "## ✅ All checks passed"
+  echo "ALL PASS"; exit 0
+else
+  sum "## ❌ $fails check(s) failed"
+  echo "$fails FAILURE(S)"; exit 1
+fi
