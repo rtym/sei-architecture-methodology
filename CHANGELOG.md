@@ -24,6 +24,9 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
   failed confusingly; `run.sh` step 4c asserts the guards without needing a renderer.
 - `scripts/render-all.sh` — re-render every `*.mmd` / `*.puml` under a directory in place, in
   one deterministic pass; both example READMEs use it in their regenerate instructions.
+- `.github/PULL_REQUEST_TEMPLATE.md` — the CLAUDE.md contributor checklist at review time —
+  and `.github/dependabot.yml`, grouping weekly npm updates for the pinned Mermaid renderer and
+  GitHub Actions updates (the vendored C4-PlantUML stays a manual, reviewed bump).
 
 ### Changed
 - The drivers `README.md` template (and both worked examples) opens with a plain-language
