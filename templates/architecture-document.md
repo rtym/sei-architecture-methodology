@@ -5,8 +5,13 @@
 - **Session**: `<slug>-session.md`
 - **Drivers**: [`../drivers/README.md`](../drivers/README.md)
 
-> Companion document produced by `/attribute-driven-design`. For a full Views-and-Beyond
-> description, run `/architecture-docs`; this document is the ADD working architecture.
+<!-- Companion document produced by /attribute-driven-design. For a full Views-and-Beyond
+     description, run /architecture-docs; this document is the ADD working architecture.
+     Replace the line below with a plain sentence for the reader. -->
+
+<One or two plain sentences for the reader: this is the working architecture from the ADD
+design session — what system it covers and, if `../docs/` exists, where the full
+Views-and-Beyond description lives.>
 
 <!-- Mermaid: every diagram appears as BOTH a ```mermaid block AND, immediately after it,
      a ![title](diagrams/<name>.png) line pointing at the verified render in ./diagrams/ .

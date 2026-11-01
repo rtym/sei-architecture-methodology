@@ -34,7 +34,10 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
 1. Update the skill **and** its template **and** both worked examples under `examples/` — they are
    the regression fixtures; `tests/run.sh` validates every file in them.
 2. Re-render any diagram whose source changed (`skills/sei-diagrams/scripts/render.sh` /
-   `render-plantuml.sh`), then open the PNG and check it before committing it.
+   `render-plantuml.sh`, or `scripts/render-all.sh <dir>` for every source under a directory),
+   then open the PNG and check it before committing it. Both render scripts write the PNG
+   **next to its source** — extra arguments are more inputs, not an output path (an
+   output-looking `.png`/`.svg` argument is rejected; use `--out DIR` to redirect).
 3. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
 
 ## Release checklist

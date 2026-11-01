@@ -285,6 +285,12 @@ Append a dated line to the top `README.md`'s change log for every run: what was 
 
 ## Rules
 
+- **Write for the human reader** — follow `${CLAUDE_PLUGIN_ROOT}/references/writing-style.md`:
+  open every artifact with one to three plain sentences saying what it covers and where to start,
+  explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
+  use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
+  HTML comments, never in the artifact's visible text.
+
 - Four driver kinds, four ID prefixes: `BG-`, `UC-`, `CON-`, `<ATTR>QA-`; plus `AC-` concerns and
   `ST-` stakeholders. IDs are sequential within their prefix and never reused or renumbered.
 - **One file per driver** under the matching sub-directory; the top `README.md` is the aggregate

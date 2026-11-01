@@ -3,9 +3,13 @@
 - **Date**: <YYYY-MM-DD>
 - **Owner**: <name>
 
-> The single stakeholder register for the whole `architecture/` package. `/drivers` creates it;
-> `/qaw` (participants), `/atam` (Phase 2 stakeholders) and `/architecture-docs` (view selection)
-> read it instead of asking again. Each business goal cites the `ST-<n>` of its primary stakeholder.
+<!-- Template notes (do not copy into the artifact):
+     The single stakeholder register for the whole architecture/ package. /drivers creates it;
+     /qaw (participants), /atam (Phase 2 stakeholders) and /architecture-docs (view selection)
+     read it instead of asking again. Replace the line below with reader-voice sentences. -->
+
+<One or two plain sentences for the reader: who has a stake in this system and what the table
+shows. Each business goal cites the `ST-<n>` of its primary stakeholder.>
 
 | ID | Name / representative | Role | Concerns | QAW | ATAM Phase 2 | V&B reader |
 |----|-----------------------|------|----------|:---:|:------------:|:----------:|

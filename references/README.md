@@ -10,6 +10,7 @@ carries. Nothing here is executable; it is the encoded SEI body of knowledge.
 | [`architecture-fundamentals.md`](architecture-fundamentals.md) | what an architecture is (module / C&C / allocation structures, views); why it matters; the process + structural "good architecture" rules of thumb |
 | [`glossary.md`](glossary.md) | every term used across the skills and references, with the file that treats it in depth |
 | [`best-practices-checklist.md`](best-practices-checklist.md) | the quality gate every skill runs against its own output |
+| [`writing-style.md`](writing-style.md) | how artifacts are written for human readers — plain voice, no filler, orientation paragraph, notation explained at first use |
 
 ## Drivers and quality attributes
 

@@ -8,9 +8,21 @@ cd "$ROOT"
 PY="$(command -v python3 || command -v python)"
 QUICK=0; [ "${1:-}" = "--quick" ] && QUICK=1
 fails=0
-step() { printf '\n=== %s ===\n' "$1"; }
-ok()   { echo "PASS  $1"; }
-bad()  { echo "FAIL  $1"; fails=$((fails+1)); }
+# When run under GitHub Actions, mirror every check into the job summary
+# ($GITHUB_STEP_SUMMARY) so the run page shows a per-check results table, and
+# keep execution stats (counts + per-step wall time) for the final section.
+SUMMARY="${GITHUB_STEP_SUMMARY:-}"
+sum()  { if [ -n "$SUMMARY" ]; then printf '%s\n' "$1" >> "$SUMMARY"; fi; }
+passes=0; skips=0
+STEP_STATS=()               # "name|seconds" per step, in order
+cur_step=""; step_t0=0
+flush_step() { if [ -n "$cur_step" ]; then STEP_STATS+=("$cur_step|$((SECONDS - step_t0))"); fi; }
+step() { flush_step; cur_step="$1"; step_t0=$SECONDS
+         printf '\n=== %s ===\n' "$1"
+         sum ""; sum "### $1"; sum ""; sum "| Check | Result |"; sum "|-------|--------|"; }
+ok()   { echo "PASS  $1"; passes=$((passes+1)); sum "| \`$1\` | ✅ pass |"; }
+bad()  { echo "FAIL  $1"; fails=$((fails+1)); sum "| \`$1\` | ❌ **FAIL** |"; }
+skip() { echo "$1"; skips=$((skips+1)); sum "| _${1}_ | ⏭️ skipped |"; }
 
 step "1. plugin.json is valid JSON"
 "$PY" -c "import json,sys; json.load(open('.claude-plugin/plugin.json')); print('ok')" && ok "plugin.json" || bad "plugin.json"
@@ -24,7 +36,29 @@ step "3. plugin structure — validate.py --self"
 "$PY" tests/validate.py --self && ok "validate --self" || bad "validate --self"
 
 step "4. mdreport converter unit test"
-"$PY" tests/test_mdreport.py && ok "test_mdreport" || bad "test_mdreport"
+if out="$("$PY" tests/test_mdreport.py)"; then
+  ok "test_mdreport ($(printf '%s\n' "$out" | grep -c '^ok') assertions)"
+else printf '%s\n' "$out"; bad "test_mdreport"; fi
+
+step "4b. validator unit tests"
+if out="$("$PY" tests/test_validate.py)"; then
+  ok "test_validate ($(printf '%s\n' "$out" | tail -1))"
+else printf '%s\n' "$out"; bad "test_validate"; fi
+
+step "4c. render-script argument guards (no toolchain needed)"
+# every positional argument is an input; an output-looking path must fail fast and loud
+if bash skills/sei-diagrams/scripts/render.sh out.png >/dev/null 2>&1; then
+  bad "render.sh must reject a .png argument"
+else ok "render.sh rejects a .png argument"; fi
+if bash skills/sei-diagrams/scripts/render-plantuml.sh out.png >/dev/null 2>&1; then
+  bad "render-plantuml.sh must reject a .png argument"
+else ok "render-plantuml.sh rejects a .png argument"; fi
+if bash scripts/render-all.sh >/dev/null 2>&1; then
+  bad "render-all.sh must fail without arguments"
+else ok "render-all.sh fails without arguments"; fi
+if bash scripts/render-all.sh /nonexistent-dir-zz >/dev/null 2>&1; then
+  bad "render-all.sh must fail on a missing directory"
+else ok "render-all.sh fails on a missing directory"; fi
 
 step "5. example artifacts validate"
 if [ -d examples ]; then
@@ -52,7 +86,7 @@ fi
 
 step "7. diagram render smoke test"
 if [ "$QUICK" = "1" ]; then
-  echo "(skipped: --quick)"
+  skip "(skipped: --quick)"
 elif command -v mmdc >/dev/null 2>&1 || [ -x skills/sei-diagrams/node_modules/.bin/mmdc ]; then
   tmp="$(mktemp -d)"
   cat > "$tmp/t.mmd" <<'EOF'
@@ -64,7 +98,7 @@ EOF
     && ok "render.sh -> PNG" || bad "render.sh -> PNG"
   rm -rf "$tmp"
 else
-  echo "(skipped: mermaid CLI not installed — run: bash skills/sei-diagrams/scripts/setup.sh)"
+  skip "(skipped: mermaid CLI not installed — run: bash skills/sei-diagrams/scripts/setup.sh)"
 fi
 
 step "8. PlantUML render smoke test (from OUTSIDE the plugin)"
@@ -72,11 +106,11 @@ step "8. PlantUML render smoke test (from OUTSIDE the plugin)"
 # resolve through PLANTUML_INCLUDE_PATH, and a '../'-traversal regression would still pass if
 # we rendered from within this repo (where ../../skills/... happens to exist).
 if [ "$QUICK" = "1" ]; then
-  echo "(skipped: --quick)"
+  skip "(skipped: --quick)"
 elif ! command -v java >/dev/null 2>&1 && [ -z "${PLANTUML_JAR:-}" ]; then
-  echo "(skipped: no Java — install a JRE to exercise the PlantUML renderer)"
+  skip "(skipped: no Java — install a JRE to exercise the PlantUML renderer)"
 elif ! command -v plantuml >/dev/null 2>&1 && [ -z "${PLANTUML_JAR:-}" ]; then
-  echo "(skipped: plantuml not installed — brew install plantuml / apt-get install plantuml)"
+  skip "(skipped: plantuml not installed — brew install plantuml / apt-get install plantuml)"
 else
   tmp="$(mktemp -d)"
   mkdir -p "$tmp/architecture/diagrams"
@@ -148,5 +182,30 @@ EOF
   rm -rf "$tmp"
 fi
 
+flush_step
+total_checks=$((passes + fails))
+printf '\n--- execution stats ---\n'
+if [ "${#STEP_STATS[@]}" -gt 0 ]; then
+  for s in "${STEP_STATS[@]}"; do printf '%5ss  %s\n' "${s##*|}" "${s%|*}"; done
+fi
+echo "checks: $total_checks run — $passes passed, $fails failed, $skips skipped — ${SECONDS}s total"
+sum ""
+sum "## Execution stats"
+sum ""
+sum "| Step | Time |"
+sum "|------|-----:|"
+if [ "${#STEP_STATS[@]}" -gt 0 ]; then
+  for s in "${STEP_STATS[@]}"; do sum "| ${s%|*} | ${s##*|} s |"; done
+fi
+sum "| **Total** | **${SECONDS} s** |"
+sum ""
+sum "**$passes passed · $fails failed · $skips skipped** ($total_checks checks run)"
 printf '\n===============================\n'
-if [ "$fails" -eq 0 ]; then echo "ALL PASS"; exit 0; else echo "$fails FAILURE(S)"; exit 1; fi
+sum ""
+if [ "$fails" -eq 0 ]; then
+  sum "## ✅ All checks passed"
+  echo "ALL PASS"; exit 0
+else
+  sum "## ❌ $fails check(s) failed"
+  echo "$fails FAILURE(S)"; exit 1
+fi

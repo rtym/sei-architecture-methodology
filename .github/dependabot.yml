@@ -1,0 +1,35 @@
+# Dependabot keeps the two update-able dependency surfaces fresh:
+#   - the pinned Mermaid renderer under skills/sei-diagrams (package.json + package-lock.json)
+#   - the GitHub Actions used by .github/workflows/tests.yml
+# The vendored C4-PlantUML under skills/sei-diagrams/assets/c4/ is NOT managed here — bumping it
+# is a manual, reviewed step (see that directory's README.md).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /skills/sei-diagrams
+    schedule:
+      interval: weekly
+      day: monday
+    # the full CI suite (Mermaid render job) is the merge gate for these
+    groups:
+      mermaid-renderer:
+        patterns:
+          - "*"
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "Bump"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns:
+          - "*"
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "Bump"

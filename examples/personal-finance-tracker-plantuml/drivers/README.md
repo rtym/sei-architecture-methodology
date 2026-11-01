@@ -7,12 +7,11 @@
 - **Design purpose**: greenfield system
 - **Stakeholders**: [stakeholders.md](stakeholders.md) (ST-1 … ST-6)
 
-> The top aggregate file of `drivers/`. One file per driver lives under
-> [`business-goals/`](business-goals/README.md), [`use-cases/`](use-cases/README.md),
-> [`constraints/`](constraints/README.md), [`quality-attributes/`](quality-attributes/README.md),
-> [`concerns/`](concerns/README.md);
-> each of those has its own `README.md` index. This file holds the ID legend, the traceability
-> matrix, the coverage check, the prioritised list, and the change log.
+This register lists everything that shapes the architecture of the Personal Finance Tracker:
+four business goals, four use cases, five constraints, six quality attribute scenarios, and two
+architectural concerns. Each driver has its own file, linked from the tables below; start with
+the [prioritised list](#prioritised-driver-list-input-to-add--atam) if you want to know what
+matters most, or the [traceability matrix](#traceability-matrix) to see how the drivers connect.
 
 ## Driver inventory
 
@@ -67,11 +66,10 @@ Overview use case diagram: [`use-cases/diagrams/overview-core.png`](use-cases/di
 per row, `★` on each `(H, H)` leaf. `(V, R)` = business value and technical risk (`V ≈
 Importance`, `R ≈ Difficulty`). Built from the QAW Step 9; ATAM step 5 reuses it.
 
-**QA ID legend**: AQA availability · RQA reliability(other) · PQA performance · SQA security ·
-SFQA safety · MQA modifiability · MNQA maintainability(other) · TQA testability · UQA usability ·
-IQA interoperability · CQA compatibility · SCQA scalability · DQA deployability · PTQA portability
-· ADQA adaptability · OQA observability · EQA energy · INQA integrability · FQA functional-suitability.
-Never `QAS-`.
+**QA ID legend** — scenario IDs are prefixed by attribute, numbered within each prefix. Used in
+this register: AQA availability · PQA performance · SQA security · MQA modifiability ·
+UQA usability. A scenario for a new attribute gets its own prefix, recorded here (the full
+prefix table is in the plugin's quality-attribute taxonomy reference). Never the flat `QAS-`.
 
 ## Traceability matrix
 

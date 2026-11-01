@@ -140,6 +140,12 @@ package index `architecture/README.md` (create it from
 
 ## Rules
 
+- **Write for the human reader** — follow `${CLAUDE_PLUGIN_ROOT}/references/writing-style.md`:
+  open every artifact with one to three plain sentences saying what it covers and where to start,
+  explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
+  use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
+  HTML comments, never in the artifact's visible text.
+
 - Facilitator stays neutral on scenario *content*; drives *process* only.
 - Never discard or merge a scenario without stakeholder agreement — record dissent.
 - Raw scenario wording from step 5 is preserved verbatim, each tagged use-case / growth /
