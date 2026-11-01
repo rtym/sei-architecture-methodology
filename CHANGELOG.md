@@ -4,6 +4,17 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## Unreleased
+
+### Changed
+- Mermaid renderer bumped to `@mermaid-js/mermaid-cli` 12 (+ `@mermaid-js/layout-elk` 1).
+  mermaid-cli 12 replaces `--width` with `--size` (a max-dimension budget): `render.sh` now
+  passes `--size`, keeps `--width` as an alias, and `setup.sh` installs the Chromium build this
+  puppeteer expects explicitly (npm's allow-scripts guard can block the postinstall download)
+  and writes current versions in its package.json fallback. All 21 Mermaid example renders and
+  the Mermaid example reports regenerated: diagrams now get up to 4800 px on their longest
+  axis, so tall diagrams gained resolution.
+
 ## 1.12.0 — 2026-11-01
 
 ### Added

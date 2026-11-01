@@ -28,8 +28,8 @@ if [ ! -f package.json ]; then
   "private": true,
   "description": "Local Mermaid CLI for the sei-diagrams skill",
   "dependencies": {
-    "@mermaid-js/mermaid-cli": "^11.4.2",
-    "@mermaid-js/layout-elk": "^0.1.7"
+    "@mermaid-js/mermaid-cli": "^12.0.0",
+    "@mermaid-js/layout-elk": "^1.0.1"
   }
 }
 JSON
@@ -42,6 +42,14 @@ if [ -f package-lock.json ]; then
   npm ci --no-audit --no-fund
 else
   npm install --no-audit --no-fund
+fi
+
+# npm may block puppeteer's postinstall (its allow-scripts guard), and a cached browser from an
+# older puppeteer may not match the build this one expects — ensure it explicitly. Idempotent:
+# a present, matching browser is a no-op.
+if [ -x "$SKILL_DIR/node_modules/.bin/puppeteer" ]; then
+  "$SKILL_DIR/node_modules/.bin/puppeteer" browsers install chrome-headless-shell
+  "$SKILL_DIR/node_modules/.bin/puppeteer" browsers install chrome
 fi
 
 if [ -x "$SKILL_DIR/node_modules/.bin/mmdc" ]; then
