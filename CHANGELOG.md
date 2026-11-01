@@ -29,7 +29,8 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
   GitHub Actions updates (the vendored C4-PlantUML stays a manual, reviewed bump).
 - Test dashboard on GitHub: `tests/run.sh` mirrors every check (pass / fail / skipped) into the
   Actions job summary when `GITHUB_STEP_SUMMARY` is set, and the README carries the workflow
-  status badge.
+  status badge. The suite also reports execution stats — per-step wall time, pass/fail/skip
+  counts and the unit-test assertion totals — in the console and as a table in the job summary.
 
 ### Maintenance
 - All 54 example diagrams re-rendered with the pinned toolchain and visually re-reviewed; the

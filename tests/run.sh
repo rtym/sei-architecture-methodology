@@ -9,14 +9,20 @@ PY="$(command -v python3 || command -v python)"
 QUICK=0; [ "${1:-}" = "--quick" ] && QUICK=1
 fails=0
 # When run under GitHub Actions, mirror every check into the job summary
-# ($GITHUB_STEP_SUMMARY) so the run page shows a per-check results table.
+# ($GITHUB_STEP_SUMMARY) so the run page shows a per-check results table, and
+# keep execution stats (counts + per-step wall time) for the final section.
 SUMMARY="${GITHUB_STEP_SUMMARY:-}"
 sum()  { if [ -n "$SUMMARY" ]; then printf '%s\n' "$1" >> "$SUMMARY"; fi; }
-step() { printf '\n=== %s ===\n' "$1"
+passes=0; skips=0
+STEP_STATS=()               # "name|seconds" per step, in order
+cur_step=""; step_t0=0
+flush_step() { if [ -n "$cur_step" ]; then STEP_STATS+=("$cur_step|$((SECONDS - step_t0))"); fi; }
+step() { flush_step; cur_step="$1"; step_t0=$SECONDS
+         printf '\n=== %s ===\n' "$1"
          sum ""; sum "### $1"; sum ""; sum "| Check | Result |"; sum "|-------|--------|"; }
-ok()   { echo "PASS  $1"; sum "| \`$1\` | ✅ pass |"; }
+ok()   { echo "PASS  $1"; passes=$((passes+1)); sum "| \`$1\` | ✅ pass |"; }
 bad()  { echo "FAIL  $1"; fails=$((fails+1)); sum "| \`$1\` | ❌ **FAIL** |"; }
-skip() { echo "$1"; sum "| _${1}_ | ⏭️ skipped |"; }
+skip() { echo "$1"; skips=$((skips+1)); sum "| _${1}_ | ⏭️ skipped |"; }
 
 step "1. plugin.json is valid JSON"
 "$PY" -c "import json,sys; json.load(open('.claude-plugin/plugin.json')); print('ok')" && ok "plugin.json" || bad "plugin.json"
@@ -30,10 +36,14 @@ step "3. plugin structure — validate.py --self"
 "$PY" tests/validate.py --self && ok "validate --self" || bad "validate --self"
 
 step "4. mdreport converter unit test"
-"$PY" tests/test_mdreport.py && ok "test_mdreport" || bad "test_mdreport"
+if out="$("$PY" tests/test_mdreport.py)"; then
+  ok "test_mdreport ($(printf '%s\n' "$out" | grep -c '^ok') assertions)"
+else printf '%s\n' "$out"; bad "test_mdreport"; fi
 
-step "4b. validator prose-check unit tests"
-"$PY" tests/test_validate.py && ok "test_validate" || bad "test_validate"
+step "4b. validator unit tests"
+if out="$("$PY" tests/test_validate.py)"; then
+  ok "test_validate ($(printf '%s\n' "$out" | tail -1))"
+else printf '%s\n' "$out"; bad "test_validate"; fi
 
 step "4c. render-script argument guards (no toolchain needed)"
 # every positional argument is an input; an output-looking path must fail fast and loud
@@ -172,6 +182,24 @@ EOF
   rm -rf "$tmp"
 fi
 
+flush_step
+total_checks=$((passes + fails))
+printf '\n--- execution stats ---\n'
+if [ "${#STEP_STATS[@]}" -gt 0 ]; then
+  for s in "${STEP_STATS[@]}"; do printf '%5ss  %s\n' "${s##*|}" "${s%|*}"; done
+fi
+echo "checks: $total_checks run — $passes passed, $fails failed, $skips skipped — ${SECONDS}s total"
+sum ""
+sum "## Execution stats"
+sum ""
+sum "| Step | Time |"
+sum "|------|-----:|"
+if [ "${#STEP_STATS[@]}" -gt 0 ]; then
+  for s in "${STEP_STATS[@]}"; do sum "| ${s%|*} | ${s##*|} s |"; done
+fi
+sum "| **Total** | **${SECONDS} s** |"
+sum ""
+sum "**$passes passed · $fails failed · $skips skipped** ($total_checks checks run)"
 printf '\n===============================\n'
 sum ""
 if [ "$fails" -eq 0 ]; then
