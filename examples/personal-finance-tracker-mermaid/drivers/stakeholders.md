@@ -3,9 +3,10 @@
 - **Date**: 2026-09-04
 - **Owner**: Eng lead
 
-> The single stakeholder register for the package. Seeded from the QAW participant list
-> ([`../qaw/qaw-report.md`](../qaw/qaw-report.md) Step 1); ATAM Phase 2 and the V&B view-selection
-> table read it. Business goals cite their primary stakeholder's `ST-<n>`.
+Everyone with a stake in the Personal Finance Tracker, what they care about, and which
+activities they take part in. The list was seeded from the participants of the
+[Quality Attribute Workshop](../qaw/qaw-report.md); each business goal names its primary
+stakeholder's `ST-<n>`.
 
 | ID | Name / representative | Role | Concerns | QAW | ATAM Phase 2 | V&B reader |
 |----|-----------------------|------|----------|:---:|:------------:|:----------:|
