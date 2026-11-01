@@ -2,7 +2,7 @@
 # Render Mermaid diagrams to high-resolution PNG with the SEI palette.
 #
 # Usage:
-#   render.sh [--out DIR] [--format png|svg|pdf] [--width N] [--scale N] TARGET [TARGET ...]
+#   render.sh [--out DIR] [--format png|svg|pdf] [--size N] [--scale N] TARGET [TARGET ...]
 #
 # TARGET may be:
 #   *.mmd / *.mermaid   a Mermaid source file            -> <name>.png
@@ -22,7 +22,7 @@ PUPPET="$SKILL_DIR/assets/puppeteer-config.json"
 
 OUT_DIR=""
 FORMAT="png"
-WIDTH="1600"
+SIZE="1600"
 SCALE="3"
 BACKGROUND="white"
 TARGETS=()
@@ -31,7 +31,8 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --out)        OUT_DIR="${2:?--out needs a directory}"; shift 2 ;;
     --format)     FORMAT="${2:?}"; shift 2 ;;
-    --width)      WIDTH="${2:?}"; shift 2 ;;
+    --size)       SIZE="${2:?}"; shift 2 ;;
+    --width)      SIZE="${2:?}"; shift 2 ;;   # pre-12 mermaid-cli spelling, kept as an alias
     --scale)      SCALE="${2:?}"; shift 2 ;;
     --background) BACKGROUND="${2:?}"; shift 2 ;;
     -h|--help)    sed -n '2,20p' "$0"; exit 0 ;;
@@ -88,7 +89,7 @@ render_one() { # <src.mmd> <dest.png>
         --configFile "$THEME" \
         --puppeteerConfigFile "$PUPPET" \
         --backgroundColor "$BACKGROUND" \
-        --width "$WIDTH" \
+        --size "$SIZE" \
         --scale "$SCALE" >/dev/null 2>"$TMP_DIR/err.log"; then
     echo "  ok   $dest"
     rendered=$((rendered + 1))
@@ -165,7 +166,7 @@ process() { # <path>
   fi
 }
 
-echo "render: theme=$(basename "$THEME") format=$FORMAT width=$WIDTH scale=$SCALE bg=$BACKGROUND"
+echo "render: theme=$(basename "$THEME") format=$FORMAT size=$SIZE scale=$SCALE bg=$BACKGROUND"
 for t in "${TARGETS[@]}"; do
   # allow unquoted globs passed as a single quoted string
   if [[ "$t" == *"*"* ]]; then
