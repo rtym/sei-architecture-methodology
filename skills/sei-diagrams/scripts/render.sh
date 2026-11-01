@@ -44,6 +44,18 @@ if [ "${#TARGETS[@]}" -eq 0 ]; then
   exit 2
 fi
 
+# Every positional argument is an INPUT. Catch the classic mistake of passing an intended
+# output path — the render would land next to the source and the "output" count as a missing
+# input, failing in a confusing way.
+for t in "${TARGETS[@]}"; do
+  case "$t" in
+    *.png|*.svg|*.pdf)
+      echo "render.sh: '$t' looks like a render output, but every argument is an input." >&2
+      echo "           Output lands next to each source; use --out DIR to redirect it." >&2
+      exit 2 ;;
+  esac
+done
+
 # ---- locate the renderer -----------------------------------------------------
 MMDC=()
 if [ -x "$SKILL_DIR/node_modules/.bin/mmdc" ]; then

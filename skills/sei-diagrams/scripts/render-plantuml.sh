@@ -42,6 +42,16 @@ while [ $# -gt 0 ]; do
 done
 [ "${#TARGETS[@]}" -gt 0 ] || { echo "render-plantuml.sh: no target. Try --help." >&2; exit 2; }
 
+# Every positional argument is an INPUT; reject an intended output path loudly.
+for t in "${TARGETS[@]}"; do
+  case "$t" in
+    *.png|*.svg)
+      echo "render-plantuml.sh: '$t' looks like a render output, but every argument is an input." >&2
+      echo "                    Output lands next to each source; use --out DIR to redirect it." >&2
+      exit 2 ;;
+  esac
+done
+
 # Find Java: PATH first, then common keg-only / SDK locations.
 if ! command -v java >/dev/null 2>&1; then
   for jdkbin in \

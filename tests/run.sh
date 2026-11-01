@@ -29,6 +29,21 @@ step "4. mdreport converter unit test"
 step "4b. validator prose-check unit tests"
 "$PY" tests/test_validate.py && ok "test_validate" || bad "test_validate"
 
+step "4c. render-script argument guards (no toolchain needed)"
+# every positional argument is an input; an output-looking path must fail fast and loud
+if bash skills/sei-diagrams/scripts/render.sh out.png >/dev/null 2>&1; then
+  bad "render.sh must reject a .png argument"
+else ok "render.sh rejects a .png argument"; fi
+if bash skills/sei-diagrams/scripts/render-plantuml.sh out.png >/dev/null 2>&1; then
+  bad "render-plantuml.sh must reject a .png argument"
+else ok "render-plantuml.sh rejects a .png argument"; fi
+if bash scripts/render-all.sh >/dev/null 2>&1; then
+  bad "render-all.sh must fail without arguments"
+else ok "render-all.sh fails without arguments"; fi
+if bash scripts/render-all.sh /nonexistent-dir-zz >/dev/null 2>&1; then
+  bad "render-all.sh must fail on a missing directory"
+else ok "render-all.sh fails on a missing directory"; fi
+
 step "5. example artifacts validate"
 if [ -d examples ]; then
   # drivers/ directories get the cross-file check + every file
