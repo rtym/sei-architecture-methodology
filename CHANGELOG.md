@@ -14,7 +14,14 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
   template placeholders fail, and a duplicated header bullet fails. `--self` also lints the
   plugin's own commands/skills/templates/references for filler and checks example diagram
   hygiene (every `.mmd`/`.puml` has its committed render; no orphan PNGs).
-- `tests/test_validate.py` — unit tests for the new prose checks, wired into `tests/run.sh`.
+- `tests/test_validate.py` — unit tests for the new prose checks, wired into `tests/run.sh`,
+  then extended to 55 fixture-based tests covering the diagram rules, every per-driver-file
+  checker, report checks (scenario register, ATAM), traceability orphans (incl. the retired
+  exclusion), link checking (incl. the `reports/` exemption) and the drivers-directory
+  cross-file check.
+- `render.sh` and `render-plantuml.sh` reject an output-looking `.png`/`.svg` argument with a
+  message pointing at `--out DIR` — every positional argument is an input, and the old behaviour
+  failed confusingly; `run.sh` step 4c asserts the guards without needing a renderer.
 - `scripts/render-all.sh` — re-render every `*.mmd` / `*.puml` under a directory in place, in
   one deterministic pass; both example READMEs use it in their regenerate instructions.
 
@@ -22,7 +29,9 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 - The drivers `README.md` template (and both worked examples) opens with a plain-language
   reader's paragraph instead of template meta-commentary, and its QA ID legend lists only the
   prefixes in use (the full table stays in the taxonomy reference). Template guidance now lives
-  in HTML comments so it cannot leak into artifacts.
+  in HTML comments so it cannot leak into artifacts — applied across the drivers README,
+  package-index, stakeholders, quality-attribute-scenario and architecture-document templates;
+  both examples' stakeholder registers rewritten in reader voice to match.
 
 ### Fixed
 - Duplicated `Design purpose` / `Stakeholders` header lines in the Mermaid example's drivers
