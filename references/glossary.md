@@ -35,6 +35,8 @@ Terms used across the skills and references, with the file that treats each in d
 | **CBAM** | Cost/Benefit Analysis Method — ranks candidate architectural strategies by ROI; the follow-on to ATAM (`atam-method.md`) |
 | **Tactics-based questionnaire** | a per-QA analysis: for each tactic, Supported? / Design decisions + location / Risk / Rationale (`quality-attribute-taxonomy.md`) |
 | **QAW** | Quality Attribute Workshop — an 8-step, stakeholder-driven method to elicit and prioritise scenarios before the architecture exists (`qaw-method.md`) |
+| **QAW entry mode** | how a QAW starts: *greenfield* (nothing documented), *partial* (some inputs to correct) or *refresh* (an existing drivers register to test and extend) (`qaw-question-guide.md`) |
+| **Parked question** | a workshop question nobody present could answer, recorded as `PQ-<n>` with an owner and a due date instead of an invented answer (`qaw-question-guide.md`) |
 | **PALM** | a workshop with the architect + business stakeholders to elicit business goals and derive the QAs they imply (`architectural-drivers.md`) |
 | **Architecture debt** | technical debt whose root cause is spread across files and their relations; found via a design structure matrix + anti-patterns (`architecture-in-the-lifecycle.md`) |
 | **DSM** (design structure matrix) | a files × files matrix of structural + evolutionary dependencies, used to find hotspots (`architecture-in-the-lifecycle.md`) |

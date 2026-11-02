@@ -7,6 +7,18 @@
 
 ---
 
+## Step 0 — Starting point
+
+- **Entry mode**: greenfield | partial | refresh
+- **Previous workshop**: none | [qaw-report-<YYYY-MM-DD>.md](qaw-report-<YYYY-MM-DD>.md)
+
+<!-- One row per input the workshop started from. Greenfield: one row, "none — started from
+     open questions". Partial and refresh: every document, register or codebase read before Step 1. -->
+
+| Input | Where | How the workshop used it |
+|-------|-------|--------------------------|
+| | | |
+
 ## Step 1 — QAW presentation and introductions
 
 ### Participants
@@ -101,6 +113,16 @@ A **table** (see `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`). Every refin
 
 _Reading the tree_: a QA / refinement with no leaf → look for an unrecorded ASR; the `★`
 leaves get the most attention; note which leaves are `addressed` vs `open`.
+
+## Parked questions
+
+<!-- Questions nobody present could answer. Never fill these with invented numbers; each needs
+     the role that can answer it, an owner who will get the answer, and a date. Write
+     "None — every question was answered in the session." if the table would be empty. -->
+
+| ID | Question | Raised in | Who can answer | Owner | Due | Status |
+|----|----------|-----------|----------------|-------|-----|--------|
+| PQ-1 | | Step <n> / CS-<id> | <role> | ST-<n> | <YYYY-MM-DD> | open |
 
 ## Next steps — hand-off to the drivers register
 

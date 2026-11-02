@@ -4,6 +4,30 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## Unreleased
+
+### Added
+- `references/qaw-question-guide.md` — the QAW facilitator's script: the questions to ask at
+  every step, per ISO/IEC 25010 characteristic, per stakeholder role, for testing documentation
+  that already exists, and for turning vague answers ("fast", "always up", "secure") into
+  measurable scenarios.
+- QAW entry modes. A workshop now starts with Step 0, *Starting point*, which picks
+  **greenfield** (nothing documented), **partial** (a brief, a codebase or loose scenarios to
+  correct) or **refresh** (an existing drivers register to test and extend). In refresh mode the
+  existing scenarios enter brainstorming tagged *existing* and are re-voted with the new ones; a
+  previous report is kept as `qaw-report-<date>.md`.
+- *Parked questions* in the QAW report: a question nobody present can answer becomes a `PQ-<n>`
+  row with who can answer it, an owner and a due date, instead of a guessed number.
+- Validator: the entry mode must be exactly one of the three; refresh mode must carry existing
+  scenarios into Step 5; every parked question needs an owner and a status. Reports written
+  before this release have neither section and still pass. `--self` checks that the question
+  guide keeps a question section for every step, every ISO/IEC 25010 characteristic and every
+  entry mode. 20 new unit tests (75 in total).
+
+### Changed
+- Both worked examples' QAW reports gain the new sections: a *partial*-mode starting point (the
+  founder's brief) and three parked questions, among them the budget figure BG-4 never stated.
+
 ## 1.12.1 — 2026-11-01
 
 ### Changed

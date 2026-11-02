@@ -72,6 +72,15 @@ runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated 
 ## Quality Attribute Workshop (`qaw-report.md`)
 
 - [ ] All eight steps present as sections, plus Step 9 (utility tree).
+- [ ] Step 0 *Starting point* states one entry mode (greenfield / partial / refresh) and lists
+      every input used; a previous report is kept as `qaw-report-<date>.md` and linked.
+- [ ] Every step was opened with questions from `qaw-question-guide.md`, not "what are your
+      quality requirements?"; every ISO/IEC 25010 characteristic without a driver was asked
+      about, and its answer recorded.
+- [ ] Refresh mode: existing scenarios entered Step 5 tagged *existing* and were voted on with
+      the new ones.
+- [ ] Every unanswered question is a `PQ-<n>` row with who can answer it, an owner and a due
+      date — no invented numbers.
 - [ ] Participant list with roles.
 - [ ] Raw brainstormed scenarios kept **verbatim**; consolidation has a merge map; dissent recorded.
 - [ ] Vote budget stated explicitly as `ceil(0.30 × consolidated count)`.
