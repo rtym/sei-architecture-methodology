@@ -38,6 +38,25 @@ step: never open a step with "what are your quality requirements?".
 - **Inputs**: business/mission drivers, any architectural plan or context that exists, a system
   description. Ask for these up front; read files the user points at.
 
+## Rely on the documentation available
+
+The workshop is guided by whatever documentation exists — never run it as if the page were blank
+when it is not. Before every step:
+
+1. **Look first.** Check the inputs found in Step 0 (drivers register, stakeholder register,
+   earlier QAW report, architecture docs and ADRs, brownfield intake, briefs and requirements the
+   user named) for what the step's questions would ask.
+2. **Do not ask what the documents answer.** Present the documented answer with its source
+   (file and section, or driver ID) and ask only whether it still holds — "The brief says 10 000
+   users within 12 months (BG-1). Is that still the target?" — instead of the open question.
+3. **Ask openly only about the gaps** — what no document covers, or what the group says is out
+   of date.
+4. **Cite the source in the report.** Every answer taken from a document names where it came
+   from; an answer from the room is attributed to the participant.
+5. **Record contradictions, do not resolve them silently.** When a stakeholder contradicts a
+   document, write down both and the decision the group made; a document the group calls out of
+   date is listed as such in the Starting point.
+
 ## Asking the questions
 
 Each step below names its section of the question guide. Ask one question at a time, play the
@@ -204,6 +223,9 @@ package index `architecture/README.md` (create it from
   HTML comments, never in the artifact's visible text.
 
 - Facilitator stays neutral on scenario *content*; drives *process* only.
+- **Rely on the documentation available** (section above): read it before each step, confirm
+  what it already answers instead of asking again, cite the source of every documented answer,
+  and record contradictions between documents and stakeholders.
 - Elicit with questions from the guide, never with "what are the non-functional requirements?";
   no question names a technology or invites a yes/no answer about a quality.
 - An unanswered question is parked as `PQ-<n>` with an owner — never answered with an invented

@@ -438,6 +438,15 @@ check("Starting point with an empty inputs table is flagged",
                               "draft business goals (Step 2) and the five constraints (Step 3), "
                               "corrected by the group |", "| | | |"))))
 
+no_docs = QAW_EXAMPLE.replace(
+    "| Founder's product brief | shared by the sponsor before the session | "
+    "draft business goals (Step 2) and the five constraints (Step 3), corrected by the group |",
+    "| none — started from open questions | | |")
+check("partial mode that names no input document is flagged",
+      any("lists no input document" in e for e in qaw_new_rule_errors(no_docs)))
+check("greenfield mode with a 'none' input row passes",
+      qaw_new_rule_errors(no_docs.replace("**Entry mode**: partial", "**Entry mode**: greenfield")) == [])
+
 refresh = QAW_EXAMPLE.replace("**Entry mode**: partial", "**Entry mode**: refresh")
 check("refresh mode with no scenario tagged 'existing' is flagged",
       any("refresh mode" in e for e in qaw_new_rule_errors(refresh)))

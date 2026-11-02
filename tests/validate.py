@@ -592,6 +592,10 @@ def _qaw_starting_point_errors(raw: str) -> list[str]:
     if not any(any(c for c in row) for row in inputs):
         errs.append("QAW Starting point has no inputs table rows (greenfield: "
                     "one row saying it started from open questions)")
+    elif mode != "greenfield" and not any(
+            row and row[0].strip() and not row[0].strip().lower().startswith("none") for row in inputs):
+        errs.append(f"QAW {mode} mode lists no input document in Starting point — the workshop "
+                    f"must rely on the documentation available, so name what it read")
     if mode == "refresh":
         bm = _qaw_section(raw, r"brainstorm")
         if bm is not None and "existing" not in bm.lower():
