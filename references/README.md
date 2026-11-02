@@ -21,6 +21,7 @@ carries. Nothing here is executable; it is the encoded SEI body of knowledge.
 | [`quality-attribute-taxonomy.md`](quality-attribute-taxonomy.md) | ISO/IEC 25010; the six-part scenario; general-scenario "portions" summary; tactics-based-questionnaire framing |
 | [`quality-attribute-scenarios.md`](quality-attribute-scenarios.md) | the full general-scenario portion table for all 10 attributes + a worked concrete example each |
 | [`qaw-method.md`](qaw-method.md) | the SEI 8-step Quality Attribute Workshop |
+| [`qaw-question-guide.md`](qaw-question-guide.md) | the facilitator's script: questions per QAW step, per ISO/IEC 25010 characteristic and per stakeholder role; the three entry modes (greenfield / partial / refresh) and how to test documentation that already exists |
 | [`tactics-catalog.md`](tactics-catalog.md) | per-attribute tactic lists + questionnaire cues (ADD Step 4, ATAM Step 6) |
 
 ## Design

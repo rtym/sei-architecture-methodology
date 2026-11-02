@@ -85,6 +85,17 @@ The QAW is one structured form of "gathering ASRs by interviewing stakeholders" 
 business-goal workshop, the architect's own utility tree) and the "play dumb" technique for a
 stakeholder who says *"I don't know what that requirement should be."*
 
+## Running it when documentation already exists
+
+The method is written for the start of a project, but the same eight steps work later: when a
+drivers register and scenarios already exist, after an incident, before a major change, or
+when the people around the system have changed. The workshop then **tests** the existing
+drivers instead of eliciting them from nothing — Steps 2–4 confirm, correct or retire what is
+recorded, Step 5 starts from the existing scenarios and aims the round at the gaps, and Step 7
+votes on old and new scenarios together. The three entry modes (greenfield / partial /
+refresh) and the questions for each step are in
+`${CLAUDE_PLUGIN_ROOT}/references/qaw-question-guide.md`.
+
 ## Facilitation tips
 
 - Keep the architectural-driver list visible throughout so brainstorming stays on target.
