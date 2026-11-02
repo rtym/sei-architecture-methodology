@@ -468,6 +468,22 @@ empty_section = none_section.replace("None — every question was answered in th
 check("an empty parked-questions section is flagged",
       any("does not say 'None'" in e for e in qaw_new_rule_errors(empty_section)))
 
+def without_links(errs: list[str]) -> list[str]:
+    return [e for e in errs if not e.startswith("broken link")]
+
+
+archived = without_links(run_checker(validate.validate_file, "architecture/qaw/qaw-report-2026-08-20.md", QAW_EXAMPLE))
+check("an archived QAW report (qaw-report-<date>.md) is validated as a QAW report, not an ADD session",
+      archived == [] and archived == without_links(
+          run_checker(validate.validate_file, "architecture/qaw/qaw-report.md", QAW_EXAMPLE)))
+check("an archived QAW report with a QAW defect is still caught",
+      any("vote budget" in e for e in run_checker(
+          validate.validate_file, "architecture/qaw/qaw-report-2026-08-20.md",
+          QAW_EXAMPLE.replace("30", "XX").replace("vote", "ballot").replace("Vote", "Ballot"))))
+check("a dated ADD session file is still validated as a session",
+      any("**Purpose**" in e for e in
+          run_checker(validate.validate_file, "architecture/add/acme-2026-08-20.md", "# Acme\n")))
+
 # --------------------------------------------------------------------------- #
 # QAW question guide coverage (self-check)
 # --------------------------------------------------------------------------- #
