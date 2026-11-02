@@ -60,6 +60,11 @@ if bash scripts/render-all.sh /nonexistent-dir-zz >/dev/null 2>&1; then
   bad "render-all.sh must fail on a missing directory"
 else ok "render-all.sh fails on a missing directory"; fi
 
+step "4d. QAW kit generator unit tests"
+if out="$("$PY" tests/test_qawkit.py)"; then
+  ok "test_qawkit ($(printf '%s\n' "$out" | tail -1))"
+else printf '%s\n' "$out"; bad "test_qawkit"; fi
+
 step "5. example artifacts validate"
 if [ -d examples ]; then
   # drivers/ directories get the cross-file check + every file

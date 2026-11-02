@@ -27,7 +27,21 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
   scenarios into Step 5; every parked question needs an owner and a status. Reports written
   before this release have neither section and still pass. `--self` checks that the question
   guide keeps a question section for every step, every ISO/IEC 25010 characteristic and every
-  entry mode. 22 new unit tests (77 in total).
+  entry mode. 25 new unit tests (80 in total).
+
+- `scripts/qawkit.py` — generates the QAW's working artifacts from the documentation that
+  already exists, deterministically: `prep` (documented answers to confirm with their sources,
+  the ISO/IEC 25010 characteristics with no scenario and their questions, each participant's
+  role questions, open parked questions from the last workshop), `ballot` (the Step 7 vote
+  sheet with the budget computed) and `summary` (a one-page result for the sponsor). The QAW
+  skill runs it at the matching steps; both worked examples carry a generated kit.
+- `tests/test_qawkit.py` — 103 unit tests for the kit: every reader and builder, CLI exit
+  codes, and golden files (the kit committed in each example must equal a fresh run). Wired
+  into `tests/run.sh` as step 4d.
+
+### Fixed
+- An archived QAW report (`qaw-report-<date>.md`) was validated as an ADD session because
+  of its dated name; it is now validated as a QAW report.
 
 ### Changed
 - Both worked examples' QAW reports gain the new sections: a *partial*-mode starting point (the

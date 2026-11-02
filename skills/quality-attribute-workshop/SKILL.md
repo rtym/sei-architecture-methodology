@@ -57,6 +57,22 @@ when it is not. Before every step:
    document, write down both and the decision the group made; a document the group calls out of
    date is listed as such in the Starting point.
 
+## Generate the workshop artifacts
+
+`${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py` builds three working artifacts from what is already
+documented, deterministically (same inputs, same file). Use it instead of writing them by hand;
+review each file before handing it out.
+
+| When | Command | Writes |
+|------|---------|--------|
+| Before Step 1 (after Step 0) | `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py prep --drivers architecture/drivers --system "<SystemName>" --date <YYYY-MM-DD> --out architecture/qaw/qaw-prep.md` (add `--previous-report architecture/qaw/qaw-report-<date>.md` in refresh mode) | `qaw-prep.md` — documented answers to confirm with their sources, the ISO/IEC 25010 characteristics with no scenario and their questions, each participant's role questions, open parked questions from the last workshop |
+| At Step 7, after consolidation | `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py ballot architecture/qaw/qaw-report.md --out architecture/qaw/qaw-vote-sheet.md` | `qaw-vote-sheet.md` — one row per `CS-<n>`, one column per participant, the vote budget computed |
+| After the hand-off table | `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py summary architecture/qaw/qaw-report.md --out architecture/qaw/qaw-summary.md` | `qaw-summary.md` — one page for the sponsor: counts, ranking, `(H, H)` leaves, refined scenarios, open questions |
+
+`prep` suggests an entry mode from the register; the Step 0 decision is still yours. With no
+drivers register yet (greenfield), skip `prep` and use the question guide directly. The script
+exits 2 with a one-line reason when an input is missing; fix the input, never hand-edit around it.
+
 ## Asking the questions
 
 Each step below names its section of the question guide. Ask one question at a time, play the
@@ -148,6 +164,9 @@ Each stakeholder gets a vote budget = **30 % of the consolidated scenario count,
 1. Allocate all votes (a stakeholder may put multiple votes on one scenario).
 2. Tally. Sort by total votes.
 
+Generate the ballot with `qawkit.py ballot` (see *Generate the workshop artifacts*) so the
+budget and the scenario rows come from the report, not from memory.
+
 When relaying for a group, ask the user for per-stakeholder vote allocations, or for a single
 merged prioritisation if that is all that is available. Record the vote table and the ranked list.
 Ask the guide's *Step 7* sanity question after the tally; in **refresh** mode, a scenario that
@@ -213,6 +232,9 @@ package index `architecture/README.md` (create it from
 10. **Hand-off table** — `CS-<id>` → `<ATTR>QA-<n>`, `AD-<n>` → register IDs.
 11. **Parked questions** — every `PQ-<n>` with who can answer it, an owner and a due date.
 12. Next steps (run `/drivers` from the hand-off table, then ADD; schedule ATAM).
+
+Generated beside the report by `qawkit.py` (section above): `qaw-prep.md` (before the session,
+when a drivers register exists), `qaw-vote-sheet.md` (Step 7) and `qaw-summary.md` (at the end).
 
 ## Rules
 

@@ -38,7 +38,10 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
    then open the PNG and check it before committing it. Both render scripts write the PNG
    **next to its source** — extra arguments are more inputs, not an output path (an
    output-looking `.png`/`.svg` argument is rejected; use `--out DIR` to redirect).
-3. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
+3. If an example's `drivers/` or `qaw/qaw-report.md` changed, regenerate its QAW kit with
+   `scripts/qawkit.py` (commands in the example README) — `tests/test_qawkit.py` compares the
+   committed `qaw-prep.md`, `qaw-vote-sheet.md` and `qaw-summary.md` with a fresh run.
+4. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
 
 ## Release checklist
 

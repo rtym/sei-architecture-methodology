@@ -858,6 +858,9 @@ def validate_file(path: Path) -> list[str] | None:
 
     if name.endswith("-Architecture.md"):
         return _md(check_architecture(path))
+    # an earlier workshop kept beside the current one; its dated name must not read as an ADD session
+    if re.match(r"qaw-report-\d{4}-\d{2}-\d{2}\.md$", name):
+        return _md(check_qaw(path))
     if name.endswith("-session.md") or re.search(r"-\d{4}-\d{2}-\d{2}\.md$", name):
         return _md(check_session(path))
     if name == "drivers.md":
@@ -1202,6 +1205,7 @@ def check_self() -> list[str]:
     BARE_PATH_RE = re.compile(
         r"(?<![/{\w-])(references|templates|assets)/[A-Za-z0-9_./-]+"
         r"|(?<![/{\w-])scripts/(?:build-report|render|render-plantuml|setup)\.sh"
+        r"|(?<![/{\w-])scripts/qawkit\.py"
         r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md"
         r"|(?<![/{\w-])tests/validate\.py")
     template_files = sorted((ROOT / "templates").glob("*.md"))
