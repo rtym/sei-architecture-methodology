@@ -45,6 +45,7 @@ footer links up to (`/drivers` creates it from `templates/architecture-readme.md
 | [`drivers/use-cases/`](drivers/use-cases/README.md) | `/drivers` + `/sei-diagram` | Each use case with its own **proper UML use case diagram** (native PlantUML — stick-figure actors, ellipse use cases, boundary rectangle, dashed `<<include>>` / `<<extend>>`) rendered to `diagrams/UC-<n>.png`, plus an overview diagram |
 | [`drivers/quality-attributes/`](drivers/quality-attributes/README.md) | `/drivers` | Each quality attribute as a **six-part scenario** + its own six-part scenario diagram (PlantUML pattern); [`utility-tree.md`](drivers/quality-attributes/utility-tree.md) — the summary of the QA drivers **as a table** (`(V, R)` per leaf) |
 | [`qaw/qaw-report.md`](qaw/qaw-report.md) | `/qaw` | The SEI 8-step workshop + Step 9 **utility tree** (a table) built from the refined scenarios (handed to `/drivers`) |
+| [`qaw/qaw-prep.md`](qaw/qaw-prep.md) · [`qaw/qaw-vote-sheet.md`](qaw/qaw-vote-sheet.md) · [`qaw/qaw-summary.md`](qaw/qaw-summary.md) | `scripts/qawkit.py` | The **QAW kit**, generated from the documentation: a preparation sheet for a refresh workshop (documented answers to confirm, the uncovered ISO/IEC 25010 characteristics, each participant's questions, open parked questions), the Step 7 vote sheet, and the one-page summary for the sponsor |
 | [`quality-attributes/scenarios.md`](quality-attributes/scenarios.md) | `/quality-attributes` | **Register-mode** summary — six-part table + links to the per-scenario files and diagrams in `drivers/quality-attributes/`; no duplicated copy |
 | [`add/`](add/personal-finance-tracker-Architecture.md) | `/add` | An ADD 3.0 session log + companion architecture document — 9 sections incl. a module decomposition view and an [`adr/`](add/adr/ADR-1.md) log; context / container / component / sequence / deployment views in **C4-PlantUML**; interfaces; ADR-style decisions |
 | [`docs/`](docs/README.md) | `/architecture-docs` | A Views-and-Beyond package — roadmap ([`README.md`](docs/README.md)), system overview, one view packet per viewtype (Module / C&C / Allocation), mapping between views, rationale + ADRs, directory, change log |
@@ -68,6 +69,17 @@ scripts/build-report.sh \
 scripts/build-report.sh --profile vandb $EX/docs/ \
   --format both --embed-diagrams --title "Architecture Description — Personal Finance Tracker" \
   --out $EX/reports/vandb-architecture-description.html
+```
+
+## Regenerate the QAW kit
+
+```bash
+# from the plugin root — the committed files are golden fixtures: tests/test_qawkit.py fails if they drift
+EX=examples/personal-finance-tracker-plantuml
+python3 scripts/qawkit.py prep --drivers $EX/drivers --previous-report $EX/qaw/qaw-report.md \
+  --system "Personal Finance Tracker" --date 2026-11-02 --out $EX/qaw/qaw-prep.md
+python3 scripts/qawkit.py ballot  $EX/qaw/qaw-report.md --out $EX/qaw/qaw-vote-sheet.md
+python3 scripts/qawkit.py summary $EX/qaw/qaw-report.md --out $EX/qaw/qaw-summary.md
 ```
 
 ## Validate
