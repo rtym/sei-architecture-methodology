@@ -560,6 +560,72 @@ def check_qaw(path: Path) -> list[str]:
             errs.append("QAW utility-tree leaves carry no (V, R) pair like (H, M)")
         if "mindmap" in text:
             errs.append("QAW utility tree must be a table, not a mindmap")
+    errs += _qaw_starting_point_errors(raw)
+    errs += _qaw_parked_question_errors(raw)
+    return errs
+
+
+QAW_ENTRY_MODES = ("greenfield", "partial", "refresh")
+
+
+def _qaw_section(raw: str, title_re: str) -> str | None:
+    m = re.search(r"^##[^\n]*" + title_re + r"[^\n]*$(.*?)(?=^##\s|\Z)", raw,
+                  re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    return m.group(1) if m else None
+
+
+def _qaw_starting_point_errors(raw: str) -> list[str]:
+    # Reports written before the entry modes existed have no Starting point; they stay valid.
+    sec = _qaw_section(raw, r"starting point")
+    if sec is None:
+        return []
+    m = re.search(r"^\s*-\s*\*\*Entry mode\*\*\s*:\s*(.+?)\s*$", sec, re.MULTILINE)
+    if not m:
+        return ["QAW Starting point does not state the entry mode "
+                "(- **Entry mode**: greenfield / partial / refresh)"]
+    mode = m.group(1).strip().strip("`*_").lower()
+    if mode not in QAW_ENTRY_MODES:
+        return [f"QAW entry mode {m.group(1).strip()!r} is not exactly one of "
+                f"{' / '.join(QAW_ENTRY_MODES)}"]
+    errs: list[str] = []
+    inputs = _table_rows("x\n" + sec, "Input")
+    if not any(any(c for c in row) for row in inputs):
+        errs.append("QAW Starting point has no inputs table rows (greenfield: "
+                    "one row saying it started from open questions)")
+    if mode == "refresh":
+        bm = _qaw_section(raw, r"brainstorm")
+        if bm is not None and "existing" not in bm.lower():
+            errs.append("QAW refresh mode: no brainstormed scenario is tagged 'existing' — "
+                        "the existing scenarios should enter Step 5 first")
+    return errs
+
+
+def _qaw_parked_question_errors(raw: str) -> list[str]:
+    sec = _qaw_section(raw, r"parked question")
+    if sec is None:
+        return []
+    lines = sec.splitlines()
+    header: list[str] = []
+    errs: list[str] = []
+    for i, ln in enumerate(lines):
+        if ln.strip().startswith("|") and i + 1 < len(lines) \
+                and re.match(r"^\s*\|?[\s:|-]+\|?\s*$", lines[i + 1]):
+            header = [c.strip().lower() for c in ln.strip().strip("|").split("|")]
+            break
+    rows = _table_rows("x\n" + sec, "Question")
+    if not rows:
+        if "none" not in sec.lower():
+            errs.append("QAW Parked questions section has no table and does not say 'None'")
+        return errs
+    col = {name: header.index(name) for name in ("owner", "status") if name in header}
+    for row in rows:
+        ids = re.findall(r"\bPQ-\d+\b", " ".join(row))
+        if not ids:
+            continue
+        pid = ids[0]
+        for name, idx in col.items():
+            if idx >= len(row) or not row[idx].strip():
+                errs.append(f"parked question {pid} has no {name}")
     return errs
 
 
@@ -994,6 +1060,37 @@ def check_vendored_c4() -> list[str]:
     return errs
 
 
+ISO_25010_CHARACTERISTICS = (
+    "Performance efficiency", "Compatibility", "Interaction capability", "Reliability",
+    "Security", "Maintainability", "Flexibility", "Safety", "Functional suitability",
+)
+
+
+def check_qaw_question_guide(path: Path | None = None) -> list[str]:
+    """The QAW skill scripts every step from this guide, so its coverage is part of the contract:
+    a question section per workshop step, per ISO/IEC 25010 characteristic, and per entry mode."""
+    path = path or ROOT / "references" / "qaw-question-guide.md"
+    if not path.is_file():
+        return [f"{path.name}: missing — the QAW skill reads its questions from it"]
+    text = path.read_text(encoding="utf-8")
+    headings = [h.strip().lower() for h in re.findall(r"^#{2,4}\s+(.+)$", text, re.MULTILINE)]
+    errs: list[str] = []
+    for n in range(1, 10):
+        if not any(h.startswith(f"step {n} ") or h == f"step {n}" for h in headings):
+            errs.append(f"{path.name}: no '### Step {n}' question section")
+    for ch in ISO_25010_CHARACTERISTICS:
+        if not any(h.startswith(ch.lower()) for h in headings):
+            errs.append(f"{path.name}: no question section for ISO/IEC 25010 '{ch}'")
+    for mode in QAW_ENTRY_MODES:
+        if f"**{mode}**" not in text:
+            errs.append(f"{path.name}: entry mode '{mode}' is not described")
+    for name, body in re.findall(r"^###\s+(.+?)\n(.*?)(?=^##|\Z)", text, re.MULTILINE | re.DOTALL):
+        if name.lower().startswith(("step ", *(c.lower() for c in ISO_25010_CHARACTERISTICS))) \
+                and "?" not in body:
+            errs.append(f"{path.name}: section '{name.strip()}' asks no questions")
+    return errs
+
+
 def check_self() -> list[str]:
     errs: list[str] = []
 
@@ -1116,6 +1213,7 @@ def check_self() -> list[str]:
         if rf.name != "README.md" and f"({rf.name})" not in ref_index:
             errs.append(f"references/{rf.name}: not linked from references/README.md")
 
+    errs += check_qaw_question_guide()
     errs += check_plantuml_includes()
     errs += check_vendored_c4()
     errs += check_license()

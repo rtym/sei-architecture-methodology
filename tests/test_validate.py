@@ -395,5 +395,96 @@ with tempfile.TemporaryDirectory() as td:
     check("a stray file in a driver directory is flagged",
           any("notes.md" in e for e in validate.check_drivers_dir(d)))
 
+# --------------------------------------------------------------------------- #
+# QAW report — entry mode (Starting point) and parked questions
+# --------------------------------------------------------------------------- #
+
+QAW_EXAMPLE = (Path(__file__).resolve().parent.parent / "examples"
+               / "personal-finance-tracker-mermaid" / "qaw" / "qaw-report.md").read_text(encoding="utf-8")
+
+
+def qaw(text: str) -> list[str]:
+    return run_checker(validate.check_qaw, "architecture/qaw/qaw-report.md", text)
+
+
+def qaw_new_rule_errors(text: str) -> list[str]:
+    return [e for e in qaw(text) if "Starting point" in e or "entry mode" in e
+            or "parked question" in e.lower() or "refresh mode" in e]
+
+
+check("worked example QAW report passes", qaw(QAW_EXAMPLE) == [])
+
+legacy = QAW_EXAMPLE.split("## Step 0", 1)[0] + "## Step 1" + QAW_EXAMPLE.split("## Step 1", 1)[1]
+legacy = legacy.split("## Parked questions", 1)[0] + "## Next steps" + legacy.split("## Next steps", 1)[1]
+check("a report written before entry modes existed (no Step 0, no parked questions) still passes",
+      qaw(legacy) == [])
+
+check("unfilled entry mode 'greenfield | partial | refresh' is flagged",
+      any("not exactly one of" in e for e in qaw_new_rule_errors(
+          QAW_EXAMPLE.replace("**Entry mode**: partial", "**Entry mode**: greenfield | partial | refresh"))))
+check("unknown entry mode is flagged",
+      any("not exactly one of" in e for e in qaw_new_rule_errors(
+          QAW_EXAMPLE.replace("**Entry mode**: partial", "**Entry mode**: brownfield"))))
+check("missing entry-mode line is flagged",
+      any("does not state the entry mode" in e for e in qaw_new_rule_errors(
+          QAW_EXAMPLE.replace("- **Entry mode**: partial\n", ""))))
+check("each entry mode is accepted, bold or plain",
+      all(qaw_new_rule_errors(QAW_EXAMPLE.replace("**Entry mode**: partial", f"**Entry mode**: {m}")) == []
+          for m in ("greenfield", "partial", "`partial`"))
+      )
+check("Starting point with an empty inputs table is flagged",
+      any("no inputs table rows" in e for e in qaw_new_rule_errors(
+          QAW_EXAMPLE.replace("| Founder's product brief | shared by the sponsor before the session | "
+                              "draft business goals (Step 2) and the five constraints (Step 3), "
+                              "corrected by the group |", "| | | |"))))
+
+refresh = QAW_EXAMPLE.replace("**Entry mode**: partial", "**Entry mode**: refresh")
+check("refresh mode with no scenario tagged 'existing' is flagged",
+      any("refresh mode" in e for e in qaw_new_rule_errors(refresh)))
+tagged = refresh.replace("| use-case | Advisor | AD-1 |", "| use-case | existing (SQA-1) | AD-1 |", 1)
+check("refresh-mode fixture really tags a Step 5 row", tagged != refresh)
+check("refresh mode passes once an existing scenario enters Step 5", qaw_new_rule_errors(tagged) == [])
+
+check("parked question without an owner is flagged",
+      any("PQ-1 has no owner" in e for e in qaw_new_rule_errors(
+          QAW_EXAMPLE.replace("| SOC 2 auditor | ST-4 |", "| SOC 2 auditor | |"))))
+check("parked question without a status is flagged",
+      any("PQ-2 has no status" in e for e in qaw_new_rule_errors(
+          QAW_EXAMPLE.replace("| ST-5 | 2026-09-03 | open |", "| ST-5 | 2026-09-03 | |"))))
+none_section = (QAW_EXAMPLE.split("## Parked questions", 1)[0]
+                + "## Parked questions\n\nNone — every question was answered in the session.\n\n## Next steps"
+                + QAW_EXAMPLE.split("## Next steps", 1)[1])
+check("a parked-questions section that says None passes", qaw_new_rule_errors(none_section) == [])
+empty_section = none_section.replace("None — every question was answered in the session.", "TBD")
+check("an empty parked-questions section is flagged",
+      any("does not say 'None'" in e for e in qaw_new_rule_errors(empty_section)))
+
+# --------------------------------------------------------------------------- #
+# QAW question guide coverage (self-check)
+# --------------------------------------------------------------------------- #
+
+GUIDE = (Path(__file__).resolve().parent.parent / "references" / "qaw-question-guide.md").read_text(encoding="utf-8")
+
+
+def guide_errors(text: str) -> list[str]:
+    return run_checker(validate.check_qaw_question_guide, "references/qaw-question-guide.md", text)
+
+
+check("shipped QAW question guide covers every step, characteristic and mode", guide_errors(GUIDE) == [])
+check("guide without a Step 5 section is flagged",
+      any("Step 5" in e for e in guide_errors(GUIDE.replace("### Step 5 — Scenario brainstorming",
+                                                             "### Brainstorming"))))
+check("guide without a Safety section is flagged",
+      any("'Safety'" in e for e in guide_errors(GUIDE.replace("### Safety", "### Hazards"))))
+check("guide that drops the refresh mode is flagged",
+      any("'refresh'" in e for e in guide_errors(GUIDE.replace("**refresh**", "refresh"))))
+s7 = GUIDE.index("### Step 7")
+s8 = GUIDE.index("### Step 8")
+check("a step section with no questions is flagged",
+      any("asks no questions" in e for e in guide_errors(
+          GUIDE[:s7] + "### Step 7 — Prioritisation\n\nVote.\n\n" + GUIDE[s8:])))
+check("a missing guide file is reported",
+      any("missing" in e for e in validate.check_qaw_question_guide(Path("/nonexistent/qaw-question-guide.md"))))
+
 print(f"{PASSES} passed, {FAILS} failed")
 sys.exit(1 if FAILS else 0)
