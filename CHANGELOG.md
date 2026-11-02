@@ -16,13 +16,18 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
   correct) or **refresh** (an existing drivers register to test and extend). In refresh mode the
   existing scenarios enter brainstorming tagged *existing* and are re-voted with the new ones; a
   previous report is kept as `qaw-report-<date>.md`.
+- The QAW skill now requires relying on the documentation available: before each step Claude
+  checks the documents found in Step 0, confirms what they already answer (citing the source)
+  instead of asking again, asks open questions only about the gaps, and records where a
+  stakeholder contradicts a document. The validator rejects a partial- or refresh-mode report
+  whose Starting point names no input document.
 - *Parked questions* in the QAW report: a question nobody present can answer becomes a `PQ-<n>`
   row with who can answer it, an owner and a due date, instead of a guessed number.
 - Validator: the entry mode must be exactly one of the three; refresh mode must carry existing
   scenarios into Step 5; every parked question needs an owner and a status. Reports written
   before this release have neither section and still pass. `--self` checks that the question
   guide keeps a question section for every step, every ISO/IEC 25010 characteristic and every
-  entry mode. 20 new unit tests (75 in total).
+  entry mode. 22 new unit tests (77 in total).
 
 ### Changed
 - Both worked examples' QAW reports gain the new sections: a *partial*-mode starting point (the

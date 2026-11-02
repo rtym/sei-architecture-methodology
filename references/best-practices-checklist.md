@@ -74,6 +74,9 @@ runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated 
 - [ ] All eight steps present as sections, plus Step 9 (utility tree).
 - [ ] Step 0 *Starting point* states one entry mode (greenfield / partial / refresh) and lists
       every input used; a previous report is kept as `qaw-report-<date>.md` and linked.
+- [ ] The workshop relied on the documentation available: documented answers were confirmed
+      with their source cited, not asked again; open questions covered only the gaps;
+      contradictions between documents and stakeholders are recorded.
 - [ ] Every step was opened with questions from `qaw-question-guide.md`, not "what are your
       quality requirements?"; every ISO/IEC 25010 characteristic without a driver was asked
       about, and its answer recorded.

@@ -10,6 +10,11 @@ attribute and role sections are pools you draw from during Steps 4, 5 and 8.
 
 ## How to ask
 
+- **Rely on the documentation available.** Before asking a question, check whether the documents
+  found in Step 0 already answer it. If they do, quote the answer and its source and ask only
+  whether it still holds ("The brief sets 99.5 % uptime per month — still right?"). Ask open
+  questions only about what the documents do not cover. When a stakeholder contradicts a
+  document, record both and what the group decided.
 - **One question at a time.** Wait for the answer, play it back in one line, then move on.
 - **Ask about situations, not qualities.** "Should it be secure?" gets "yes" and nothing else.
   "Who would want to see data that isn't theirs, and what would they try?" gets a scenario.
