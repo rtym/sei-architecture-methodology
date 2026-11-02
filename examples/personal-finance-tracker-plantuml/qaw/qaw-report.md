@@ -7,6 +7,19 @@
 
 > Condensed record. A real QAW runs half a day to a day; the structure below is the full method.
 
+## Step 0 — Starting point
+
+- **Entry mode**: partial
+- **Previous workshop**: none — this is the first QAW for the system.
+
+The founder's product brief was the only input: no drivers register, no design and no code
+existed yet. The brief was read before Step 1, presented as a draft in Steps 2–4, and corrected
+by the group.
+
+| Input | Where | How the workshop used it |
+|-------|-------|--------------------------|
+| Founder's product brief | shared by the sponsor before the session | draft business goals (Step 2) and the five constraints (Step 3), corrected by the group |
+
 ## Step 1 — QAW presentation and introductions
 
 ### Participants
@@ -42,7 +55,7 @@ Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six
 - **System boundary**: a single web app + API + datastore; one external dependency (email).
 - **Known technical constraints**: CON-1..CON-5 from the brief.
 - **External systems / interfaces**: transactional email provider (SMTP).
-- **Existing architectural context**: none yet — greenfield.
+- **Existing architectural context**: none yet — no design or code exists.
 
 ## Step 4 — Architectural drivers
 
@@ -165,6 +178,17 @@ _Reading the tree_: **SQA-1** and **AQA-1** are the `★` `(H, H)` leaves — th
 design attention. Every refinement has a leaf, so there is no obvious unrecorded ASR. These
 scenarios become the `<ATTR>QA-n` drivers under
 [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md).
+
+## Parked questions
+
+Questions nobody in the session could answer. Each has an owner and a date; none was answered
+with a guessed number.
+
+| ID | Question | Raised in | Who can answer | Owner | Due | Status |
+|----|----------|-----------|----------------|-------|-----|--------|
+| PQ-1 | How long must the audit log be kept for the SOC 2 Type II audit? | CS-1 refinement | SOC 2 auditor | ST-4 | 2026-09-03 | open |
+| PQ-2 | Which browsers and screen readers must first use support at launch? | CS-5 refinement | Design partner's users | ST-5 | 2026-09-03 | open |
+| PQ-3 | What monthly infrastructure budget does BG-4 allow at 10 000 users? | Step 2 | Founder, after the funding round | ST-1 | 2026-09-17 | open |
 
 ## Next steps — hand-off to the drivers register
 
