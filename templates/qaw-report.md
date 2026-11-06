@@ -3,6 +3,7 @@
 - **Date(s)**: <YYYY-MM-DD>
 - **Facilitator(s)**: <names>
 - **Sponsor**: <name>
+- **Format**: two-day | one-day | half-day | remote
 - **Status**: in progress | complete
 
 ---
@@ -71,10 +72,13 @@ Dissent / notes: <record any objection to a merge>
 
 ## Step 7 — Scenario prioritisation
 
+<!-- Replace this section's body with the "Step 7 of the report" block that
+     `qawkit.py tally qaw-vote-sheet.md` writes; never add the votes up by hand. -->
+
 **Vote budget** = ceil(0.30 × <consolidated count>) = **<N>** votes per stakeholder.
 
-| Scenario | <stakeholder A> | <stakeholder B> | … | Total |
-|----------|-----------------|-----------------|---|-------|
+| Scenario | ST-1 | ST-2 | … | Total |
+|----------|:---:|:---:|:---:|:-----:|
 | CS-1 | 2 | 1 | | 3 |
 
 **Ranked**: CS-3 (7) > CS-1 (3) > …

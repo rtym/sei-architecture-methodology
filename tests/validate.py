@@ -562,10 +562,95 @@ def check_qaw(path: Path) -> list[str]:
             errs.append("QAW utility tree must be a table, not a mindmap")
     errs += _qaw_starting_point_errors(raw)
     errs += _qaw_parked_question_errors(raw)
+    errs += _qaw_format_errors(raw)
+    errs += _qaw_vote_errors(raw)
     return errs
 
 
 QAW_ENTRY_MODES = ("greenfield", "partial", "refresh")
+# The formats the facilitation playbook times (its ### headings under *Timeboxes*).
+QAW_FORMATS = ("two-day", "one-day", "half-day", "remote")
+
+
+def _qaw_format_errors(raw: str) -> list[str]:
+    # Optional header bullet; reports written before formats existed have none.
+    head = raw.split("\n## ", 1)[0]
+    m = re.search(r"^\s*-\s*\*\*Format\*\*\s*:\s*(.+?)\s*$", head, re.MULTILINE)
+    if m and m.group(1).strip().strip("`*_").lower() not in QAW_FORMATS:
+        return [f"QAW format {m.group(1).strip()!r} is not one of {' / '.join(QAW_FORMATS)}"]
+    return []
+
+
+def _qaw_vote_errors(raw: str) -> list[str]:
+    """Step 7 arithmetic: row totals, the 30 % budget, nobody over budget, and a ranking that
+    follows the totals. Cells that are not numbers (template placeholders) are skipped."""
+    sec = _qaw_section(raw, r"prioriti")
+    if sec is None:
+        return []
+    lines = sec.splitlines()
+    head: list[str] = []
+    rows: list[list[str]] = []
+    for i, ln in enumerate(lines):
+        if ln.strip().startswith("|") and "total" in ln.lower() and i + 1 < len(lines) \
+                and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1]):
+            head = [c.strip() for c in ln.strip().strip("|").split("|")]
+            for r in lines[i + 2:]:
+                if not r.strip().startswith("|"):
+                    break
+                rows.append([c.strip() for c in r.strip().strip("|").split("|")])
+            break
+    if len(head) < 3 or head[-1].lower() != "total":
+        return []
+    errs: list[str] = []
+    people = head[1:-1]
+    totals: dict[str, int] = {}
+    spent = [0] * len(people)
+    numeric = True
+    for row in rows:
+        m = re.match(r"\s*((?:CS|S)-\d+)\b", row[0].replace("*", ""))
+        cells = (row[1:-1] + [""] * len(people))[:len(people)]
+        if not m or not all(re.fullmatch(r"\d*", c) for c in cells + [row[-1]]):
+            numeric = numeric and not m
+            continue
+        votes = [int(c or 0) for c in cells]
+        spent = [a + b for a, b in zip(spent, votes)]
+        totals[m.group(1)] = sum(votes)
+        if row[-1] and int(row[-1]) != sum(votes):
+            errs.append(f"Step 7: {m.group(1)} total is {row[-1]}, but its votes add up to {sum(votes)}")
+    if not totals or not numeric:
+        return errs
+    budget = re.search(r"\*\*(\d+)\*\*\s*votes?\s+per", sec)
+    n_cs = len(re.findall(r"^\|\s*CS-\d+\s*\|", _qaw_section(raw, r"consolidat") or "", re.MULTILINE))
+    if budget:
+        b = int(budget.group(1))
+        if n_cs and b != max(1, -(-n_cs * 3 // 10)):
+            errs.append(f"Step 7: vote budget {b} is not 30 % of {n_cs} consolidated scenarios "
+                        f"rounded up ({max(1, -(-n_cs * 3 // 10))})")
+        for person, n in zip(people, spent):
+            if n > b:
+                errs.append(f"Step 7: {person} cast {n} votes, over the budget of {b}")
+    ranked = re.search(r"^\*\*Ranked\*\*\s*:\s*(.+)$", sec, re.MULTILINE)
+    if ranked:
+        seq = re.findall(r"((?:CS|S)-\d+)\s*\((\d+)\)\s*([=>])?", ranked.group(1))
+        prev = None
+        for sid, n, sep in seq:
+            n = int(n)
+            if sid in totals and totals[sid] != n:
+                errs.append(f"Step 7: the ranking gives {sid} {n} votes, the table {totals[sid]}")
+            if prev is not None:
+                psid, pn, psep = prev
+                if pn < n:
+                    errs.append(f"Step 7: the ranking puts {psid} ({pn}) above {sid} ({n})")
+                elif psep == "=" and pn != n:
+                    errs.append(f"Step 7: the ranking says {psid} = {sid}, but they have {pn} and {n} votes")
+                elif psep == ">" and pn == n:
+                    errs.append(f"Step 7: the ranking says {psid} > {sid}, but both have {n} votes")
+            prev = (sid, n, sep)
+        listed = {sid for sid, _, _ in seq}
+        missing = [sid for sid in totals if sid not in listed]
+        if seq and missing:
+            errs.append(f"Step 7: the ranking leaves out {', '.join(missing)}")
+    return errs
 
 
 def _qaw_section(raw: str, title_re: str) -> str | None:
@@ -1095,6 +1180,76 @@ def check_qaw_question_guide(path: Path | None = None) -> list[str]:
         if name.lower().startswith(("step ", *(c.lower() for c in ISO_25010_CHARACTERISTICS))) \
                 and "?" not in body:
             errs.append(f"{path.name}: section '{name.strip()}' asks no questions")
+    # system-type packs: each names the --domain key qawkit.py uses and ends with its measure
+    st = re.search(r"^##\s+Questions by system type.*?$(.*?)(?=^##\s|\Z)", text,
+                   re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    if not st:
+        errs.append(f"{path.name}: no 'Questions by system type' section")
+    else:
+        keys: list[str] = []
+        for name, body in re.findall(r"^###\s+(.+?)\n(.*?)(?=^###\s|\Z)", st.group(1),
+                                     re.MULTILINE | re.DOTALL):
+            key = re.search(r"Key:\s*`([a-z0-9-]+)`", body)
+            items = re.findall(r"^\d+\.\s+(.*)$", body, re.MULTILINE)
+            if not key:
+                errs.append(f"{path.name}: system type '{name.strip()}' names no Key: `<key>`")
+            else:
+                keys.append(key.group(1))
+            if len(items) < 3 or "?" not in body:
+                errs.append(f"{path.name}: system type '{name.strip()}' has fewer than 3 questions")
+            elif not items[-1].startswith("*Measure:*"):
+                errs.append(f"{path.name}: system type '{name.strip()}' does not end with a *Measure:* question")
+        dup = sorted({k for k in keys if keys.count(k) > 1})
+        if dup:
+            errs.append(f"{path.name}: system-type key used twice: {', '.join(dup)}")
+        if not keys:
+            errs.append(f"{path.name}: 'Questions by system type' has no system types")
+    return errs
+
+
+def check_qaw_playbook(path: Path | None = None) -> list[str]:
+    """`qawkit.py agenda` times the workshop from this playbook, so every format needs a
+    timebox table that runs all nine steps with whole minutes; the difficult-moments table is
+    what the skill turns to when the room goes wrong."""
+    path = path or ROOT / "references" / "qaw-facilitation-playbook.md"
+    if not path.is_file():
+        return [f"{path.name}: missing — the QAW skill and qawkit.py agenda read it"]
+    text = path.read_text(encoding="utf-8")
+    errs: list[str] = []
+    tb = re.search(r"^##\s+Timeboxes.*?$(.*?)(?=^##\s|\Z)", text, re.MULTILINE | re.DOTALL)
+    found: dict[str, str] = {}
+    if tb:
+        found = {m.group(1).strip(): m.group(2) for m in
+                 re.finditer(r"^###\s+(\S+)\s*\n(.*?)(?=^###\s|\Z)", tb.group(1), re.MULTILINE | re.DOTALL)}
+    else:
+        errs.append(f"{path.name}: no 'Timeboxes' section")
+    for fmt in QAW_FORMATS:
+        if fmt not in found:
+            errs.append(f"{path.name}: no timebox table for format '{fmt}'")
+    for fmt, body in found.items():
+        if fmt not in QAW_FORMATS:
+            errs.append(f"{path.name}: timebox table '{fmt}' is not a known format ({' / '.join(QAW_FORMATS)})")
+        rows = _table_rows("x\n" + body, "Block")
+        names = [r[0] for r in rows if r]
+        for n in range(1, 10):
+            if not any(re.match(rf"Step {n}\b", nm) for nm in names):
+                errs.append(f"{path.name}: format '{fmt}' never runs Step {n}")
+        for r in rows:
+            if len(r) < 2:
+                continue
+            if r[0].lower() == "next day":
+                if r[1] not in ("—", "-", ""):
+                    errs.append(f"{path.name}: format '{fmt}': 'Next day' takes no minutes")
+            elif not re.fullmatch(r"[1-9]\d*", r[1]):
+                errs.append(f"{path.name}: format '{fmt}': block '{r[0]}' has no whole minutes ({r[1]!r})")
+        if f"**{fmt}**" not in text:
+            errs.append(f"{path.name}: format '{fmt}' is not described in 'Choose a format'")
+    dm = re.search(r"^##\s+Difficult moments.*?$(.*?)(?=^##\s|\Z)", text, re.MULTILINE | re.DOTALL)
+    if not dm or len(_table_rows("x\n" + dm.group(1), "Signal")) < 8:
+        errs.append(f"{path.name}: 'Difficult moments' needs a Signal table with at least 8 rows")
+    for title in ("Before the workshop", "After the workshop", "Scenarios that hold up"):
+        if not re.search(rf"^##\s+{title}", text, re.MULTILINE):
+            errs.append(f"{path.name}: no '{title}' section")
     return errs
 
 
@@ -1222,6 +1377,7 @@ def check_self() -> list[str]:
             errs.append(f"references/{rf.name}: not linked from references/README.md")
 
     errs += check_qaw_question_guide()
+    errs += check_qaw_playbook()
     errs += check_plantuml_includes()
     errs += check_vendored_c4()
     errs += check_license()
