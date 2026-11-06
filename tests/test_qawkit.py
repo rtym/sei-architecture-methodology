@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Unit tests for scripts/qawkit.py — the QAW kit generator (prep sheet, vote sheet, summary).
-Covers every reader and builder, the CLI's exit codes, and golden files: the kit committed under
-each worked example must equal a fresh regeneration. Standard library only; exit 0 on success."""
+"""Unit tests for scripts/qawkit.py — the QAW kit generator (prep sheet, agenda, vote sheet, tally,
+status, lint, summary). Covers every reader and builder, the CLI's exit codes, and golden files:
+the kit committed under each worked example must equal a fresh regeneration, and the example's
+vote sheet, tally and Step 7 must agree. Standard library only; exit 0 on success."""
 from __future__ import annotations
 
 import contextlib
@@ -51,6 +52,7 @@ def quiet_main(argv: list[str]) -> int:
 
 
 GUIDE = qawkit.GUIDE.read_text(encoding="utf-8")
+PLAYBOOK = qawkit.PLAYBOOK.read_text(encoding="utf-8")
 
 # --------------------------------------------------------------------------- #
 # Markdown readers
@@ -151,6 +153,16 @@ with tempfile.TemporaryDirectory() as td:
     check("a scenario's characteristic is read without emphasis", dr["qa"][1]["characteristic"] == "Security")
     check("suggested mode with scenarios is refresh", qawkit.suggest_mode(dr) == "refresh")
 check("a missing drivers directory is an error", raises(qawkit.load_drivers, Path("/nonexistent/drivers")))
+with tempfile.TemporaryDirectory() as td:
+    d = make_drivers(Path(td), {"PQA-1": "Performance efficiency", "SQA-1": "Security"})
+    write(Path(td), "architecture/drivers/constraints/CON-2.md", "# CON-2: Old\n\n- **Constraint**: x\n- **Status**: retired\n")
+    q = d / "quality-attributes" / "SQA-1.md"
+    q.write_text(q.read_text().replace("- **Status**: open", "- **Status**: retired (merged into PQA-1)"))
+    write(Path(td), "architecture/drivers/quality-attributes/PQA-draft.md", "# notes\n")
+    dr = qawkit.load_drivers(d)
+    check("retired constraints are skipped", [c["id"] for c in dr["con"]] == ["CON-1"])
+    check("retired scenarios are skipped, whatever follows the word", [x["id"] for x in dr["qa"]] == ["PQA-1"])
+
 check("suggested mode with goals only is partial",
       qawkit.suggest_mode({"bg": [{"id": "BG-1"}], "con": [], "qa": []}) == "partial")
 check("suggested mode with nothing is greenfield",
@@ -162,6 +174,8 @@ with tempfile.TemporaryDirectory() as td:
     p = write(Path(td), "stakeholders.md", ST)
     people = qawkit.load_participants(p)
     check("participants marked '—' in the QAW column are left out", [x["id"] for x in people] == ["ST-1", "ST-3"])
+    p3 = write(Path(td), "s3.md", ST + "| — | (role unfilled) | maintainer | — | ✓ |\n")
+    check("rows without an ST-<n> ID are not participants", [x["id"] for x in qawkit.load_participants(p3)] == ["ST-1", "ST-3"])
     p2 = write(Path(td), "s2.md", ST.replace(" QAW |", " Other |"))
     check("with no QAW column everyone is a participant", len(qawkit.load_participants(p2)) == 3)
 check("a missing stakeholder register gives no participants",
@@ -317,7 +331,9 @@ with tempfile.TemporaryDirectory() as td:
     out = root / "qaw" / "qaw-summary.md"
     s = qawkit.build_summary(rep, out)
     check("summary counts participants, raw, consolidated and refined scenarios",
-          "2 participants produced 3 raw scenarios, consolidated to 2; 1 were refined" in s)
+          "2 participants produced 3 raw scenarios, consolidated to 2; 1 was refined" in s)
+    check("summary agrees verbs with singular counts",
+          "1 carries the highest business value" in s and "and 1 question remains open." in s)
     check("summary carries the header fields",
           "- **Workshop date**: 2026-01-10" in s and "- **Report status**: complete" in s)
     check("summary carries the entry mode", "- **Entry mode**: refresh" in s)
@@ -358,16 +374,399 @@ with tempfile.TemporaryDirectory() as td:
     check("a missing required option exits 2", quiet_main(["ballot", str(rep)]) == 2)
 
 # --------------------------------------------------------------------------- #
+# Guide sections the new commands read
+# --------------------------------------------------------------------------- #
+
+st = qawkit.guide_system_types(GUIDE)
+check("the guide has seven system types", sorted(st) == ["ai", "api", "data", "iot", "mobile", "regulated", "saas"])
+check("every system type has at least four questions ending with the measure",
+      all(len(qs) >= 4 and qs[-1].startswith("Measure:") for _, qs in st.values()))
+check("system-type headings are read whole", st["regulated"][0] == "Regulated data — payments, health, personal data")
+check("a guide without system types gives none", qawkit.guide_system_types("# G\n\n## Other\n") == {})
+check("a system-type section without a Key line is skipped",
+      qawkit.guide_system_types("## Questions by system type\n\n### Thing\n\n1. Why?\n") == {})
+
+pq_parts = qawkit.guide_part_questions(GUIDE)
+check("the guide's Step 8 table has a question for each of the six parts",
+      all(pq_parts.get(part, "").endswith("?") or "?" in pq_parts.get(part, "") for part in qawkit.SIX_PARTS))
+check("a guide without a Step 8 gives no part questions", qawkit.guide_part_questions("# G\n") == {})
+
+va = qawkit.guide_vague_answers(GUIDE)
+check("the vague-answer table has eight rows keyed without quotes", len(va) == 8 and "it must be fast" in va)
+check("every lint phrase exists in the guide's vague-answer table",
+      all(phrase.lower() in va for _, phrase in qawkit.VAGUE_TERMS if phrase))
+
+# --------------------------------------------------------------------------- #
+# Reading the facilitation playbook
+# --------------------------------------------------------------------------- #
+
+fm = qawkit.playbook_formats(PLAYBOOK)
+check("the playbook times exactly the formats the validator knows", tuple(fm) == validate.QAW_FORMATS)
+for fmt, blocks in fm.items():
+    names = [b for b, _ in blocks]
+    check(f"format {fmt} runs Steps 1 to 9 in order",
+          [n for n in range(1, 10) if any(b.startswith(f"Step {n} ") for b in names)] == list(range(1, 10))
+          and sorted(names.index(next(b for b in names if b.startswith(f"Step {n} "))) for n in range(1, 10))
+          == [names.index(next(b for b in names if b.startswith(f"Step {n} "))) for n in range(1, 10)])
+check("half-day is four hours", sum(m for _, m in fm["half-day"]) == 240)
+check("remote is three sessions", sum(1 for b, _ in fm["remote"] if b == qawkit.NEXT_DAY) == 2)
+check("a block without minutes is an error", raises(
+    qawkit.playbook_formats, "## Timeboxes\n\n### x\n\n| Block | Minutes |\n|---|---|\n| Step 1 — a | soon |\n"))
+check("a playbook without timeboxes has no formats", qawkit.playbook_formats("# P\n") == {})
+
+# --------------------------------------------------------------------------- #
+# Small readers
+# --------------------------------------------------------------------------- #
+
+check("logical_lines joins wrapped list items",
+      qawkit.logical_lines("- a b\n  c d\n- e\n  1. f\nplain\n") == ["- a b c d", "- e", "  1. f", "plain"])
+ns = qawkit.not_significant_reasons("x\n- **Safety** is not significant here:\n  nothing can hurt anyone.\n"
+                                    "- Security matters.\nCompatibility: not significant here.\n")
+check("not-significant reasons are read whole and without markers",
+      ns == {"Safety": "Safety is not significant here: nothing can hurt anyone.",
+             "Compatibility": "Compatibility: not significant here."})
+check("not_significant is the set of characteristics", qawkit.not_significant("Safety — not significant here") == {"Safety"})
+
+# --------------------------------------------------------------------------- #
+# prep: system types and characteristics set aside last time
+# --------------------------------------------------------------------------- #
+
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    d = make_drivers(root, {"PQA-1": "Performance efficiency"})
+    out = root / "architecture" / "qaw" / "qaw-prep.md"
+    text = qawkit.build_prep(d, "Acme", "2026-01-05", out, domains=["ai", "regulated", "ai"])
+    check("prep adds the system-type questions in the order given, once each",
+          text.count("### AI and machine-learning components") == 1
+          and text.index("### AI and machine") < text.index("### Regulated data"))
+    check("prep numbers the system-type questions", "1. Which decisions does the model make" in text)
+    check("an unknown system type is an error naming the valid keys",
+          raises(qawkit.build_prep, d, "Acme", "2026-01-05", out, domains=["blockchain"]))
+    try:
+        qawkit.build_prep(d, "Acme", "2026-01-05", out, domains=["blockchain"])
+    except qawkit.KitError as e:
+        check("the unknown-type error lists the keys", "ai" in str(e) and "regulated" in str(e))
+    check("no --domain adds no system-type section",
+          "Questions for this kind of system" not in qawkit.build_prep(d, "Acme", "2026-01-05", out))
+    prev = write(root, "architecture/qaw/qaw-report-2025.md",
+                 "# R\n\n- **Safety** is not significant here: no hardware.\n- **Compatibility** is\n"
+                 "  not significant here: no partners.\n\n## Parked questions\n\nNone.\n")
+    text = qawkit.build_prep(d, "Acme", "2026-01-05", out, prev)
+    check("characteristics set aside last time are not asked from scratch",
+          "### Safety" not in text and "### Compatibility" not in text and "### Security" in text)
+    check("they are listed with the recorded reason to re-check",
+          "## Characteristics set aside last time" in text
+          and "| Compatibility | Compatibility is not significant here: no partners. |" in text)
+    check("the gap count says what was set aside", "and were not set aside at the last workshop" in text)
+    out.write_text(text, encoding="utf-8")
+    check("a prep sheet with set-aside characteristics passes the validator", validate.validate_file(out) == [])
+    every = "\n".join(f"- {c} is not significant here." for c in qawkit.ISO_CHARACTERISTICS)
+    prev2 = write(root, "architecture/qaw/qaw-report-2024.md", "# R\n\n" + every + "\n")
+    text = qawkit.build_prep(d, "Acme", "2026-01-05", out, prev2)
+    check("when every gap was set aside, prep says so",
+          "Every characteristic without a scenario was set aside" in text)
+
+# --------------------------------------------------------------------------- #
+# agenda
+# --------------------------------------------------------------------------- #
+
+a1 = qawkit.build_agenda("one-day", "Acme", "2026-11-10")
+check("agenda starts at 09:00 by default", "| 09:00–09:20 | Step 1 — QAW presentation and introductions | 20 |" in a1)
+check("agenda one-day ends at 16:45", "| 16:30–16:45 | Wrap-up — parked questions and next steps | 15 |" in a1)
+check("agenda names the weekday", "## Day 1 — 2026-11-10 (Tuesday)" in a1)
+check("agenda splits workshop time from breaks", "6 h 20 min of workshop time and 1 h 25 min of breaks" in a1)
+check("agenda is deterministic", a1 == qawkit.build_agenda("one-day", "Acme", "2026-11-10"))
+a2 = qawkit.build_agenda("two-day", "Acme", "2026-11-13", "08:30")
+check("a two-day workshop starting on Friday continues on Monday",
+      "## Day 1 — 2026-11-13 (Friday)" in a2 and "## Day 2 — 2026-11-16 (Monday)" in a2)
+check("each day restarts at the start time", a2.count("| 08:30–") == 2)
+check("two days are counted", "- **Length**: 2 days," in a2)
+a3 = qawkit.build_agenda("remote", "Acme", "2026-11-10", "14:00")
+check("remote agendas are in sessions", "## Session 3 — 2026-11-12 (Thursday)" in a3 and "3 sessions" in a3)
+a4 = qawkit.build_agenda("half-day", "Acme", "2026-11-10", "13:00")
+check("a half-day from 13:00 ends at 17:00", "–17:00 | Wrap-up" in a4)
+check("an unknown format is an error", raises(qawkit.build_agenda, "weekend", "Acme", "2026-11-10"))
+check("a malformed start time is an error", raises(qawkit.build_agenda, "one-day", "Acme", "2026-11-10", "9am"))
+check("25:00 is not a time", raises(qawkit.build_agenda, "one-day", "Acme", "2026-11-10", "25:00"))
+check("a malformed date is an error", raises(qawkit.build_agenda, "one-day", "Acme", "10/11/2026"))
+check("an impossible date is an error", raises(qawkit.build_agenda, "one-day", "Acme", "2026-02-30"))
+check("a day that runs past midnight is an error", raises(qawkit.build_agenda, "one-day", "Acme", "2026-11-10", "20:00"))
+custom = ("## Timeboxes\n\n### tiny\n\n| Block | Minutes |\n|---|---:|\n| Step 1 — a | 5 |\n"
+          "| Next day | — |\n| Next day | — |\n| Step 2 — b | 70 |\n| Break | 10 |\n")
+a5 = qawkit.build_agenda("tiny", "Acme", "2026-11-10", "09:00", playbook_text=custom)
+check("an empty day between two Next day rows is dropped, and dates still advance",
+      "## Day 1 — 2026-11-10" in a5 and "## Day 2 — 2026-11-12" in a5 and "## Day 3" not in a5)
+check("durations under an hour read in minutes", "1 h 15 min of workshop time and 10 min of breaks" in a5)
+check("next_working_day skips the weekend",
+      qawkit.next_working_day(qawkit.parse_date("2026-11-14")).isoformat() == "2026-11-16")
+check("clock formats minutes", qawkit.clock(9 * 60 + 5) == "09:05")
+with tempfile.TemporaryDirectory() as td:
+    out = Path(td) / "qaw-agenda.md"
+    out.write_text(a2, encoding="utf-8")
+    check("a generated agenda passes the validator", validate.validate_file(out) == [])
+
+# --------------------------------------------------------------------------- #
+# tally
+# --------------------------------------------------------------------------- #
+
+check("ranking puts most votes first and marks ties",
+      qawkit.ranking([("CS-1", 1), ("CS-2", 3), ("CS-3", 1), ("CS-4", 0)]) == "CS-2 (3) > CS-1 (1) = CS-3 (1) > CS-4 (0)")
+check("ranking of one scenario has no separator", qawkit.ranking([("CS-1", 2)]) == "CS-1 (2)")
+
+SHEET = """# QAW vote sheet — Acme
+
+- **Workshop report**: [qaw-report.md](qaw-report.md)
+- **Votes per participant**: 2
+
+| Scenario | ST-1 | ST-2 | ST-3 | Total |
+|----------|:---:|:---:|:---:|:-----:|
+| CS-1 — **Fast** dashboard | 1 |  | 2 | |
+| CS-2 — Zone loss | 1 | 1 |  | |
+| CS-3 — Audit log |  | 1 |  | 9 |
+| CS-4 — Import |  |  |  | |
+| CS-5 — Onboarding |  |  |  | |
+"""
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    sheet = write(root, "qaw/qaw-vote-sheet.md", SHEET)
+    out = root / "qaw" / "qaw-tally.md"
+    t = qawkit.build_tally(sheet, out)
+    check("tally reads blank cells as no votes and adds each row",
+          "| CS-1 | 1 | 0 | 2 | 3 |" in t and "| CS-4 | 0 | 0 | 0 | 0 |" in t)
+    check("tally ignores a hand-written total", "| CS-3 | 0 | 1 | 0 | 1 |" in t)
+    check("tally ranks with ties in sheet order",
+          "**Ranked**: CS-1 (3) > CS-2 (2) > CS-3 (1) > CS-4 (0) = CS-5 (0)." in t)
+    check("tally states the budget line for Step 7",
+          "**Vote budget** = ceil(0.30 × 5) = **2** votes per stakeholder (3 stakeholders → 6 votes)." in t)
+    check("tally reports unspent votes", "- ST-3 cast 2 of 2 votes." not in t and "- ST-2 cast 2 of 2" not in t
+          and "## Unspent votes" not in t)
+    check("tally counts votes cast", "- **Votes cast**: 6 of 6" in t)
+    out.write_text(t, encoding="utf-8")
+    check("a generated tally passes the validator", validate.validate_file(out) == [])
+    block = t.split("## Step 7 of the report\n\n", 1)[1]
+    fake = ("# Quality Attribute Workshop — Acme\n\n## Step 6 — Scenario consolidation\n\n| Consolidated ID | Merged from | Scenario |\n"
+            "|---|---|---|\n" + "".join(f"| CS-{i} | S-{i} | s |\n" for i in range(1, 6)) +
+            "\n## Step 7 — Scenario prioritisation\n\n" + block + "\n## Step 8 — Scenario refinement\n")
+    check("the Step 7 block tally writes passes the validator's vote checks", validate._qaw_vote_errors(fake) == [])
+    under = write(root, "u/qaw-vote-sheet.md", SHEET.replace("| CS-1 — **Fast** dashboard | 1 |  | 2 |",
+                                                            "| CS-1 — **Fast** dashboard | 1 |  | 1 |"))
+    tu = qawkit.build_tally(under, root / "u" / "t.md")
+    check("tally lists who left votes unspent", "## Unspent votes" in tu and "- ST-3 cast 1 of 2 votes." in tu)
+    over = write(root, "o/qaw-vote-sheet.md", SHEET.replace("| CS-4 — Import |  |  |  |", "| CS-4 — Import | 1 |  |  |"))
+    check("a participant over budget is an error", raises(qawkit.build_tally, over, out))
+    bad = write(root, "b/qaw-vote-sheet.md", SHEET.replace("| CS-4 — Import |  |", "| CS-4 — Import | x |"))
+    check("a non-number vote is an error", raises(qawkit.build_tally, bad, out))
+    wrong = write(root, "w/qaw-vote-sheet.md", SHEET.replace("participant**: 2", "participant**: 3"))
+    check("a stated budget that is not 30 % of the scenarios is an error", raises(qawkit.build_tally, wrong, out))
+    words = write(root, "v/qaw-vote-sheet.md", SHEET.replace("participant**: 2", "participant**: two"))
+    check("a stated budget in words is an error", raises(qawkit.build_tally, words, out))
+    nobudget = write(root, "n/qaw-vote-sheet.md", SHEET.replace("- **Votes per participant**: 2\n", ""))
+    check("without a stated budget the tally computes it", "**Votes per participant**: 2" in qawkit.build_tally(nobudget, out))
+    notable = write(root, "x/qaw-vote-sheet.md", "# QAW vote sheet — Acme\n\nno table\n")
+    check("a sheet with no vote table is an error", raises(qawkit.build_tally, notable, out))
+    norows = write(root, "y/qaw-vote-sheet.md", "| Scenario | ST-1 | Total |\n|---|---|---|\n| total | 1 | |\n")
+    check("a sheet with no scenario rows is an error", raises(qawkit.build_tally, norows, out))
+    check("a missing sheet is an error", raises(qawkit.build_tally, root / "none.md", out))
+    check("tally command exits 0", quiet_main(["tally", str(sheet), "--out", str(root / "t2.md")]) == 0)
+    check("tally command over budget exits 2", quiet_main(["tally", str(over), "--out", str(root / "t3.md")]) == 2
+          and not (root / "t3.md").exists())
+
+# --------------------------------------------------------------------------- #
+# status
+# --------------------------------------------------------------------------- #
+
+TEMPLATE = (ROOT / "templates" / "qaw-report.md").read_text(encoding="utf-8")
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    tpl = write(root, "qaw/qaw-report.md", TEMPLATE)
+    prog = qawkit.report_progress(TEMPLATE)
+    check("status sees twelve stages", len(prog) == 12)
+    check("a fresh template has every stage not started",
+          all(state == "not started" for _, state, _ in prog))
+    st_text = qawkit.build_status(tpl)
+    check("status of a fresh template names Step 0 as next", "- **Next step**: Step 0 — Starting point" in st_text)
+    check("status of a fresh template reports no gaps", "None found in the steps recorded so far." in st_text)
+    rep = write(root, "q2/qaw-report.md", REPORT)
+    prog2 = dict((s, (state, d)) for s, state, d in qawkit.report_progress(REPORT))
+    check("a section that is absent is missing", prog2["Step 2 — Business drivers"][0] == "missing")
+    check("an entry mode without inputs is not started", prog2["Step 0 — Starting point"][0] == "not started")
+    check("status counts scenario types", prog2["Step 5 — Scenario brainstorming"][1]
+          == "3 raw scenarios: 1 use-case, 1 growth, 1 exploratory")
+    check("a ranking without a budget is not started", prog2["Step 7 — Prioritisation"][0] == "not started")
+    check("status counts leaves and stars", prog2["Step 9 — Utility tree"][1] == "2 leaves, 1 ★")
+    check("status counts parked questions", prog2["Parked questions"][1] == "2 questions, 1 open")
+    check("status counts hand-off mappings", prog2["Hand-off to the drivers register"][1] == "3 mappings")
+    s2 = qawkit.build_status(rep, "2026-03-01")
+    check("status names the first unfinished stage as next", "- **Next step**: Step 0 — Starting point" in s2)
+    check("status flags an overdue parked question", "PQ-1 is open (owner ST-2, due 2026-02-01, overdue since 2026-02-01)" in s2)
+    check("an answered parked question is not a gap", "PQ-2" not in s2)
+    check("without a date nothing is overdue", "overdue" not in qawkit.build_status(rep))
+    gapped = REPORT + ("\n## Step 4 — Architectural drivers\n\n| ID | Architectural driver | Kind | Supports |\n"
+                       "|---|---|---|---|\n| AD-1 | a | QA | BG-1 |\n| AD-2 | b | QA | BG-1 |\n| AD-3 | c | QA | BG-1 |\n")
+    gaps = "\n".join(qawkit.report_gaps(gapped))
+    check("status lists drivers with no scenario", "Drivers with no brainstormed scenario: AD-3." in gaps)
+    check("status lists characteristics with no leaf", "Compatibility" in gaps and "Reliability" not in gaps)
+    one_type = REPORT.replace("| growth |", "| use-case |").replace("| exploratory |", "| use-case |")
+    check("status lists scenario types never used",
+          "Scenario types with no brainstormed scenario: growth, exploratory." in "\n".join(qawkit.report_gaps(one_type)))
+    unmapped = REPORT.replace("| CS-2 | AQA-1 | |\n", "")
+    check("status lists consolidated scenarios missing from the hand-off",
+          "missing from the hand-off table: CS-2." in "\n".join(qawkit.report_gaps(unmapped)))
+    check("a characteristic recorded as not significant is not a gap",
+          "Safety" not in "\n".join(qawkit.report_gaps(REPORT + "\nSafety is not significant here.\n")))
+    check("status command prints to stdout and exits 0", quiet_main(["status", str(rep)]) == 0)
+    check("status command with a bad date exits 2", quiet_main(["status", str(rep), "--date", "soon"]) == 2)
+    check("status command can write a file", quiet_main(["status", str(rep), "--out", str(root / "s.md")]) == 0
+          and (root / "s.md").is_file())
+    (root / "s.md").write_text(s2, encoding="utf-8")
+    check("a generated status passes the validator", validate.validate_file(root / "s.md") == [])
+
+# --------------------------------------------------------------------------- #
+# lint
+# --------------------------------------------------------------------------- #
+
+SMELLY = """# Quality Attribute Workshop — Acme
+
+## Step 5 — Scenario brainstorming
+
+| ID | Scenario | Type | Contributor | Driver(s) |
+|----|----------|------|-------------|-----------|
+| S-1 | a | use-case | Ana | AD-1 |
+| S-2 | b | wishlist | Bo | AD-1 |
+
+## Step 8 — Scenario refinement
+
+### CS-1 — Dashboard
+
+| Part | Value |
+|------|-------|
+| Source of stimulus | The user |
+| Stimulus | Opens the dashboard |
+| Artifact | Web app |
+| Environment | |
+| Response | Page loads quickly |
+| Response measure | Fast enough for PQA-1 |
+
+- **Business goals**: none yet
+
+### CS-2 — Zone loss
+
+| Part | Value |
+|------|-------|
+| Source of stimulus | Cloud provider |
+| Stimulus | A zone fails |
+| Artifact | Whole system |
+| Environment | Peak load |
+| Response | Traffic moves to the other zone |
+| Response measure | Recovery < 60 s; reasonable data loss |
+
+- **Business goals**: BG-1
+
+### CS-3 — Clean
+
+| Part | Value |
+|------|-------|
+| Source of stimulus | Attacker with a stolen session |
+| Stimulus | Requests another user's data |
+| Artifact | API |
+| Environment | Normal operation |
+| Response | Request is refused and logged |
+| Response measure | 0 successful reads; alert < 1 min |
+
+- **Business goals**: BG-2
+
+## Step 9 — Quality attribute utility tree
+
+| Quality attribute | Refinement | Leaf scenario | Priority (V, R) | Status |
+|---|---|---|---|---|
+| Performance efficiency | Time | PQA-1 (CS-1) — dashboard is fast | (H, M) | open |
+| Reliability | Availability | AQA-1 (CS-2) — recover < 60 s | (H, H) ★ | open |
+| Security | Confidentiality | SQA-1 (CS-3) — 0 reads | (H, H) ★ | open |
+"""
+findings = qawkit.lint_report(SMELLY, GUIDE)
+by = {}
+for where, problem, ask in findings:
+    by.setdefault(where, []).append((problem, ask))
+check("lint flags a raw scenario with an unknown type", any("wishlist" in p for p, _ in by.get("S-2", [])))
+check("lint flags an empty part with its guide question",
+      any(p == "environment is empty" and ask.startswith("What state is the system in") for p, ask in by["CS-1"]))
+check("lint flags a generic source", any("'the user' names no role" in p for p, _ in by["CS-1"]))
+check("an ID's digits do not count as a measure", ("response measure has no number", pq_parts["Response measure"]) in by["CS-1"])
+check("lint flags a vague word in the measure with the guide's follow-up",
+      any("vague word 'Fast'" in p and ask == va["it must be fast"] for p, ask in by["CS-1"]))
+check("lint flags a vague word in the response", any(p == "response uses the vague word 'quickly'" for p, _ in by["CS-1"]))
+check("lint flags a missing business goal", any("cites no business goal" in p for p, _ in by["CS-1"]))
+check("a generic vague word asks for a number",
+      ("response measure uses the vague word 'reasonable'", pq_parts["Response measure"]) in by["CS-2"])
+check("a clean scenario has no findings", "CS-3" not in by)
+check("lint flags a leaf with no measure", any("leaf has no measure" in p for p, _ in by.get("PQA-1", [])))
+check("lint flags characteristics neither covered nor set aside",
+      "Compatibility" in by and "Security" not in by and "Reliability" not in by)
+check("a characteristic set aside is not flagged",
+      "Safety" not in {w for w, _, _ in qawkit.lint_report(SMELLY + "\nSafety is not significant here.\n", GUIDE)})
+check("a report with no utility tree has no coverage findings",
+      not any(w in qawkit.ISO_CHARACTERISTICS for w, _, _ in qawkit.lint_report("# Q\n", GUIDE)))
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    smelly = write(root, "q/qaw-report.md", SMELLY)
+    text, n = qawkit.build_lint(smelly)
+    check("lint output counts findings", f"- **Findings**: {n}" in text and n == len(findings))
+    check("lint command exits 1 with findings", quiet_main(["lint", str(smelly)]) == 1)
+    clean = write(root, "c/qaw-report.md", "# Quality Attribute Workshop — Clean\n")
+    check("lint command exits 0 with no findings", quiet_main(["lint", str(clean)]) == 0)
+    check("a clean lint says so", "No findings" in qawkit.build_lint(clean)[0])
+    check("lint command on a missing report exits 2", quiet_main(["lint", str(root / "none.md")]) == 2)
+    check("lint can write its findings to a file and still exits 1",
+          quiet_main(["lint", str(smelly), "--out", str(root / "lint.md")]) == 1 and (root / "lint.md").is_file())
+    check("a generated lint report passes the validator", validate.validate_file(root / "lint.md") == [])
+
+# --------------------------------------------------------------------------- #
+# summary and prep CLI details
+# --------------------------------------------------------------------------- #
+
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    rep = write(root, "qaw/qaw-report.md", REPORT.replace("- **Status**: complete", "- **Format**: one-day\n- **Status**: complete"))
+    check("summary carries the format when the report states it",
+          "- **Format**: one-day" in qawkit.build_summary(rep, root / "qaw" / "s.md"))
+    check("summary has no format line when the report has none",
+          "**Format**" not in qawkit.build_summary(write(root, "q2/qaw-report.md", REPORT), root / "q2" / "s.md"))
+    d = make_drivers(root)
+    check("prep accepts comma-separated and repeated --domain",
+          quiet_main(["prep", "--drivers", str(d), "--system", "A", "--date", "2026-01-01", "--domain", "ai,saas",
+                      "--domain", "api", "--out", str(root / "p.md")]) == 0
+          and all(h in (root / "p.md").read_text() for h in ("### Multi-tenant SaaS", "### Public APIs")))
+    check("prep with an unknown --domain exits 2",
+          quiet_main(["prep", "--drivers", str(d), "--system", "A", "--date", "2026-01-01", "--domain", "x",
+                      "--out", str(root / "p2.md")]) == 2)
+    check("agenda command exits 0", quiet_main(["agenda", "--format", "half-day", "--date", "2026-01-05",
+                                                "--system", "A", "--out", str(root / "a.md")]) == 0)
+    check("agenda command with an unknown format exits 2",
+          quiet_main(["agenda", "--format", "x", "--date", "2026-01-05", "--system", "A", "--out", str(root / "a2.md")]) == 2)
+
+# --------------------------------------------------------------------------- #
 # Golden files: the kit committed in each worked example equals a fresh regeneration
 # --------------------------------------------------------------------------- #
+
+def blank_votes(sheet: str) -> str:
+    """The filled-in vote sheet with its vote cells emptied — what `ballot` wrote."""
+    out = []
+    for ln in sheet.splitlines():
+        cells = ln.split("|")
+        if ln.startswith("| CS-") and len(cells) > 3:
+            ln = "|".join(cells[:2] + ["  " for _ in cells[2:-2]] + [" ", ""])
+        out.append(ln)
+    return "\n".join(out) + "\n"
+
 
 for ex in sorted((ROOT / "examples").glob("personal-finance-tracker-*")):
     q = ex / "qaw"
     rep = q / "qaw-report.md"
     want = {
         "qaw-prep.md": qawkit.build_prep(ex / "drivers", "Personal Finance Tracker", "2026-11-02",
-                                         q / "qaw-prep.md", rep),
-        "qaw-vote-sheet.md": qawkit.build_ballot(rep, q / "qaw-vote-sheet.md"),
+                                         q / "qaw-prep.md", rep, domains=["regulated"]),
+        "qaw-agenda.md": qawkit.build_agenda("remote", "Personal Finance Tracker", "2026-11-10", "10:00"),
+        "qaw-tally.md": qawkit.build_tally(q / "qaw-vote-sheet.md", q / "qaw-tally.md"),
         "qaw-summary.md": qawkit.build_summary(rep, q / "qaw-summary.md"),
     }
     for name, text in want.items():
@@ -375,6 +774,14 @@ for ex in sorted((ROOT / "examples").glob("personal-finance-tracker-*")):
         check(f"{ex.name}/qaw/{name} matches a fresh regeneration "
               f"(re-run scripts/qawkit.py — see the example README)",
               committed.is_file() and committed.read_text(encoding="utf-8") == text)
+    sheet = (q / "qaw-vote-sheet.md").read_text(encoding="utf-8")
+    check(f"{ex.name}/qaw/qaw-vote-sheet.md is the ballot with votes filled in",
+          blank_votes(sheet) == qawkit.build_ballot(rep, q / "qaw-vote-sheet.md"))
+    block = want["qaw-tally.md"].split("## Step 7 of the report\n\n", 1)[1].split("\n## ", 1)[0].strip()
+    check(f"{ex.name}: Step 7 of the report is the tally's block", block in rep.read_text(encoding="utf-8"))
+    check(f"{ex.name}: the report lints clean", qawkit.lint_report(rep.read_text(encoding="utf-8"), GUIDE) == [])
+    check(f"{ex.name}: status finds every stage done",
+          all(state == "done" for _, state, _ in qawkit.report_progress(rep.read_text(encoding="utf-8"))))
 
 print(f"{PASSES} passed, {FAILS} failed")
 sys.exit(1 if FAILS else 0)

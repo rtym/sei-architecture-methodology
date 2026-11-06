@@ -1,6 +1,7 @@
 # QAW summary — Personal Finance Tracker
 
 - **Workshop date**: 2026-08-20
+- **Format**: half-day
 - **Report status**: complete
 - **Entry mode**: partial
 - **Full report**: [qaw-report.md](qaw-report.md)
