@@ -40,7 +40,10 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
    output-looking `.png`/`.svg` argument is rejected; use `--out DIR` to redirect).
 3. If an example's `drivers/` or `qaw/qaw-report.md` changed, regenerate its QAW kit with
    `scripts/qawkit.py` (commands in the example README) — `tests/test_qawkit.py` compares the
-   committed `qaw-prep.md`, `qaw-vote-sheet.md` and `qaw-summary.md` with a fresh run.
+   committed `qaw-prep.md`, `qaw-agenda.md`, `qaw-tally.md` and `qaw-summary.md` with a fresh
+   run, checks that `qaw-vote-sheet.md` is the ballot with votes filled in, and that the
+   report's Step 7 is the tally's block. If a skill names a new plugin file, check the Claude
+   app edition still builds: `python3 scripts/appbundle.py` (`tests/test_appbundle.py` runs it).
 4. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
 
 ## Release checklist
@@ -50,6 +53,8 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
 2. `bash tests/run.sh && claude plugin validate .`
 3. Commit, then tag `v<x.y.z>` and `sei-architecture-methodology--v<x.y.z>` (both tag styles are in use).
 4. Push only when asked — pushing publishes to everyone who installed from `rtym/sei-architecture-methodology`.
+5. Build the Claude app edition (`python3 scripts/appbundle.py`) and attach
+   `dist/claude-app/sei-architecture-methodology-app-<x.y.z>.zip` to the GitHub release.
 
 To bump the vendored C4-PlantUML, follow `skills/sei-diagrams/assets/c4/README.md`.
 

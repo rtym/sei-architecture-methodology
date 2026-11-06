@@ -13,7 +13,7 @@ It packages seven activities as separate skills behind one router:
 | `/sei` | `sei-architecture` | Router — pick or infer the activity you need | — |
 | `/drivers` | `architectural-drivers` | Collect & track the four driver kinds (business goals, use cases, constraints, quality attributes) with a traceability matrix | `architecture/drivers/` package — one file per driver + a `README.md` index per directory + per-use-case UML diagrams + a **tabular** utility tree |
 | `/quality-attributes` | `quality-attributes` | Measurable six-part quality attribute scenarios (ISO/IEC 25010), each drawn as a UML scenario diagram | `quality-attributes/scenarios.md` |
-| `/qaw` | `quality-attribute-workshop` | Facilitate the SEI 8-step Quality Attribute Workshop | `qaw/qaw-report.md` |
+| `/qaw` | `quality-attribute-workshop` | Facilitate the SEI 8-step Quality Attribute Workshop with a question script, four formats and a generated kit (agenda, prep sheet, vote tally, status, scenario lint, summary) | `qaw/qaw-report.md` + the kit beside it |
 | `/add` | `attribute-driven-design` | Run an ADD 3.0 design session → architecture + C4/UML views + ADR log | `add/<slug>-session.md`, `add/<slug>-Architecture.md` |
 | `/atam` | `atam` | Run a 9-step ATAM evaluation → risks, sensitivity/tradeoff points, risk themes | `atam/atam-report.md` |
 | `/architecture-docs` | `architecture-documentation` | Produce a Views-and-Beyond architecture description (Module + C&C + Allocation views) | `docs/` package |
@@ -21,7 +21,8 @@ It packages seven activities as separate skills behind one router:
 
 Every skill:
 
-- **drafts first**, then refines with you — it doesn't interview you question by question;
+- **drafts first**, then refines with you — only the QAW interviews, one question at a time from
+  its question guide, because a workshop's answers have to come from the people in it;
 - writes **Markdown** artifacts under `architecture/` as the single source of truth;
 - keeps **traceability** — decisions and findings cite driver IDs; ADD writes an ADR per decision,
   ATAM marks scenarios `at risk`, and both write statuses back to the drivers register;
@@ -100,12 +101,12 @@ plugin enabled with zero manual steps.
 
 ### Discoverability & trust
 
-There is no central, curated Anthropic app-store for plugins — "submitting to a marketplace" is
-just publishing `.claude-plugin/marketplace.json` in a repo. Being public on GitHub doesn't add it
-to any searchable directory: people only find it if you point them at `rtym/sei-architecture-methodology`
-(this README, a docs link, word of mouth). Installing runs the plugin's skills/commands with
-whatever permissions the user's Claude Code session grants — same trust model as running any
-third-party script — and Anthropic doesn't track installs or review the code beforehand.
+Publishing `.claude-plugin/marketplace.json` in a public repository does not list the plugin in
+Anthropic's plugin directory (Customize > Plugins > Discover in the Claude app): people find it
+only when pointed at `rtym/sei-architecture-methodology`. Anthropic reviews the plugins listed in
+its directory; that review does not cover a marketplace you add yourself. Installing runs the
+plugin's skills and commands with whatever permissions the user's session grants — the same
+trust model as running any third-party script.
 
 ### One-time diagram renderer setup
 
@@ -138,6 +139,42 @@ This is what makes the diagrams portable. Your `.puml` files live in *your* proj
 `architecture/diagrams/`, while the plugin lives under `~/.claude/plugins/…` — no number of
 `../` walks from one to the other. A `!include` containing `../` is a bug, and
 `tests/validate.py --self` rejects it.
+
+---
+
+## Use it in the Claude app (chat and Cowork)
+
+The Claude app copies only a skill's own folder into a chat's sandbox, so a skill there cannot
+read this plugin's shared `references/`, `templates/` and `scripts/`. The **Claude app edition**
+fixes that: `scripts/appbundle.py` copies into every skill folder each file the skill names
+(and each file those files name), rewrites the paths to `${CLAUDE_SKILL_DIR}`, and keeps
+SKILL.md front matter to the fields claude.ai accepts. The same sources always give a
+byte-identical zip, and `tests/test_appbundle.py` checks the result: no path leaves its skill,
+every path resolves, the bundled QAW kit and validator run from inside the bundle.
+
+```bash
+python3 scripts/appbundle.py              # writes dist/claude-app/sei-architecture-methodology-app-<version>.zip
+```
+
+Each release has the zip attached, and every CI run uploads it as the `claude-app-edition`
+artifact. To install it:
+
+1. In claude.ai or the desktop app, open **Customize > Plugins**.
+2. Choose **Add > Upload plugin** and select the zip.
+3. In a new chat, ask Claude which skills it has from plugins, then ask it to run a Quality
+   Attribute Workshop.
+
+What works where:
+
+| | Claude Code | Cowork | Chat |
+|---|---|---|---|
+| Skills and their references, templates, kit and validator | yes | yes | yes, with code execution turned on |
+| Slash commands (`/qaw`, `/add`, …) | yes | not in the app edition — ask for the activity by name | not in the app edition — ask for the activity by name |
+| Artifacts written to `architecture/` in your project | yes | yes | in the chat's sandbox, offered as files to download |
+| Diagrams rendered to PNG | yes, after `setup.sh` | only where Node.js and Java are installed | no — the Mermaid or PlantUML source stays in the artifact |
+
+For Claude Code, keep installing the plugin itself from the marketplace (above); the app edition
+leaves out the slash commands.
 
 ---
 
@@ -224,6 +261,21 @@ Produces `architecture/quality-attributes/scenarios.md` — every scenario in th
 against ISO/IEC 25010, and drawn as the canonical six-part scenario diagram:
 
 ![Six-part quality attribute scenario diagram](examples/personal-finance-tracker-mermaid/drivers/quality-attributes/diagrams/scenario-SQA-1.png)
+
+### 2b. Run a Quality Attribute Workshop
+
+```
+/qaw Personal Finance Tracker docs/product-brief.md
+```
+
+The workshop starts by reading what exists and choosing an entry mode (greenfield, partial or
+refresh) and a format (two-day, one-day, half-day or remote). It then asks the questions for
+each step from its question guide, one at a time, and keeps the report current. `qawkit.py`
+generates the working files deterministically: the agenda, a preparation sheet of documented
+answers to confirm, the vote sheet and its tally, a progress check (`status`), a scenario check
+(`lint`) and a one-page summary for the sponsor. See the
+[example report](examples/personal-finance-tracker-mermaid/qaw/qaw-report.md) and its
+[kit](examples/personal-finance-tracker-mermaid/README.md#regenerate-the-qaw-kit).
 
 ### 3. Design the architecture with ADD 3.0
 
@@ -352,6 +404,8 @@ sei-architecture-methodology/
 ├── scripts/
 │   ├── mdreport.py                    # dependency-free Markdown → Markdown/HTML report builder (mermaid + plantuml embed)
 │   ├── build-report.sh
+│   ├── qawkit.py                      # QAW kit: prep, agenda, ballot, tally, status, lint, summary
+│   ├── appbundle.py                   # builds the Claude app edition (self-contained skills, deterministic zip)
 │   └── render-all.sh                  # re-render every *.mmd / *.puml under a directory, in place
 ├── examples/
 │   ├── personal-finance-tracker-mermaid/    # the full worked example, every diagram in Mermaid
@@ -359,7 +413,9 @@ sei-architecture-methodology/
 ├── tests/
 │   ├── validate.py                    # plugin + artifact validator (structure, C4 principles, six-part scenarios, traceability, prose)
 │   ├── test_mdreport.py               # mdreport unit tests
-│   ├── test_validate.py               # validator prose-check unit tests
+│   ├── test_validate.py               # validator unit tests
+│   ├── test_qawkit.py                 # QAW kit unit tests + golden files for the examples' kits
+│   ├── test_appbundle.py              # Claude app edition: limits, self-containment, determinism
 │   └── run.sh                         # full suite
 ├── CHANGELOG.md                       # release notes per version
 ├── CLAUDE.md                          # contributor notes: tests, conventions, release checklist
@@ -417,6 +473,12 @@ Since 1.11.1 the validator also reads artifacts as a human would: filler phrases
 "leverages", "delve", …) are rejected, an unfilled template placeholder (`<SystemName>`,
 `<YYYY-MM-DD>`) fails, a duplicated header bullet fails, every example diagram source must have
 its committed render, and an orphan PNG that nothing references fails the self-check.
+Since 1.13.0 the QAW is checked end to end: the question guide covers every step,
+characteristic and system type, the facilitation playbook times all nine steps in each format,
+a report's Step 7 votes add up (totals, the 30 % budget, nobody over budget, a ranking that
+follows the totals), `tests/test_qawkit.py` covers every kit command and compares each
+example's kit with a fresh run, and `tests/test_appbundle.py` builds the Claude app edition and
+runs its bundled scripts.
 
 Validate produced artifacts in a target project:
 
@@ -431,7 +493,7 @@ pull requests, and on manual dispatch, as three jobs:
 
 | Job | What it runs | Needs |
 |-----|--------------|-------|
-| `test suite (no renderer)` | `tests/run.sh --quick` — everything but the render smoke test | Python only; finishes in seconds |
+| `test suite (no renderer)` | `tests/run.sh --quick` — everything but the render smoke test — then builds the Claude app edition and uploads it as the `claude-app-edition` artifact | Python only; finishes in seconds |
 | `full suite (Mermaid renderer)` | `setup.sh` then the complete `tests/run.sh` | Node 20 + a headless Chromium (cached between runs) |
 | `full suite (PlantUML renderer)` | the complete `tests/run.sh`, then renders every shipped example `.puml` | PlantUML + a JRE (apt) |
 
