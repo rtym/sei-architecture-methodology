@@ -77,16 +77,21 @@ runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated 
 - [ ] The workshop relied on the documentation available: documented answers were confirmed
       with their source cited, not asked again; open questions covered only the gaps;
       contradictions between documents and stakeholders are recorded.
+- [ ] The header states the format (two-day / one-day / half-day / remote) and the agenda was
+      generated from the playbook's timeboxes with `qawkit.py agenda`.
 - [ ] Every step was opened with questions from `qaw-question-guide.md`, not "what are your
       quality requirements?"; every ISO/IEC 25010 characteristic without a driver was asked
-      about, and its answer recorded.
+      about, and its answer recorded — a driver, or the characteristic named as "not
+      significant here" with the reason; the system-type questions were asked when one applies.
 - [ ] Refresh mode: existing scenarios entered Step 5 tagged *existing* and were voted on with
       the new ones.
 - [ ] Every unanswered question is a `PQ-<n>` row with who can answer it, an owner and a due
       date — no invented numbers.
 - [ ] Participant list with roles.
 - [ ] Raw brainstormed scenarios kept **verbatim**; consolidation has a merge map; dissent recorded.
-- [ ] Vote budget stated explicitly as `ceil(0.30 × consolidated count)`.
+- [ ] Vote budget stated explicitly as `ceil(0.30 × consolidated count)`; the Step 7 table and
+      ranking come from `qawkit.py tally`, and `validate.py` finds no vote arithmetic error.
+- [ ] `qawkit.py lint` reports no findings.
 - [ ] Refined top scenarios have the six-part form + numeric measure + questions + issues.
 - [ ] Step 9 utility tree is a **table** (one leaf per row, `(V, R)` pair, `★` on (H,H)), not a diagram.
 

@@ -36,6 +36,8 @@ Terms used across the skills and references, with the file that treats each in d
 | **Tactics-based questionnaire** | a per-QA analysis: for each tactic, Supported? / Design decisions + location / Risk / Rationale (`quality-attribute-taxonomy.md`) |
 | **QAW** | Quality Attribute Workshop — an 8-step, stakeholder-driven method to elicit and prioritise scenarios before the architecture exists (`qaw-method.md`) |
 | **QAW entry mode** | how a QAW starts: *greenfield* (nothing documented), *partial* (some inputs to correct) or *refresh* (an existing drivers register to test and extend) (`qaw-question-guide.md`) |
+| **QAW format** | how long and where a QAW runs: *two-day*, *one-day*, *half-day* (a mini-QAW) or *remote* (three short sessions); each has a timebox table that `qawkit.py agenda` turns into a dated agenda (`qaw-facilitation-playbook.md`) |
+| **Scenario smell** | a sign that a refined scenario cannot be tested yet: an empty part, a generic source such as "the user", a measure with no number or with a vague word such as "fast", no business goal (`qaw-facilitation-playbook.md`; `qawkit.py lint` finds most of them) |
 | **Parked question** | a workshop question nobody present could answer, recorded as `PQ-<n>` with an owner and a due date instead of an invented answer (`qaw-question-guide.md`) |
 | **PALM** | a workshop with the architect + business stakeholders to elicit business goals and derive the QAs they imply (`architectural-drivers.md`) |
 | **Architecture debt** | technical debt whose root cause is spread across files and their relations; found via a design structure matrix + anti-patterns (`architecture-in-the-lifecycle.md`) |

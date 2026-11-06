@@ -6,7 +6,9 @@ documentation which already exists. The method itself (roles, the eight steps, o
 `${CLAUDE_PLUGIN_ROOT}/references/qaw-method.md`; this file is only about what to say in the room.
 
 Start with **Choose the entry mode** below, then work through **Questions by step** in order. The
-attribute and role sections are pools you draw from during Steps 4, 5 and 8.
+attribute, system-type and role sections are pools you draw from during Steps 4, 5 and 8. How to
+run the room around these questions (formats, timeboxes, difficult moments) is in
+`${CLAUDE_PLUGIN_ROOT}/references/qaw-facilitation-playbook.md`.
 
 ## How to ask
 
@@ -291,6 +293,97 @@ Usually captured as use cases, not quality scenarios — but ask:
    deadlines)?
 2. How would anyone notice it was wrong?
 3. *Measure:* What error rate is acceptable, and how is correctness checked?
+
+## Questions by system type
+
+Some kinds of system have failure modes the general questions miss. When the system is one of
+these (or contains one), add its questions to Steps 4 and 5; `qawkit.py prep --domain <key>`
+puts them in the preparation sheet. Each list ends with the question that draws out the measure.
+
+### AI and machine-learning components
+
+Key: `ai`. ISO/IEC 25059:2023 extends ISO/IEC 25010 for AI systems with sub-characteristics such
+as user controllability, transparency, robustness and intervenability; these questions reach them.
+
+1. Which decisions does the model make or influence, and what does a wrong answer cost?
+2. Who must be able to understand or challenge an output — users, support staff, a regulator?
+3. What should happen when the model is unsure, unavailable, or sees inputs unlike its training
+   data?
+4. Who can override the model or switch it off, and how quickly?
+5. Which personal or licensed data goes into training or prompts, and who may see the outputs?
+6. Which groups of users could the model treat unfairly, and how would anyone notice?
+7. *Measure:* What accuracy or error rate is acceptable, measured how often and on which data,
+   and how long may a degraded model stay in production?
+
+### Multi-tenant SaaS
+
+Key: `saas`.
+
+1. Can one tenant's load, data or failure affect another tenant? Which tenant would complain
+   first?
+2. Must any tenant's data stay in one region, or be deleted on request?
+3. How is a new tenant set up, and how long may that take?
+4. Do large tenants need different limits, plans or upgrade schedules?
+5. *Measure:* How much may one tenant's peak slow down the others, and how long may setting up a
+   tenant take?
+
+### Data and analytics platforms
+
+Key: `data`.
+
+1. How fresh must the data be for each consumer — a dashboard, a report, a model?
+2. What happens when a source sends late, duplicate or malformed data?
+3. Who may see which columns or rows, and must that access be audited?
+4. How far back must data be reprocessed when a business rule changes?
+5. *Measure:* What maximum data age, what share of bad records, and how long to reprocess a
+   month of data?
+
+### Mobile and offline-capable apps
+
+Key: `mobile`.
+
+1. Where do users lose their connection, and what must keep working when they do?
+2. What happens when two devices change the same record while offline?
+3. Which old app versions must keep working, and for how long?
+4. Which device limits matter — battery, storage, mobile data, old operating systems?
+5. *Measure:* What may a user do offline, how soon after reconnecting must changes sync, and how
+   much battery or data may a session use?
+
+### Regulated data — payments, health, personal data
+
+Key: `regulated`.
+
+1. Which regulation applies, and which of its requirements reach the architecture — residency,
+   retention, consent, audit?
+2. What must an auditor or regulator be able to see, and how quickly must it be produced?
+3. What happens to a payment or record caught half-way by a failure — lost, duplicated or
+   recoverable?
+4. Who may see personal data, and how is a person's request to see or delete their data
+   handled?
+5. *Measure:* How many lost or duplicated transactions are acceptable, how soon must a breach be
+   reported, and how long may a request to see or delete data take?
+
+### Embedded, IoT and edge devices
+
+Key: `iot`.
+
+1. What happens when a device loses its connection or its power in the middle of an operation?
+2. How are devices updated in the field, and what happens when an update fails half-way?
+3. Which timing deadlines are hard (a missed one is a failure) and which are soft?
+4. How many years must a device run on its hardware before it is replaced?
+5. *Measure:* What deadline in milliseconds, how many misses are allowed, and what share of the
+   fleet may fail an update?
+
+### Public APIs and integration platforms
+
+Key: `api`.
+
+1. Who calls the API, how many callers are there, and how much notice do they get of a change?
+2. How long must an old version of the API keep working?
+3. What happens when one caller sends far more traffic than agreed?
+4. How do callers find out that the API is down or slow?
+5. *Measure:* How long do deprecated versions live, what request rate does each caller get, and
+   what error rate breaks the agreement?
 
 ## Questions by stakeholder role
 
