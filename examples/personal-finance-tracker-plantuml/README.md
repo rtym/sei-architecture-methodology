@@ -45,7 +45,7 @@ footer links up to (`/drivers` creates it from `templates/architecture-readme.md
 | [`drivers/use-cases/`](drivers/use-cases/README.md) | `/drivers` + `/sei-diagram` | Each use case with its own **proper UML use case diagram** (native PlantUML — stick-figure actors, ellipse use cases, boundary rectangle, dashed `<<include>>` / `<<extend>>`) rendered to `diagrams/UC-<n>.png`, plus an overview diagram |
 | [`drivers/quality-attributes/`](drivers/quality-attributes/README.md) | `/drivers` | Each quality attribute as a **six-part scenario** + its own six-part scenario diagram (PlantUML pattern); [`utility-tree.md`](drivers/quality-attributes/utility-tree.md) — the summary of the QA drivers **as a table** (`(V, R)` per leaf) |
 | [`qaw/qaw-report.md`](qaw/qaw-report.md) | `/qaw` | The SEI 8-step workshop + Step 9 **utility tree** (a table) built from the refined scenarios (handed to `/drivers`) |
-| [`qaw/qaw-prep.md`](qaw/qaw-prep.md) · [`qaw/qaw-vote-sheet.md`](qaw/qaw-vote-sheet.md) · [`qaw/qaw-summary.md`](qaw/qaw-summary.md) | `scripts/qawkit.py` | The **QAW kit**, generated from the documentation: a preparation sheet for a refresh workshop (documented answers to confirm, the uncovered ISO/IEC 25010 characteristics, each participant's questions, open parked questions), the Step 7 vote sheet, and the one-page summary for the sponsor |
+| [`qaw/qaw-prep.md`](qaw/qaw-prep.md) · [`qaw/qaw-agenda.md`](qaw/qaw-agenda.md) · [`qaw/qaw-vote-sheet.md`](qaw/qaw-vote-sheet.md) · [`qaw/qaw-tally.md`](qaw/qaw-tally.md) · [`qaw/qaw-summary.md`](qaw/qaw-summary.md) | `scripts/qawkit.py` | The **QAW kit**, generated from the documentation. For the next workshop, a refresh run remotely: the preparation sheet (documented answers to confirm, characteristics set aside last time with their reasons, the regulated-data questions, each participant's questions, open parked questions) and the three-session agenda. From the half-day workshop on 2026-08-20: the vote sheet as filled in, its tally (the source of the report's Step 7), and the one-page summary for the sponsor |
 | [`quality-attributes/scenarios.md`](quality-attributes/scenarios.md) | `/quality-attributes` | **Register-mode** summary — six-part table + links to the per-scenario files and diagrams in `drivers/quality-attributes/`; no duplicated copy |
 | [`add/`](add/personal-finance-tracker-Architecture.md) | `/add` | An ADD 3.0 session log + companion architecture document — 9 sections incl. a module decomposition view and an [`adr/`](add/adr/ADR-1.md) log; context / container / component / sequence / deployment views in **C4-PlantUML**; interfaces; ADR-style decisions |
 | [`docs/`](docs/README.md) | `/architecture-docs` | A Views-and-Beyond package — roadmap ([`README.md`](docs/README.md)), system overview, one view packet per viewtype (Module / C&C / Allocation), mapping between views, rationale + ADRs, directory, change log |
@@ -77,10 +77,18 @@ scripts/build-report.sh --profile vandb $EX/docs/ \
 # from the plugin root — the committed files are golden fixtures: tests/test_qawkit.py fails if they drift
 EX=examples/personal-finance-tracker-plantuml
 python3 scripts/qawkit.py prep --drivers $EX/drivers --previous-report $EX/qaw/qaw-report.md \
-  --system "Personal Finance Tracker" --date 2026-11-02 --out $EX/qaw/qaw-prep.md
-python3 scripts/qawkit.py ballot  $EX/qaw/qaw-report.md --out $EX/qaw/qaw-vote-sheet.md
+  --domain regulated --system "Personal Finance Tracker" --date 2026-11-02 --out $EX/qaw/qaw-prep.md
+python3 scripts/qawkit.py agenda --format remote --date 2026-11-10 --start 10:00 \
+  --system "Personal Finance Tracker" --out $EX/qaw/qaw-agenda.md
+python3 scripts/qawkit.py tally   $EX/qaw/qaw-vote-sheet.md --out $EX/qaw/qaw-tally.md
 python3 scripts/qawkit.py summary $EX/qaw/qaw-report.md --out $EX/qaw/qaw-summary.md
+python3 scripts/qawkit.py status  $EX/qaw/qaw-report.md     # prints progress and gaps
+python3 scripts/qawkit.py lint    $EX/qaw/qaw-report.md     # prints scenario smells; exits 1 if any
 ```
+
+`qaw-vote-sheet.md` is the sheet `qawkit.py ballot` wrote, with the votes filled in by hand;
+the test checks that emptying its vote cells gives the ballot back, and that the report's Step 7
+is the tally's block. Regenerate the ballot only when the consolidated scenarios change.
 
 ## Validate
 

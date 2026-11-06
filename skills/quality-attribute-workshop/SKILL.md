@@ -4,9 +4,10 @@ description: >-
   Facilitate the SEI Quality Attribute Workshop (QAW) — the eight-step, stakeholder-driven method
   that elicits, brainstorms, consolidates, prioritises and refines quality attribute scenarios,
   guided by a question script per step, per quality attribute and per stakeholder role. Runs from
-  a blank page or over existing drivers and documentation (refresh mode). Use when the user
-  invokes /qaw or asks to run a QAW, facilitate a quality attribute workshop, elicit or revisit
-  quality requirements with stakeholders, or asks which questions to ask in one.
+  a blank page or over existing drivers and documentation (refresh mode), in a two-day, one-day,
+  half-day or remote format, with generated agenda, vote tally, progress and scenario checks. Use
+  when the user invokes /qaw or asks to run a QAW, facilitate a quality attribute workshop,
+  elicit or revisit quality requirements with stakeholders, or asks which questions to ask in one.
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
 user-invocable: false
 ---
@@ -24,9 +25,15 @@ and the "play dumb" technique for a stakeholder who says *"I don't know what tha
 should be"*). Report template: `${CLAUDE_PLUGIN_ROOT}/templates/qaw-report.md`.
 
 **Question guide:** `${CLAUDE_PLUGIN_ROOT}/references/qaw-question-guide.md` is the facilitator's
-script — the questions for every step, per ISO/IEC 25010 characteristic, per stakeholder role,
-and for testing documentation that already exists. Read it before Step 0 and ask from it at every
+script — the questions for every step, per ISO/IEC 25010 characteristic, per kind of system
+(AI, multi-tenant SaaS, data, mobile, regulated data, IoT, public APIs), per stakeholder role, and
+for testing documentation that already exists. Read it before Step 0 and ask from it at every
 step: never open a step with "what are your quality requirements?".
+
+**Facilitation playbook:** `${CLAUDE_PLUGIN_ROOT}/references/qaw-facilitation-playbook.md` is how
+to run the room — the four formats and their timeboxes, who does what, what to prepare, what to
+do and say in difficult moments, the scenario smells, and what happens after the workshop. Turn
+to its *Difficult moments* table whenever the session stalls or one voice takes over.
 
 **Keep prompts short.** Numbered lists for choices. One step at a time; announce each step in one line.
 
@@ -59,19 +66,27 @@ when it is not. Before every step:
 
 ## Generate the workshop artifacts
 
-`${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py` builds three working artifacts from what is already
-documented, deterministically (same inputs, same file). Use it instead of writing them by hand;
-review each file before handing it out.
+`${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py` builds the workshop's working files and checks from
+what is already documented and from the report, deterministically (same inputs, same output).
+Use it instead of writing these files or adding up votes by hand; review each file before
+handing it out.
+
+Every command below is `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py <command> …`.
 
 | When | Command | Writes |
 |------|---------|--------|
-| Before Step 1 (after Step 0) | `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py prep --drivers architecture/drivers --system "<SystemName>" --date <YYYY-MM-DD> --out architecture/qaw/qaw-prep.md` (add `--previous-report architecture/qaw/qaw-report-<date>.md` in refresh mode) | `qaw-prep.md` — documented answers to confirm with their sources, the ISO/IEC 25010 characteristics with no scenario and their questions, each participant's role questions, open parked questions from the last workshop |
-| At Step 7, after consolidation | `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py ballot architecture/qaw/qaw-report.md --out architecture/qaw/qaw-vote-sheet.md` | `qaw-vote-sheet.md` — one row per `CS-<n>`, one column per participant, the vote budget computed |
-| After the hand-off table | `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py summary architecture/qaw/qaw-report.md --out architecture/qaw/qaw-summary.md` | `qaw-summary.md` — one page for the sponsor: counts, ranking, `(H, H)` leaves, refined scenarios, open questions |
+| Before Step 1 (after Step 0) | `prep --drivers architecture/drivers --system "<SystemName>" --date <YYYY-MM-DD> --out architecture/qaw/qaw-prep.md` — add `--previous-report architecture/qaw/qaw-report-<date>.md` in refresh mode and `--domain <key>[,<key>]` for the kind of system (`ai`, `saas`, `data`, `mobile`, `regulated`, `iot`, `api`) | `qaw-prep.md` — documented answers to confirm with their sources, the ISO/IEC 25010 characteristics with no scenario and their questions, those the last workshop set aside with its reasons, the system-type questions, each participant's role questions, open parked questions from the last workshop |
+| Before Step 1 | `agenda --format <two-day\|one-day\|half-day\|remote> --date <YYYY-MM-DD> --start 09:00 --system "<SystemName>" --out architecture/qaw/qaw-agenda.md` | `qaw-agenda.md` — dated, timed blocks from the playbook's timeboxes; later days fall on working days |
+| At any time | `status architecture/qaw/qaw-report.md --date <today>` | to stdout: which steps are done, the next step, drivers and scenario types with no scenario, characteristics with no leaf, open and overdue parked questions |
+| At Step 7, after consolidation | `ballot architecture/qaw/qaw-report.md --out architecture/qaw/qaw-vote-sheet.md` | `qaw-vote-sheet.md` — one row per `CS-<n>`, one column per participant, the vote budget computed |
+| At Step 7, after the vote | `tally architecture/qaw/qaw-vote-sheet.md --out architecture/qaw/qaw-tally.md` | `qaw-tally.md` — totals, unspent votes and the ranking, as the block that replaces Step 7's budget line, table and ranking; exits 2 when someone voted over budget |
+| After Step 8, and in the quality gate | `lint architecture/qaw/qaw-report.md` | to stdout: scenario smells (empty part, generic source, no number, vague word, no business goal, characteristic neither covered nor recorded as not significant), each with the guide's question to ask; exits 1 while findings remain |
+| After the hand-off table | `summary architecture/qaw/qaw-report.md --out architecture/qaw/qaw-summary.md` | `qaw-summary.md` — one page for the sponsor: counts, ranking, `(H, H)` leaves, refined scenarios, open questions |
 
 `prep` suggests an entry mode from the register; the Step 0 decision is still yours. With no
 drivers register yet (greenfield), skip `prep` and use the question guide directly. The script
 exits 2 with a one-line reason when an input is missing; fix the input, never hand-edit around it.
+When the user asks where the workshop stands, run `status` and answer from its output.
 
 ## Asking the questions
 
@@ -101,6 +116,11 @@ ask the mode questions from the guide's *Choose the entry mode* section. Then pi
 If a previous `qaw-report.md` exists, rename it `qaw-report-<its date>.md` in the same folder
 (its diagram links keep working) and start a new report. Record the mode and every input used in
 the report's **Starting point** section, linking the previous report if there is one.
+
+Then agree the **format** with the user from the playbook's *Choose a format* table, record it in
+the report header (`- **Format**: one-day`), and generate the agenda with `qawkit.py agenda`. Ask
+which kind of system this is; each matching system type in the question guide becomes a
+`--domain` key for `prep`.
 
 ## The eight steps
 
@@ -134,8 +154,9 @@ shape the architecture. Stakeholders add, remove, merge. Record the agreed list 
 mapped to business goals.
 Ask the guide's *Step 4* questions. Then check coverage against all nine ISO/IEC 25010
 characteristics: for each one with no driver, ask its opening questions from the guide's
-*Questions by quality attribute* and record the answer — a driver, or "not significant here"
-with the reason.
+*Questions by quality attribute* and record the answer — a driver, or a line naming the
+characteristic as "not significant here" with the reason (that exact phrase is what `status`
+and `lint` look for). Add the questions of each system type that applies.
 
 ### Step 5 — Scenario brainstorming (round-robin)
 Go around the participants; each contributes **one scenario per turn**. A scenario names a
@@ -165,7 +186,9 @@ Each stakeholder gets a vote budget = **30 % of the consolidated scenario count,
 2. Tally. Sort by total votes.
 
 Generate the ballot with `qawkit.py ballot` (see *Generate the workshop artifacts*) so the
-budget and the scenario rows come from the report, not from memory.
+budget and the scenario rows come from the report, not from memory. Once the votes are in the
+sheet, run `qawkit.py tally` and copy its *Step 7 of the report* block into the report — never
+add votes up by hand. `validate.py` re-checks the totals, the budget and the ranking order.
 
 When relaying for a group, ask the user for per-stakeholder vote allocations, or for a single
 merged prioritisation if that is all that is available. Record the vote table and the ranked list.
@@ -187,6 +210,10 @@ measures with its *Turning vague answers into scenarios* table. For each, produc
   image line;
 - **questions** raised about how the architecture would achieve it;
 - **issues** / concerns / assumptions surfaced during discussion.
+
+After each refined scenario, run `qawkit.py lint` and ask the question it gives for every
+finding before moving on; the playbook's *Scenarios that hold up* lists the smells it cannot
+see (a solution in the scenario, two events in one stimulus).
 
 ### Step 9 — Build the quality attribute utility tree
 After refinement, assemble the **utility tree as a table** — it is the summary of the workshop's
@@ -234,7 +261,8 @@ package index `architecture/README.md` (create it from
 12. Next steps (run `/drivers` from the hand-off table, then ADD; schedule ATAM).
 
 Generated beside the report by `qawkit.py` (section above): `qaw-prep.md` (before the session,
-when a drivers register exists), `qaw-vote-sheet.md` (Step 7) and `qaw-summary.md` (at the end).
+when a drivers register exists), `qaw-agenda.md` (before the session), `qaw-vote-sheet.md` and
+`qaw-tally.md` (Step 7) and `qaw-summary.md` (at the end).
 
 ## Rules
 
@@ -266,13 +294,39 @@ when a drivers register exists), `qaw-vote-sheet.md` (Step 7) and `qaw-summary.m
   `${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh architecture/qaw/qaw-report.md --format <fmt> --embed-diagrams
   --title "Quality Attribute Workshop — <SystemName>"`.
 
+## Running in the Claude app (chat)
+
+The same workshop runs in a claude.ai conversation, where there is no project folder and
+usually nobody else in the room: the user relays for the stakeholders.
+
+- **Inputs.** Ask the user to attach the documents Step 0 needs (brief, requirements, a zipped
+  `architecture/drivers/` folder, the last `qaw-report.md`). The *Rely on the documentation
+  available* rules apply to attachments exactly as to files.
+- **Pace.** One step per reply: announce the step, ask its questions as a numbered list the user
+  can answer in one message, play the answers back, then show the step's section of the report.
+- **Files.** With code execution, keep the report and the kit under `architecture/qaw/` in the
+  sandbox's working folder, run `qawkit.py` and `validate.py` there exactly as above, and offer
+  the files for download at the end of each step. Without code execution, show each section in
+  the reply and say that the kit files and the checks were not run.
+- **Resuming.** In a new conversation, ask for the last `qaw-report.md`, run `status` on it, and
+  continue from its *Next step*.
+- **Diagrams.** The renderers need Node.js, Chromium, Java and Graphviz, which chat does not
+  have. Keep each scenario's Mermaid block in the report, leave its image line in place, and
+  tell the user to render the PNGs later with the `sei-diagrams` skill in Claude Code. The
+  missing PNGs are the only `validate.py` findings that may stay open in chat; list them for
+  the user.
+
 ## Quality gate — cross-check the output before you're done
 
-Do not declare the activity complete until the generated artifact passes both:
+Do not declare the activity complete until the generated artifact passes all three:
 
 1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/qaw/qaw-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
-   measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
-2. **Best-practice checklist**: walk the relevant section of
+   measures, traceability with no orphans, vote arithmetic, diagram rules, and the
+   deprecated-`QAS-` guard.
+2. **Scenario lint**: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py lint architecture/qaw/qaw-report.md`
+   — exits 0. Every finding is a question still to ask, or a characteristic to record as not
+   significant here.
+3. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
    re-run, repeat.
 

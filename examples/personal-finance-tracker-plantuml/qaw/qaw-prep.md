@@ -30,32 +30,29 @@ Each row is already answered in the drivers register. Read it out with its sourc
 
 ## Quality characteristics with no scenario
 
-3 of the 8 ISO/IEC 25010 characteristics that scenarios cover have no scenario in the register. Ask these in Step 4; record each answer as a driver, or as not significant here with the reason. Functional suitability is left out because use cases cover it.
+Every characteristic without a scenario was set aside as not significant at the last workshop; the next section asks whether that still holds.
 
-### Compatibility
+## Characteristics set aside last time
 
-1. Which other systems must it exchange data with, now and in the next year?
-2. Who controls each interface, and how much notice do we get when it changes?
-3. What happens when a partner sends data we do not expect — reject it, store it, guess?
-4. Must it run alongside other software on shared infrastructure without slowing it down?
-5. Measure: What share of messages may fail or be lost, and how quickly must a failure be noticed?
+The last workshop recorded these as not significant. Read the reason out and ask whether it still holds; if it no longer does, ask the characteristic's questions from the guide.
 
-### Flexibility
+| Characteristic | Reason recorded | Ask |
+|----------------|-----------------|-----|
+| Compatibility | Compatibility is not significant here at launch: bank statements arrive as CSV files the user uploads, an unrecognised layout falls back to a guided column-mapping step (UC-3), and no partner system depends on the app. Revisit it if a direct bank connection is added. | Does this still hold, or has something changed that makes it matter now? |
+| Flexibility | Flexibility is not significant here at launch: there is one region and one deployment target, and load growth is covered under performance efficiency by AD-2. Revisit it when BG-1's 10 000 users are reached. | Does this still hold, or has something changed that makes it matter now? |
+| Safety | Safety is not significant here: nothing the app does can harm a person or property. | Does this still hold, or has something changed that makes it matter now? |
 
-1. How large could this become — users, data, transactions, regions — in one year and in three?
-2. Must it run in another environment later: another cloud, on-premises, a customer's site?
-3. Which vendor or component would we most like to be able to replace?
-4. Must new customers or tenants be set up without engineering work?
-5. How often must new versions reach production, and how quickly must a bad one be rolled back?
-6. Measure: At 10× today's load, how should cost and response time behave, and how long may it take to add capacity?
+## Questions for this kind of system
 
-### Safety
+From the question guide's system-type sections. Add them to Steps 4 and 5.
 
-1. Can the system's output hurt a person, damage property or the environment?
-2. Which inputs or failures could put it into a dangerous state?
-3. What is the safe state, and how fast must the system reach it?
-4. Who must be warned, and how?
-5. Measure: How long may the move to a safe state take, and how many hazards may go undetected?
+### Regulated data — payments, health, personal data
+
+1. Which regulation applies, and which of its requirements reach the architecture — residency, retention, consent, audit?
+2. What must an auditor or regulator be able to see, and how quickly must it be produced?
+3. What happens to a payment or record caught half-way by a failure — lost, duplicated or recoverable?
+4. Who may see personal data, and how is a person's request to see or delete their data handled?
+5. Measure: How many lost or duplicated transactions are acceptable, how soon must a breach be reported, and how long may a request to see or delete data take?
 
 ## Questions by participant
 
