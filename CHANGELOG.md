@@ -4,48 +4,70 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
-## Unreleased
+## 1.13.0 — 2026-11-06
+
+The Quality Attribute Workshop becomes a guided, checked workshop, from a blank page or over
+existing documentation, and the plugin gains a Claude app edition for claude.ai chat and Cowork.
 
 ### Added
 - `references/qaw-question-guide.md` — the QAW facilitator's script: the questions to ask at
-  every step, per ISO/IEC 25010 characteristic, per stakeholder role, for testing documentation
-  that already exists, and for turning vague answers ("fast", "always up", "secure") into
-  measurable scenarios.
-- QAW entry modes. A workshop now starts with Step 0, *Starting point*, which picks
-  **greenfield** (nothing documented), **partial** (a brief, a codebase or loose scenarios to
-  correct) or **refresh** (an existing drivers register to test and extend). In refresh mode the
-  existing scenarios enter brainstorming tagged *existing* and are re-voted with the new ones; a
-  previous report is kept as `qaw-report-<date>.md`.
-- The QAW skill now requires relying on the documentation available: before each step Claude
-  checks the documents found in Step 0, confirms what they already answer (citing the source)
-  instead of asking again, asks open questions only about the gaps, and records where a
-  stakeholder contradicts a document. The validator rejects a partial- or refresh-mode report
-  whose Starting point names no input document.
+  every step, per ISO/IEC 25010 characteristic, per kind of system (AI and machine learning,
+  multi-tenant SaaS, data platforms, mobile and offline, regulated data, IoT and edge, public
+  APIs), per stakeholder role, for testing documentation that already exists, and for turning
+  vague answers ("fast", "always up", "secure") into measurable scenarios.
+- `references/qaw-facilitation-playbook.md` — how to run the room: four formats (two-day,
+  one-day, half-day, remote) with a timebox table each, the roles, what to prepare and when,
+  thirteen difficult moments with what to do and say, the scenario smells, and the follow-up
+  after the workshop, including when to run it again.
+- QAW entry modes. A workshop starts with Step 0, *Starting point*, which picks **greenfield**
+  (nothing documented), **partial** (a brief, a codebase or loose scenarios to correct) or
+  **refresh** (an existing drivers register to test and extend). In refresh mode the existing
+  scenarios enter brainstorming tagged *existing* and are re-voted with the new ones; a previous
+  report is kept as `qaw-report-<date>.md`. The report header records the format.
+- The QAW skill relies on the documentation available: before each step Claude checks the
+  documents found in Step 0, confirms what they already answer (citing the source) instead of
+  asking again, asks open questions only about the gaps, and records where a stakeholder
+  contradicts a document.
 - *Parked questions* in the QAW report: a question nobody present can answer becomes a `PQ-<n>`
   row with who can answer it, an owner and a due date, instead of a guessed number.
+- `scripts/qawkit.py` — the QAW kit, generated deterministically from the documentation and the
+  report: `prep` (documented answers to confirm with their sources, characteristics with no
+  scenario and their questions, characteristics set aside last time with their reasons, the
+  questions for the kind of system via `--domain`, each participant's role questions, open
+  parked questions), `agenda` (dated and timed from the playbook; later days fall on working
+  days), `ballot` (the Step 7 vote sheet), `tally` (totals, budget check, unspent votes and the
+  ranking, as the block for Step 7), `status` (which steps are done, the next step, the gaps,
+  overdue parked questions), `lint` (scenario smells, each with the guide's question to ask;
+  exits 1 while findings remain) and `summary` (one page for the sponsor).
+- A *Running in the Claude app (chat)* section in the QAW skill: attachments as inputs, one step
+  per reply, files in the sandbox, resuming from the last report with `status`, and diagrams
+  left as source for rendering later.
+- `scripts/appbundle.py` — builds the Claude app edition: every skill carries the references,
+  templates and scripts it names, paths point at `${CLAUDE_SKILL_DIR}`, SKILL.md front matter
+  keeps only the fields claude.ai accepts, and the zip is byte-identical for the same sources.
+  Upload it in Customize > Plugins. CI uploads it with every run.
 - Validator: the entry mode must be exactly one of the three; refresh mode must carry existing
-  scenarios into Step 5; every parked question needs an owner and a status. Reports written
-  before this release have neither section and still pass. `--self` checks that the question
-  guide keeps a question section for every step, every ISO/IEC 25010 characteristic and every
-  entry mode. 25 new unit tests (80 in total).
-
-- `scripts/qawkit.py` — generates the QAW's working artifacts from the documentation that
-  already exists, deterministically: `prep` (documented answers to confirm with their sources,
-  the ISO/IEC 25010 characteristics with no scenario and their questions, each participant's
-  role questions, open parked questions from the last workshop), `ballot` (the Step 7 vote
-  sheet with the budget computed) and `summary` (a one-page result for the sponsor). The QAW
-  skill runs it at the matching steps; both worked examples carry a generated kit.
-- `tests/test_qawkit.py` — 103 unit tests for the kit: every reader and builder, CLI exit
-  codes, and golden files (the kit committed in each example must equal a fresh run). Wired
-  into `tests/run.sh` as step 4d.
+  scenarios into Step 5; every parked question needs an owner and a status; the format must be
+  one of the four; Step 7 must add up (row totals, the 30 % budget, nobody over budget, a
+  ranking that follows the totals and lists every scenario). Reports written before this
+  release still pass. `--self` checks that the question guide covers every step,
+  characteristic, entry mode and system type, and that the playbook times all nine steps in
+  every format.
+- Tests: `tests/test_validate.py` 112 (was 55), `tests/test_qawkit.py` 236 and
+  `tests/test_appbundle.py` 94, wired into `tests/run.sh` as steps 4b, 4d and 4e. The golden
+  files tie each example's vote sheet, tally and Step 7 together.
 
 ### Fixed
-- An archived QAW report (`qaw-report-<date>.md`) was validated as an ADD session because
-  of its dated name; it is now validated as a QAW report.
+- An archived QAW report (`qaw-report-<date>.md`) was validated as an ADD session because of
+  its dated name; it is now validated as a QAW report.
 
 ### Changed
-- Both worked examples' QAW reports gain the new sections: a *partial*-mode starting point (the
-  founder's brief) and three parked questions, among them the budget figure BG-4 never stated.
+- Both worked examples' QAW reports: a *partial*-mode starting point (the founder's brief), a
+  half-day format, a recorded reason for each ISO/IEC 25010 characteristic with no scenario,
+  Step 7 taken from the tally, and three parked questions, among them the budget figure BG-4
+  never stated. Each example carries the full kit, prepared for a remote refresh workshop.
+- README: a section on the Claude app edition, a QAW example, and a corrected note on plugin
+  discoverability (Anthropic's plugin directory exists; adding a marketplace is not a listing).
 
 ## 1.12.1 — 2026-11-01
 
