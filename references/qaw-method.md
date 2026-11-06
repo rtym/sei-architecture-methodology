@@ -98,6 +98,10 @@ refresh) and the questions for each step are in
 
 ## Facilitation tips
 
+The formats (two-day, one-day, half-day, remote), their timeboxes, the roles in the room, what to
+do in difficult moments and the follow-up after the workshop are in
+`${CLAUDE_PLUGIN_ROOT}/references/qaw-facilitation-playbook.md`.
+
 - Keep the architectural-driver list visible throughout so brainstorming stays on target.
 - Push every scenario toward a **measurable** response before step 8 ends.
 - Time-box refinement per scenario (~15 min); park deep design debates as "issues".
