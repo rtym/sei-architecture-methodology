@@ -65,6 +65,11 @@ if out="$("$PY" tests/test_qawkit.py)"; then
   ok "test_qawkit ($(printf '%s\n' "$out" | tail -1))"
 else printf '%s\n' "$out"; bad "test_qawkit"; fi
 
+step "4e. Claude app edition unit tests"
+if out="$("$PY" tests/test_appbundle.py)"; then
+  ok "test_appbundle ($(printf '%s\n' "$out" | tail -1))"
+else printf '%s\n' "$out"; bad "test_appbundle"; fi
+
 step "5. example artifacts validate"
 if [ -d examples ]; then
   # drivers/ directories get the cross-file check + every file
