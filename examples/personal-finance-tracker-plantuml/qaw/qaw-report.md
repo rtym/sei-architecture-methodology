@@ -3,9 +3,11 @@
 - **Date(s)**: 2026-08-20
 - **Facilitator(s)**: R. Tymoshuk (lead), J. Doe (scribe)
 - **Sponsor**: Founder
+- **Format**: half-day
 - **Status**: complete
 
-> Condensed record. A real QAW runs half a day to a day; the structure below is the full method.
+> Condensed record of a half-day workshop with five participants; the structure below is the full
+> method.
 
 ## Step 0 — Starting point
 
@@ -68,6 +70,19 @@ Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six
 | AD-5 | First-use success without docs | QA (usability) | BG-1 |
 | AD-6 | Encryption in transit and at rest | constraint | BG-2 |
 
+Five ISO/IEC 25010 characteristics have a driver above. The group answered the coverage
+questions for the other four:
+
+- **Compatibility** is not significant here at launch: bank statements arrive as CSV files the
+  user uploads, an unrecognised layout falls back to a guided column-mapping step (UC-3), and
+  no partner system depends on the app. Revisit it if a direct bank connection is added.
+- **Flexibility** is not significant here at launch: there is one region and one deployment
+  target, and load growth is covered under performance efficiency by AD-2. Revisit it when
+  BG-1's 10 000 users are reached.
+- **Safety** is not significant here: nothing the app does can harm a person or property.
+- **Functional suitability** is covered by the use cases in the drivers register, not by
+  scenarios.
+
 ## Step 5 — Scenario brainstorming (raw, verbatim)
 
 | ID | Scenario (stimulus · environment · response) | Type | Contributor | Driver(s) |
@@ -98,8 +113,8 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 
 **Vote budget** = ceil(0.30 × 6) = **2** votes per stakeholder (5 stakeholders → 10 votes).
 
-| Scenario | Founder | Eng lead | QA | Advisor | User rep | Total |
-|----------|---------|----------|----|---------|----------|-------|
+| Scenario | ST-1 | ST-2 | ST-3 | ST-4 | ST-5 | Total |
+|----------|:---:|:---:|:---:|:---:|:---:|:-----:|
 | CS-1 | 1 | 0 | 0 | 2 | 0 | 3 |
 | CS-2 | 1 | 1 | 0 | 0 | 0 | 2 |
 | CS-3 | 0 | 1 | 0 | 0 | 0 | 1 |

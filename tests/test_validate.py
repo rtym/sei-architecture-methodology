@@ -5,6 +5,7 @@ link checking, and the drivers-directory cross-file check. Standard library only
 success."""
 from __future__ import annotations
 
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -510,6 +511,156 @@ check("a step section with no questions is flagged",
           GUIDE[:s7] + "### Step 7 — Prioritisation\n\nVote.\n\n" + GUIDE[s8:])))
 check("a missing guide file is reported",
       any("missing" in e for e in validate.check_qaw_question_guide(Path("/nonexistent/qaw-question-guide.md"))))
+
+st_section = GUIDE.index("## Questions by system type")
+st_end = GUIDE.index("## Questions by stakeholder role")
+check("guide without system types is flagged",
+      any("no 'Questions by system type'" in e for e in guide_errors(GUIDE[:st_section] + GUIDE[st_end:])))
+check("a system type without a Key line is flagged",
+      any("names no Key" in e for e in guide_errors(GUIDE.replace("Key: `saas`.", "For SaaS."))))
+check("a system type with a duplicate key is flagged",
+      any("used twice: ai" in e for e in guide_errors(GUIDE.replace("Key: `saas`.", "Key: `ai`."))))
+check("a system type that does not end with its measure is flagged",
+      any("Multi-tenant SaaS' does not end" in e for e in guide_errors(
+          GUIDE.replace("5. *Measure:* How much may one tenant's peak", "5. How much may one tenant's peak"))))
+ai_start = GUIDE.index("### AI and machine-learning components")
+ai_end = GUIDE.index("### Multi-tenant SaaS")
+check("a system type with too few questions is flagged",
+      any("fewer than 3 questions" in e for e in guide_errors(
+          GUIDE[:ai_start] + "### AI and machine-learning components\n\nKey: `ai`.\n\n1. Why?\n2. *Measure:* How?\n\n"
+          + GUIDE[ai_end:])))
+
+# --------------------------------------------------------------------------- #
+# QAW facilitation playbook (self-check)
+# --------------------------------------------------------------------------- #
+
+PLAYBOOK = (Path(__file__).resolve().parent.parent / "references" / "qaw-facilitation-playbook.md").read_text(encoding="utf-8")
+
+
+def playbook_errors(text: str) -> list[str]:
+    return run_checker(validate.check_qaw_playbook, "references/qaw-facilitation-playbook.md", text)
+
+
+check("shipped facilitation playbook passes", playbook_errors(PLAYBOOK) == [])
+check("a format with no timebox table is flagged",
+      any("no timebox table for format 'remote'" in e for e in playbook_errors(PLAYBOOK.replace("### remote", "### online"))))
+check("an unknown timebox table is flagged", any("'online' is not a known format" in e
+                                                  for e in playbook_errors(PLAYBOOK.replace("### remote", "### online"))))
+check("a format that skips a step is flagged",
+      any("'half-day' never runs Step 6" in e for e in playbook_errors(
+          PLAYBOOK.replace("| Step 6 — Scenario consolidation | 15 |\n", ""))))
+check("a block without whole minutes is flagged",
+      any("block 'Step 6 — Scenario consolidation' has no whole minutes" in e for e in playbook_errors(
+          PLAYBOOK.replace("| Step 6 — Scenario consolidation | 15 |", "| Step 6 — Scenario consolidation | ~15 |"))))
+check("a Next day row with minutes is flagged",
+      any("'Next day' takes no minutes" in e for e in playbook_errors(
+          PLAYBOOK.replace("| Next day | — |", "| Next day | 30 |", 1))))
+check("a format not described in 'Choose a format' is flagged",
+      any("'half-day' is not described" in e for e in playbook_errors(PLAYBOOK.replace("**half-day**", "half-day"))))
+dm_start, dm_end = PLAYBOOK.index("## Difficult moments"), PLAYBOOK.index("## Scenarios that hold up")
+check("a difficult-moments table with too few rows is flagged",
+      any("Difficult moments" in e for e in playbook_errors(
+          PLAYBOOK[:dm_start] + "## Difficult moments\n\n| Signal | What to do | What to say |\n|---|---|---|\n"
+          "| Quiet | Ask | \"Hi\" |\n\n" + PLAYBOOK[dm_end:])))
+check("a playbook without 'After the workshop' is flagged",
+      any("'After the workshop'" in e for e in playbook_errors(PLAYBOOK.replace("## After the workshop", "## Later"))))
+check("a playbook without timeboxes is flagged",
+      any("no 'Timeboxes' section" in e for e in playbook_errors(PLAYBOOK.replace("## Timeboxes", "## Times"))))
+check("a missing playbook file is reported",
+      any("missing" in e for e in validate.check_qaw_playbook(Path("/nonexistent/qaw-facilitation-playbook.md"))))
+
+# --------------------------------------------------------------------------- #
+# QAW report — format and Step 7 vote arithmetic
+# --------------------------------------------------------------------------- #
+
+def qaw_vote_errors(text: str) -> list[str]:
+    return [e for e in qaw(text) if e.startswith("Step 7") or "format" in e.lower()]
+
+
+check("the example's format and vote table pass", qaw_vote_errors(QAW_EXAMPLE) == [])
+check("every known format is accepted",
+      all(qaw_vote_errors(QAW_EXAMPLE.replace("**Format**: half-day", f"**Format**: {f}")) == []
+          for f in validate.QAW_FORMATS))
+check("an unknown format is flagged",
+      any("format 'full-day'" in e for e in qaw_vote_errors(QAW_EXAMPLE.replace("**Format**: half-day", "**Format**: full-day"))))
+check("a report without a format line passes",
+      qaw_vote_errors(QAW_EXAMPLE.replace("- **Format**: half-day\n", "")) == [])
+check("a row total that does not add up is flagged",
+      any("CS-2 total is 3" in e for e in qaw_vote_errors(QAW_EXAMPLE.replace("| CS-2 | 1 | 1 | 0 | 0 | 0 | 2 |",
+                                                                              "| CS-2 | 1 | 1 | 0 | 0 | 0 | 3 |"))))
+over = QAW_EXAMPLE.replace("| CS-6 | 0 | 0 | 0 | 0 | 0 | 0 |", "| CS-6 | 1 | 0 | 0 | 0 | 0 | 1 |")
+check("a participant over the budget is flagged", any("ST-1 cast 3 votes, over the budget of 2" in e
+                                                      for e in qaw_vote_errors(over)))
+check("a budget that is not 30 % of the consolidated scenarios is flagged",
+      any("vote budget 3 is not 30 %" in e for e in qaw_vote_errors(
+          QAW_EXAMPLE.replace("= **2** votes per stakeholder", "= **3** votes per stakeholder"))))
+ranked = "**Ranked**: CS-1 (3) = CS-5 (3) > CS-2 (2) > CS-3 (1) = CS-4 (1) > CS-6 (0)."
+check("the vote fixture holds the expected ranking line", ranked in QAW_EXAMPLE)
+check("a ranking out of order is flagged",
+      any("puts CS-3 (1) above CS-2 (2)" in e for e in qaw_vote_errors(QAW_EXAMPLE.replace(
+          ranked, "**Ranked**: CS-1 (3) = CS-5 (3) > CS-3 (1) > CS-2 (2) > CS-4 (1) > CS-6 (0).")))
+      )
+check("a ranking count that differs from the table is flagged",
+      any("gives CS-2 4 votes, the table 2" in e for e in qaw_vote_errors(QAW_EXAMPLE.replace("CS-2 (2)", "CS-2 (4)"))))
+check("'=' between different totals is flagged",
+      any("says CS-5 = CS-2" in e for e in qaw_vote_errors(QAW_EXAMPLE.replace("CS-5 (3) > CS-2 (2)", "CS-5 (3) = CS-2 (2)"))))
+check("'>' between equal totals is flagged",
+      any("says CS-1 > CS-5" in e for e in qaw_vote_errors(QAW_EXAMPLE.replace("CS-1 (3) = CS-5 (3)", "CS-1 (3) > CS-5 (3)"))))
+check("a ranking that leaves a scenario out is flagged",
+      any("leaves out CS-6" in e for e in qaw_vote_errors(QAW_EXAMPLE.replace(" > CS-6 (0).", "."))))
+tpl = (Path(__file__).resolve().parent.parent / "templates" / "qaw-report.md").read_text(encoding="utf-8")
+check("the template's placeholder Step 7 raises no vote arithmetic error", validate._qaw_vote_errors(tpl) == [])
+check("a non-numeric vote cell switches the arithmetic off rather than guessing",
+      validate._qaw_vote_errors(QAW_EXAMPLE.replace("| CS-1 | 1 | 0 | 0 | 2 | 0 | 3 |", "| CS-1 | one | 0 | 0 | 2 | 0 | 3 |")) == [])
+check("a report with no Step 7 has no vote errors", validate._qaw_vote_errors("# Q\n\n## Step 1\n") == [])
+
+check("a Step 7 with no vote table raises no vote error",
+      validate._qaw_vote_errors("## Step 7 — Scenario prioritisation\n\nVoting by a show of hands.\n") == [])
+check("a parked-question row without a PQ ID is ignored",
+      validate._qaw_parked_question_errors("## Parked questions\n\n| ID | Question | Owner | Status |\n|---|---|---|---|\n"
+                                           "| — | later? | | |\n") == [])
+check("a system-type section with no types is flagged",
+      any("has no system types" in e for e in guide_errors(
+          GUIDE[:st_section] + "## Questions by system type\n\nNone yet.\n\n" + GUIDE[st_end:])))
+check("a one-cell timebox row is skipped, not misread",
+      playbook_errors(PLAYBOOK.replace("| Wrap-up — parked questions and next steps | 15 |\n\n### one-day",
+                                       "| Wrap-up — parked questions and next steps | 15 |\n|\n\n### one-day")) == [])
+
+# --------------------------------------------------------------------------- #
+# QAW report — the long-standing structural rules
+# --------------------------------------------------------------------------- #
+
+def qaw_has(text: str, needle: str) -> bool:
+    return any(needle in e for e in qaw(text))
+
+
+check("a refined scenario without its diagram is flagged",
+      qaw_has(QAW_EXAMPLE.replace("![CS-5 six-part scenario](diagrams/scenario-CS-5.png)", ""),
+              "refined scenario CS-5 has no embedded six-part scenario diagram"))
+no_cs5_handoff = QAW_EXAMPLE.replace("| CS-5 | [UQA-1](../drivers/quality-attributes/UQA-1.md) | refined here (Step 8) |\n", "")
+no_cs5_handoff = no_cs5_handoff.replace("UQA-1 (CS-5)", "UQA-1 (from the usability scenario)")
+no_cs5_handoff = no_cs5_handoff.replace("(refined into `UQA-1` in the drivers register)", "(refined in the drivers register)")
+no_cs5_handoff = no_cs5_handoff.replace("CS-5 (refined into UQA-1)", "CS-5")
+check("a refined scenario never mapped to a register ID is flagged",
+      qaw_has(no_cs5_handoff, "CS-5 is never mapped to a <ATTR>QA-<n> register ID"))
+check("a brainstorm table without a Type column is flagged",
+      qaw_has(QAW_EXAMPLE.replace("| ID | Scenario (stimulus · environment · response) | Type | Contributor | Driver(s) |",
+                                  "| ID | Scenario (stimulus · environment · response) | Kind | Contributor | Driver(s) |"),
+              "has no Type column"))
+check("a diagram named as a bare backtick path is flagged",
+      qaw_has(QAW_EXAMPLE + "\nSee `diagrams/scenario-CS-1.png`.\n", "bare backtick path"))
+check("a report missing a step is flagged",
+      qaw_has(re.sub(r"(?i)consolidat", "merg", QAW_EXAMPLE), "missing a step about 'consolidat'"))
+no_tree = QAW_EXAMPLE.replace("utility tree", "priority table").replace("Utility tree", "Priority table")
+check("a report without a utility tree is flagged", qaw_has(no_tree, "has no utility tree"))
+check("utility-tree leaves without a (V, R) pair are flagged",
+      qaw_has(QAW_EXAMPLE.replace("(H, H)", "high").replace("(H, M)", "high").replace("(M, M)", "medium")
+              .replace("`(V, R)`", "priority"), "carry no (V, R) pair"))
+check("a utility tree drawn as a mindmap is flagged",
+      qaw_has(QAW_EXAMPLE + "\n```mermaid\nmindmap\n  root((Utility))\n```\n", "must be a table, not a mindmap"))
+check("a report that never says its raw scenarios are kept verbatim is flagged",
+      qaw_has(QAW_EXAMPLE.replace("verbatim", "as said").replace("raw", "first").replace("Raw", "First"),
+              "verbatim"))
 
 print(f"{PASSES} passed, {FAILS} failed")
 sys.exit(1 if FAILS else 0)
