@@ -5,6 +5,9 @@ skills/sei-diagrams/node_modules/
 # Artifacts produced by running the skills in a target project
 /architecture/
 
+# The Claude app edition built by scripts/appbundle.py (attached to releases, not committed)
+/dist/
+
 # Personal Claude Code settings (model pin, local permissions) — not shared,
 # so cloning this repo never overrides a contributor's own model choice
 .claude/settings.local.json

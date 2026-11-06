@@ -29,6 +29,18 @@ jobs:
       - name: Run test suite
         run: bash tests/run.sh --quick
 
+      # The Claude app edition (every skill self-contained, for claude.ai chat and Cowork).
+      # Uploaded with each run so a pull request's edition can be tried before release.
+      - name: Build the Claude app edition
+        run: python3 scripts/appbundle.py --out dist/claude-app
+
+      - name: Upload the Claude app edition
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-app-edition
+          path: dist/claude-app/*.zip
+          if-no-files-found: error
+
   # Full suite including the Mermaid render smoke test. Split out because it
   # pulls a headless Chromium (~150 MB), which is by far the slowest part.
   render:
