@@ -21,6 +21,13 @@ THEME="$ASSETS/plantuml-theme.puml"
 [ -f "$THEME" ] || { echo "ERROR: missing theme $THEME" >&2; exit 1; }
 [ -d "$ASSETS/c4" ] || { echo "ERROR: missing C4 macros $ASSETS/c4" >&2; exit 1; }
 
+# Resolution: PlantUML draws at 96 dpi by default, which gives ~700 px wide PNGs that blur when
+# zoomed or printed. 240 dpi (override with PLANTUML_DPI) matches the Mermaid renders' sharpness;
+# the size limit is raised so a large diagram is scaled, not cropped at PlantUML's 4096 px default.
+DPI="${PLANTUML_DPI:-240}"
+case "$DPI" in ''|*[!0-9]*) echo "ERROR: PLANTUML_DPI must be a whole number, got '$DPI'" >&2; exit 2 ;; esac
+export PLANTUML_LIMIT_SIZE="${PLANTUML_LIMIT_SIZE:-16384}"
+
 # Resolve `!include <name>` against the skill's assets/ regardless of the .puml file's location.
 # Anything the caller already had on the include path is preserved.
 if [ -n "${PLANTUML_INCLUDE_PATH:-}" ]; then
@@ -102,7 +109,7 @@ done
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-echo "render-plantuml: theme=$(basename "$THEME") include=$ASSETS format=$FORMAT files=${#FILES[@]}"
+echo "render-plantuml: theme=$(basename "$THEME") include=$ASSETS format=$FORMAT dpi=$DPI files=${#FILES[@]}"
 rc=0
 for f in "${FILES[@]}"; do
   dir="$(dirname "$f")"
@@ -116,7 +123,7 @@ for f in "${FILES[@]}"; do
   stage="$TMP_DIR/stage"
   rm -rf "$stage"; mkdir -p "$stage"
 
-  if "${PLANTUML_CMD[@]}" -t"$FORMAT" -nometadata -o "$stage" "$f" \
+  if "${PLANTUML_CMD[@]}" -t"$FORMAT" -nometadata -Sdpi="$DPI" -o "$stage" "$f" \
         >"$TMP_DIR/out.log" 2>"$TMP_DIR/err.log"; then
     produced=()
     while IFS= read -r p; do produced+=("$p"); done \
