@@ -935,8 +935,12 @@ check("a renamed section is reported as extra plus missing",
 moved = "# Report — Acme\n\n## Item 1 — Alpha\n\n### Detail\n\n## Inputs\n\n## Results\n"
 check("a section out of order is named with what it follows",
       "section '## Inputs' comes after 'Detail'; templates/t.md puts it before" in struct(moved))
-check("a section at the wrong level fails",
-      struct(GOOD.replace("### Detail\n\n### Notes", "## Detail\n\n### Notes", 1)) != [])
+check("a section at the wrong level is named with the template's level, and not also as missing",
+      struct(GOOD.replace("### Detail\n\n### Notes", "## Detail\n\n### Notes", 1)) ==
+      ["section '## Detail' is at level 2; templates/t.md has it at level 3 ('### Detail')"])
+check("a section repeated where the template has it once is named",
+      struct(GOOD.replace("## Results", "## Results\n\n## Results")) ==
+      ["section '## Results' appears more than once; templates/t.md has it once"])
 check("a repeated section needs at least one occurrence",
       "missing the template section '## Item <n> — <name>' (templates/t.md)" in
       struct("# Report — Acme\n\n## Inputs\n\n## Results\n"))
@@ -968,6 +972,15 @@ with tempfile.TemporaryDirectory() as td:
     check("validate_file reports a structure error for a generated artifact",
           any("is not in templates/use-case.md" in e for e in validate.validate_file(uc)))
 check("every template is mapped and matches its own structure", validate.check_template_structures() == [])
+exercised = {validate.template_for(p).name for p in (ROOTP / "examples").rglob("*.md") if validate.template_for(p)}
+check("every mapped template governs at least one example artifact (the package index aside)",
+      {name for _, name in validate.STRUCTURE_TEMPLATES} - exercised == {"architecture-readme.md"})
+light = re.sub(r"^## Step 7 — .*?(?=^## Step 9)", "", ATAM_EX, flags=re.MULTILINE | re.DOTALL)
+check("the lightweight fixture dropped Steps 7 and 8", "## Step 7" not in light and "## Step 8" not in light)
+with tempfile.TemporaryDirectory() as td:
+    rep = write(Path(td), "architecture/atam/atam-report.md", light)
+    check("a Lightweight ATAM report without Steps 7 and 8 keeps the template's structure",
+          validate.structure_errors(rep) == [])
 
 print(f"{PASSES} passed, {FAILS} failed")
 sys.exit(1 if FAILS else 0)

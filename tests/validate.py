@@ -1183,6 +1183,7 @@ def structure_errors(path: Path, template: Path | None = None) -> list[str]:
 
     errs: list[str] = []
     matched: set[int] = set()
+    mislevelled: set[int] = set()
     t, prev = 0, None
     for lvl, title in heads:
         key = heading_key(title)
@@ -1193,7 +1194,16 @@ def structure_errors(path: Path, template: Path | None = None) -> list[str]:
                       and all(nodes[x]["level"] > nodes[r]["level"] for x in range(r + 1, t))
                       and fits(r, lvl, key)), None)
         if k is None:
-            if any(fits(j, lvl, key) and not nodes[j]["slot"] for j in range(len(nodes))):
+            dup = next((j for j in sorted(matched) if fits(j, lvl, key) and not nodes[j]["repeat"]), None)
+            other = next((j for j in range(len(nodes)) if nodes[j]["level"] != lvl and not nodes[j]["slot"]
+                          and nodes[j]["re"].fullmatch(key)), None)
+            if dup is not None:
+                errs.append(f"section '{'#' * lvl} {title}' appears more than once; {name} has it once")
+            elif other is not None:
+                mislevelled.add(other)
+                errs.append(f"section '{'#' * lvl} {title}' is at level {lvl}; {name} has it at level "
+                            f"{nodes[other]['level']} ('{'#' * nodes[other]['level']} {nodes[other]['title']}')")
+            elif any(fits(j, lvl, key) and not nodes[j]["slot"] for j in range(len(nodes))):
                 errs.append(f"section '{'#' * lvl} {title}' comes after '{prev}'; {name} puts it before")
             else:
                 errs.append(f"section '{'#' * lvl} {title}' is not in {name} — use the template's sections "
@@ -1203,7 +1213,7 @@ def structure_errors(path: Path, template: Path | None = None) -> list[str]:
         t, prev = k + 1, title
     for k, n in enumerate(nodes):
         skippable = n["optional"] or any(nodes[a]["optional"] and a not in matched for a in _ancestors(nodes, k))
-        if k not in matched and not skippable:
+        if k not in matched and k not in mislevelled and not skippable:
             errs.append(f"missing the template section '{'#' * n['level']} {n['title']}' ({name})")
     return errs or [f"headings do not follow the structure of {name} (a section is at the wrong level or repeated)"]
 
