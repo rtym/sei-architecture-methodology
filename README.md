@@ -121,7 +121,8 @@ downloads a headless Chromium once (~150 MB). Needs Node 18+. The versions are p
 committed `package-lock.json`, so every clone renders identically. **PlantUML** (used for true-UML
 use-case diagrams and canonical C4) needs a Java runtime plus PlantUML itself —
 `brew install openjdk plantuml`, or `sudo apt-get install plantuml`;
-`scripts/render-plantuml.sh` auto-detects a keg-only Homebrew JDK.
+`scripts/render-plantuml.sh` auto-detects a keg-only Homebrew JDK and renders at 240 dpi
+(`PLANTUML_DPI` to change), so PlantUML PNGs are as sharp as the Mermaid ones.
 
 #### PlantUML includes
 
@@ -405,6 +406,7 @@ sei-architecture-methodology/
 │   ├── mdreport.py                    # dependency-free Markdown → Markdown/HTML report builder (mermaid + plantuml embed)
 │   ├── build-report.sh
 │   ├── qawkit.py                      # QAW kit: prep, agenda, ballot, tally, status, lint, summary
+│   ├── driverstatus.py                # sets a driver's status in every copy the register keeps
 │   ├── appbundle.py                   # builds the Claude app edition (self-contained skills, deterministic zip)
 │   └── render-all.sh                  # re-render every *.mmd / *.puml under a directory, in place
 ├── examples/
@@ -416,6 +418,7 @@ sei-architecture-methodology/
 │   ├── test_validate.py               # validator unit tests
 │   ├── test_qawkit.py                 # QAW kit unit tests + golden files for the examples' kits
 │   ├── test_appbundle.py              # Claude app edition: limits, self-containment, determinism
+│   ├── test_driverstatus.py           # driver status writer + the validator's status cross-check
 │   └── run.sh                         # full suite
 ├── CHANGELOG.md                       # release notes per version
 ├── CLAUDE.md                          # contributor notes: tests, conventions, release checklist
@@ -478,7 +481,10 @@ characteristic and system type, the facilitation playbook times all nine steps i
 a report's Step 7 votes add up (totals, the 30 % budget, nobody over budget, a ranking that
 follows the totals), `tests/test_qawkit.py` covers every kit command and compares each
 example's kit with a fresh run, and `tests/test_appbundle.py` builds the Claude app edition and
-runs its bundled scripts.
+runs its bundled scripts. The validator also checks that every copy of a driver's status
+agrees (`scripts/driverstatus.py` writes them together), that tables have a header separator,
+that a backticked relative path exists, that a Mermaid block matches the `.mmd` beside its PNG,
+and that no artifact describes how it was made ("visually verified").
 
 Validate produced artifacts in a target project:
 

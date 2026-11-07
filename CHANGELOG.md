@@ -4,6 +4,49 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## Unreleased
+
+A review of the repository and both worked examples. It fixes the inconsistencies it found and
+adds checks so the same kinds of drift fail the tests.
+
+### Fixed
+- The examples' UC-3 named a "Bank Import API" supporting actor that no other artifact has; the
+  user uploads the CSV file. The actor is gone from UC-3 and both use case diagrams, and UC-3's
+  priority matches its index (medium).
+- Driver statuses that disagreed between copies: SQA-1 and AQA-1 are `at risk` (ATAM) in every
+  index and the utility tree, CON-4 is `in design` in its file, and the change log names CON-4.
+- The Import Queue and Import Worker that the ATAM, ADR-2 and the Views-and-Beyond views rely on
+  were missing from the ADD session, the ADD container and deployment diagrams, and the PlantUML
+  container view. The Mermaid example also kept a stale `diagrams/container.mmd` that differed from
+  the diagram in the document; it is removed.
+- The deployment diagrams labelled the browser's call to the API "Serves SPA to browser"; Redis is
+  no longer described as holding only derived data now that it carries the import stream.
+- The ADD session's design-concepts table was split by a paragraph and rendered as text, and its
+  iteration plan said SQA-1 was complete where the iteration's own analysis said partially.
+- The ATAM reports pointed at diagrams that do not exist (`Architecture-05.png`, and a
+  `../diagrams/` folder the PlantUML example does not have); they now link the real files.
+- "Rendered + visually verified", "visually verified: yes" and "this is the Mermaid tree" are
+  gone from the examples, and the four templates and the diagram skill that put them there now
+  keep that instruction in HTML comments. Other writer guidance in the templates moved into
+  comments too.
+- The validator's "needs a numeric measure" rules counted the digit in an ID such as `PQA-1`,
+  so they could never fire.
+- A reference table in `architectural-drivers.md` had no header separator.
+
+### Added
+- `scripts/driverstatus.py` sets a driver's status in the driver file, its kind's index, the
+  README matrix and the utility tree at once, or changes nothing. ADD, ATAM and `/drivers` now
+  write statuses through it.
+- Validator rules: every copy of a driver's status and priority must agree; a table must have a
+  header separator; a backticked relative path must exist; a Mermaid block must match the `.mmd`
+  beside its PNG; artifacts and template text must not describe how they were made.
+- PlantUML diagrams render at 240 dpi (`PLANTUML_DPI` to change) with the size limit raised, so
+  they are as sharp as the Mermaid renders; every PlantUML example diagram was re-rendered (same
+  layouts, 2.5 × the pixels). `tests/run.sh` fails if the default resolution drops.
+- Tests: `tests/test_driverstatus.py` (45), and `tests/test_validate.py` grows to 193 with a case
+  per rule of the architecture, session, ATAM, view-packet, mapping and drivers checkers, the
+  self-check and the CLI. Line coverage of `validate.py` rises from 59 % to 88 %.
+
 ## 1.13.0 — 2026-11-06
 
 The Quality Attribute Workshop becomes a guided, checked workshop, from a blank page or over

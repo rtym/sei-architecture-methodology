@@ -44,7 +44,9 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
    run, checks that `qaw-vote-sheet.md` is the ballot with votes filled in, and that the
    report's Step 7 is the tally's block. If a skill names a new plugin file, check the Claude
    app edition still builds: `python3 scripts/appbundle.py` (`tests/test_appbundle.py` runs it).
-4. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
+4. Change a driver's status in an example only with `scripts/driverstatus.py` — the register
+   keeps up to four copies, and `validate.py` fails when they disagree.
+5. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
 
 ## Release checklist
 
