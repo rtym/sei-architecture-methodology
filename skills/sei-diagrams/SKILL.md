@@ -589,7 +589,7 @@ into the Markdown adds noise without any benefit. Instead reference it:
 
 ![Container diagram — Acme](diagrams/container.png)
 
-Source: [`diagrams/container.puml`](diagrams/container.puml) · rendered + visually verified.
+Source: [`diagrams/container.puml`](diagrams/container.puml).
 ~~~
 
 The `.puml` file in `diagrams/` is the editable, diffable, re-renderable source; the document

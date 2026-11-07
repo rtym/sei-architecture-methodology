@@ -196,6 +196,7 @@ The utility tree is the summary of all quality-attribute ASRs, kept in
 columns:
 
 | Quality attribute (ISO/IEC 25010) | Refinement (concern) | Leaf scenario (ID + response measure) | Priority (V, R) | Status |
+|-----------------------------------|----------------------|---------------------------------------|:---------------:|:------:|
 
 - The **root** is "Utility" (overall fitness for purpose).
 - Each leaf is a concrete scenario with an explicit response and a numeric response measure.

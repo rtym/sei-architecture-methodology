@@ -35,7 +35,9 @@ sensitivity points, tradeoff points, risk themes.
 - **Technical constraints**: 
 - **External systems**: 
 - **Overview** (context → containers → key components; key flows; deployment): 
-- Diagrams (```mermaid block + image line): ![…](diagrams/….png) — visually verified: y/n
+- **Diagrams**: [container diagram](<path>) · [deployment diagram](<path>)
+  <!-- Link the diagrams the architect presented, with paths that resolve from this file
+       (usually ../diagrams/ or ../add/diagrams/). Never a bare backtick path. -->
 
 ## Step 4 — Identify architectural approaches
 

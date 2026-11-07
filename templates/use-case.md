@@ -85,14 +85,12 @@ flowchart LR
   class uc,sub artifact
 ```
 
-For a human actor use `fa:fa-user` (a person glyph) in Mermaid / a stick figure (`actor`) in
-PlantUML; for a system/API supporting actor use the `«system»` rectangle in both — never a stick
-figure, since a system is not a person.
-
-The `UC-<n>a` suffix on the included sub-use-case above is only correct when that sub-behaviour is
-private to **this** use case. If it is `<<include>>`d by more than one parent use case, it is not a
-private sub-flow — give it its own top-level `UC-<m>.md` and its own code, and reference that same
-code (never a different per-parent suffix) in every diagram that includes it, including any
-overview diagram.
+<!-- For a human actor use fa:fa-user (a person glyph) in Mermaid / a stick figure (actor) in
+     PlantUML; for a system/API supporting actor use the «system» rectangle in both — never a stick
+     figure, since a system is not a person.
+     The UC-<n>a suffix on the included sub-use-case above is only correct when that sub-behaviour
+     is private to this use case. If it is <<include>>d by more than one parent use case, give it
+     its own top-level UC-<m>.md and code, and use that same code in every diagram that includes
+     it, including any overview diagram. -->
 
 <!-- changed <YYYY-MM-DD>: <what and why> -->
