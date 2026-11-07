@@ -26,6 +26,9 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
   is not a SKILL.md field.
 - `plugin.json` and both version fields in `marketplace.json` must agree.
 - Every embedded Mermaid block obeys the ten diagram rules in `skills/sei-diagrams/SKILL.md`.
+- Every generated artifact keeps its template's headings — same sections, levels, order
+  (`validate.py` checks; a placeholder heading repeats, a heading saying *optional* may be left
+  out). A new template must be added to `STRUCTURE_TEMPLATES` in `tests/validate.py`.
 - Diagrams are embedded as `![title](diagrams/x.png)` image lines (plus the fenced block for
   Mermaid, plus a `.puml` link for PlantUML) — never a bare backtick path.
 

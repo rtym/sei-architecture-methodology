@@ -6,8 +6,9 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 
 ## 1.14.0 — 2026-11-07
 
-A review of the repository and both worked examples. It fixes the inconsistencies it found and
-adds checks so the same kinds of drift fail the tests.
+A review of the repository and both worked examples. It fixes the inconsistencies it found, adds
+checks so the same kinds of drift fail the tests, and holds every generated artifact to its
+template's structure.
 
 ### Fixed
 - The examples' UC-3 named a "Bank Import API" supporting actor that no other artifact has; the
@@ -32,8 +33,27 @@ adds checks so the same kinds of drift fail the tests.
 - The validator's "needs a numeric measure" rules counted the digit in an ID such as `PQA-1`,
   so they could never fire.
 - A reference table in `architectural-drivers.md` had no header separator.
+- Sections out of their template's order or level in the examples: BG-2's business-goal scenario
+  came before its context, the ATAM's recommendations came after the register write-back, and the
+  ADD architecture's interface specification sat beside *Interfaces* instead of under it. The
+  docs directory listed an ID prefix the register does not use.
+
+### Changed
+- Templates: the ADD session's plan heading is *Iteration Plan (design backlog)*, the drivers
+  README title no longer embeds a file name, the ATAM template names Step 6 sections
+  `<ATTR>QA-<n>` and adds optional Phase 2 scenario sections and a CBAM backlog, and the
+  architecture document allows an interface specification under *Interfaces*.
 
 ### Added
+- Generated artifacts keep their template's structure. `validate.py` compares each artifact's
+  headings with its template: the same sections, at the same levels, in the same order. A
+  section whose heading has a placeholder repeats; one the template marks optional may be left
+  out. A failure names the section that is missing, added or out of order. Every template must
+  govern some artifact and match its own structure (`--self`). The rule is in
+  `references/writing-style.md` and in every skill's writing rule.
+- Templates for the Views-and-Beyond package files that had none — `docs-readme.md`,
+  `system-overview.md`, `mapping-between-views.md`, `rationale.md`, `directory.md`,
+  `change-log.md` — and `scenarios.md`, moved out of the quality-attributes skill.
 - `scripts/driverstatus.py` sets a driver's status in the driver file, its kind's index, the
   README matrix and the utility tree at once, or changes nothing. ADD, ATAM and `/drivers` now
   write statuses through it.
@@ -43,9 +63,11 @@ adds checks so the same kinds of drift fail the tests.
 - PlantUML diagrams render at 240 dpi (`PLANTUML_DPI` to change) with the size limit raised, so
   they are as sharp as the Mermaid renders; every PlantUML example diagram was re-rendered (same
   layouts, 2.5 × the pixels). `tests/run.sh` fails if the default resolution drops.
-- Tests: `tests/test_driverstatus.py` (45), and `tests/test_validate.py` grows to 193 with a case
+- Tests: `tests/test_driverstatus.py` (45), and `tests/test_validate.py` grows to 226 with a case
   per rule of the architecture, session, ATAM, view-packet, mapping and drivers checkers, the
-  self-check and the CLI. Line coverage of `validate.py` rises from 59 % to 88 %.
+  template-structure check, the self-check and the CLI. Line coverage of `validate.py` rises from
+  59 % to 88 %. The Claude app edition bundles every template with the validator so the structure
+  check runs in chat too.
 
 ## 1.13.0 — 2026-11-06
 
