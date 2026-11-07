@@ -59,6 +59,9 @@ else ok "render-all.sh fails without arguments"; fi
 if bash scripts/render-all.sh /nonexistent-dir-zz >/dev/null 2>&1; then
   bad "render-all.sh must fail on a missing directory"
 else ok "render-all.sh fails on a missing directory"; fi
+if PLANTUML_DPI=high bash skills/sei-diagrams/scripts/render-plantuml.sh x.puml >/dev/null 2>&1; then
+  bad "render-plantuml.sh must reject a non-numeric PLANTUML_DPI"
+else ok "render-plantuml.sh rejects a non-numeric PLANTUML_DPI"; fi
 
 step "4d. QAW kit generator unit tests"
 if out="$("$PY" tests/test_qawkit.py)"; then
@@ -69,6 +72,11 @@ step "4e. Claude app edition unit tests"
 if out="$("$PY" tests/test_appbundle.py)"; then
   ok "test_appbundle ($(printf '%s\n' "$out" | tail -1))"
 else printf '%s\n' "$out"; bad "test_appbundle"; fi
+
+step "4f. driver status writer unit tests"
+if out="$("$PY" tests/test_driverstatus.py)"; then
+  ok "test_driverstatus ($(printf '%s\n' "$out" | tail -1))"
+else printf '%s\n' "$out"; bad "test_driverstatus"; fi
 
 step "5. example artifacts validate"
 if [ -d examples ]; then
@@ -179,6 +187,18 @@ EOF
     env | grep -i plantuml | sed 's/^/    env: /' || true
     ls -l "$tmp/architecture/diagrams/" | sed 's/^/    /'
     echo "-----------------------"
+  fi
+
+  # Resolution: the default (240 dpi) must give a PNG at least twice as wide as PlantUML's own
+  # 96 dpi, or the "high-resolution PNG" promise has quietly regressed.
+  png_width() { "$PY" -c "import struct,sys; print(struct.unpack('>II', open(sys.argv[1],'rb').read()[16:24])[0])" "$1"; }
+  if [ -s "$tmp/architecture/diagrams/context.png" ] \
+     && ( cd "$tmp" && PLANTUML_DPI=96 bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" \
+            --out lowres architecture/diagrams/context.puml ) >/dev/null 2>&1 \
+     && [ "$(png_width "$tmp/architecture/diagrams/context.png")" -ge $(( 2 * $(png_width "$tmp/lowres/context.png") )) ]; then
+    ok "render-plantuml.sh renders at high resolution by default"
+  else
+    bad "render-plantuml.sh renders at high resolution by default"
   fi
 
   if ( cd "$tmp" && bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" \

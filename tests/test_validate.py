@@ -662,5 +662,221 @@ check("a report that never says its raw scenarios are kept verbatim is flagged",
       qaw_has(QAW_EXAMPLE.replace("verbatim", "as said").replace("raw", "first").replace("Raw", "First"),
               "verbatim"))
 
+# --------------------------------------------------------------------------- #
+# Generic artifact rules added in the example review
+# --------------------------------------------------------------------------- #
+
+check("a table with its separator renders", validate.headerless_tables("| a | b |\n|---|---|\n| 1 | 2 |\n") == [])
+check("a header line with no separator is flagged at its line",
+      validate.headerless_tables("x\n\n| a | b |\n\ny\n") == [3])
+check("rows split from their table by a paragraph are flagged",
+      validate.headerless_tables("| a | b |\n|---|---|\n| 1 | 2 |\n\nNote.\n\n| 3 | 4 |\n") == [7])
+check("pipes inside a code block are not a table",
+      validate.headerless_tables("```\n| not | a table |\n```\n") == [])
+check("a one-line table is flagged", any("table rows without a header separator" in e
+                                        for e in errors_for("# T\n\n| only | row |\n")))
+
+for phrase in ("Source: [x](x.puml) · rendered + visually verified.", "_visually verified: yes_",
+               "It was rendered and verified.", "(this is the Mermaid tree)"):
+    check(f"self-description {phrase!r} is flagged",
+          any("self-description" in e for e in errors_for(f"# T\n\n{phrase}\n")))
+check("self-description inside a code block is allowed",
+      not any("self-description" in e for e in errors_for("# T\n\n```\nvisually verified\n```\n")))
+
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    tpl = write(root, "t.md", "# T\n\n<!-- open the PNG; visually verified before embedding -->\n\nVisible.\n")
+    check("an instruction in a template's HTML comment is fine", validate.template_meta_errors(tpl) == [])
+    tpl.write_text("# T\n\n_visually verified: y/n_\n")
+    check("visible self-description in a template is flagged",
+          validate.template_meta_errors(tpl) == ["visible text 'visually verified' would be copied into every "
+                                                 "artifact — move the instruction into an HTML comment"])
+
+BLOCK = "```mermaid\nflowchart LR\n  a --> b\n```\n\n![A](diagrams/a.png)\n"
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    md = write(root, "doc.md", "# D\n\n" + BLOCK)
+    check("a block with no .mmd beside its PNG has no drift", validate.mermaid_source_drift(md) == [])
+    write(root, "diagrams/a.mmd", "flowchart LR\n  a --> b\n")
+    check("a block identical to the .mmd beside its PNG has no drift", validate.mermaid_source_drift(md) == [])
+    write(root, "diagrams/a.mmd", "flowchart LR\n  a --> c\n")
+    check("a block that differs from the .mmd beside its PNG is flagged",
+          any("differs from a.mmd" in e for e in validate.mermaid_source_drift(md)))
+    write(root, "diagrams/a.png", "png")
+    check("validate_file reports the drift for any Markdown artifact",
+          any("differs from a.mmd" in e for e in validate.validate_file(md)))
+
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    write(root, "diagrams/c.png", "png")
+    md = write(root, "atam/report.md", "# R\n\nDiagrams: `../diagrams/c.png`, `../diagrams/gone.png`.\n"
+                                       "Plain `architecture/x.md` and [`../nope.md`](../diagrams/c.png).\n")
+    errs = validate.broken_links(md)
+    check("a backticked relative path to a missing file is flagged",
+          errs == ["names a file that does not exist: `../diagrams/gone.png`"])
+
+# --------------------------------------------------------------------------- #
+# Per-artifact checkers: one passing case and one defect per rule
+# --------------------------------------------------------------------------- #
+
+EX = Path(__file__).resolve().parent.parent / "examples" / "personal-finance-tracker-mermaid"
+
+ARCH = "# A — Architecture\n\n" + "".join(f"## {i}. Section {i}\n\nText.\n\n" for i in range(1, 9)) + (
+    "## 9. Design decisions\n\n| Decision | Rationale | ADR |\n|---|---|---|\n"
+    "| One API | SQA-1, CON-2 | [ADR-1](adr/ADR-1.md) |\n")
+
+
+def arch(text: str, extra: dict[str, str] | None = None) -> list[str]:
+    return run_checker(validate.check_architecture, "add/a-Architecture.md", text, extra)
+
+
+check("a complete architecture document passes", arch(ARCH) == [])
+check("a missing numbered section is flagged", "missing section '## 5.'" in arch(ARCH.replace("## 5. Section 5", "## Five")))
+SEQ = "```mermaid\nsequenceDiagram\n  title Tick\n  autonumber\n  participant A as App\n  A->>A: Tick\n```\n"
+check("a sequence diagram followed by prose passes",
+      not any("sequenceDiagram" in e for e in arch(ARCH.replace("## 6. Section 6\n\nText.", "## 6. Section 6\n\n" + SEQ + "\nThe app ticks."))))
+check("a sequence diagram followed by a heading is flagged",
+      any("not followed by a plain-English description" in e
+          for e in arch(ARCH.replace("## 6. Section 6\n\nText.\n", "## 6. Section 6\n\n" + SEQ))))
+check("deprecated QAS IDs are flagged", any("QAS-" in e for e in arch(ARCH + "\nSee QAS-1.\n")))
+check("a §9 decision row citing no driver is flagged",
+      any("cites no driver ID" in e for e in arch(ARCH.replace("| SQA-1, CON-2 |", "| because |"))))
+check("an empty §9 is flagged", "§9 Design decisions has no decision rows" in arch(ARCH.split("| Decision")[0]))
+check("with an adr/ folder, a §9 row without an ADR link is flagged",
+      any("no ADR link" in e for e in arch(ARCH.replace("[ADR-1](adr/ADR-1.md)", "—"), {"add/adr/ADR-1.md": "# ADR-1\n"})))
+check("leftover placeholders are flagged", any("placeholders" in e for e in arch(ARCH + "\nTODO: finish.\n")))
+check("the example architecture document passes",
+      run_checker(validate.check_architecture, "add/x-Architecture.md",
+                  (EX / "add" / "personal-finance-tracker-Architecture.md").read_text(encoding="utf-8")) == [])
+
+SESSION = ("# ADD Session\n\n- **Date**: 2026-01-01\n- **Purpose**: greenfield\n- **Status**: active\n\n"
+           "## Drivers\n\nSQA-1, UC-1\n\n## Iteration Plan\n\n| # | Drivers |\n|---|---|\n| 1 | SQA-1, UC-1 |\n\n## Iteration 1\n")
+
+
+def session(text: str) -> list[str]:
+    return run_checker(validate.check_session, "add/s-session.md", text)
+
+
+check("a complete ADD session passes", session(SESSION) == [])
+check("a missing header field is flagged", "missing header field **Purpose**" in session(SESSION.replace("- **Purpose**: greenfield\n", "")))
+check("an unknown session status is flagged", any("unexpected status" in e for e in session(SESSION.replace("active", "paused"))))
+check("a driver missing from the iteration plan is flagged",
+      "drivers not covered by the Iteration Plan: UC-1" in session(SESSION.replace("| 1 | SQA-1, UC-1 |", "| 1 | SQA-1 |")))
+check("the example ADD session passes",
+      run_checker(validate.check_session, "add/x-session.md",
+                  (EX / "add" / "personal-finance-tracker-session.md").read_text(encoding="utf-8")) == [])
+
+ATAM_EX = (EX / "atam" / "atam-report.md").read_text(encoding="utf-8")
+
+
+def atam(text: str) -> list[str]:
+    return run_checker(validate.check_atam, "atam/atam-report.md", text)
+
+
+check("the example ATAM report passes the ATAM rules", atam(ATAM_EX) == [])
+check("an ATAM report without its Mode is flagged",
+      any("**Mode**" in e for e in atam(re.sub(r"(?im)^.*\*\*mode\*\*.*$", "", ATAM_EX))))
+check("an ATAM report with no sensitivity points is flagged",
+      any("sensitivity point" in e for e in atam(re.sub(r"(?i)sensitivity point", "sensitive spot", ATAM_EX))))
+check("a utility tree drawn as a mindmap is flagged", any("mindmap" in e for e in atam(ATAM_EX + "\nmindmap\n")))
+check("a risk theme with no business goal is flagged",
+      any("risk theme not mapped" in e for e in atam("# A\n\n| Theme | Risks |\n|---|---|\n| RT-9 Lonely | R-1 |\n")))
+check("a non-risk with no assumption is flagged",
+      any("assumption column empty" in e for e in atam("# A\n\n| Non-risk | Why |\n|---|---|\n| N-9 | |\n")))
+
+VIEW_EX = (EX / "docs" / "view-cnc-runtime.md").read_text(encoding="utf-8")
+
+
+def view(text: str) -> list[str]:
+    return run_checker(validate.check_view_packet, "docs/view-x.md", text)
+
+
+check("the example C&C view packet passes", view(VIEW_EX) == [])
+check("a view packet without a variability guide is flagged",
+      any("Variability guide" in e for e in view(re.sub(r"(?i)variability guide", "Options", VIEW_EX))))
+beh = VIEW_EX.split("### 2.4", 1)
+no_beh = beh[0] + "### 2.4 Element behavior\n\nSee the code.\n\n## " + beh[1].split("\n## ", 1)[1]
+check("a C&C view with no behaviour diagram is flagged", any("no rendered behaviour diagram" in e for e in view(no_beh)))
+check("a view whose rationale cites no driver is flagged",
+      any("rationale cites no driver" in e for e in view("# V\n\nPrimary presentation, Element catalog, Context diagram, "
+                                                          "Variability guide.\n\n## Rationale\n\nBecause.\n")))
+
+MAP_EX = (EX / "docs" / "mapping-between-views.md").read_text(encoding="utf-8")
+
+
+def mapping(text: str) -> list[str]:
+    return run_checker(validate.check_mapping, "docs/mapping-between-views.md", text)
+
+
+check("the example view mapping passes", mapping(MAP_EX) == [])
+check("a mapping with no table is flagged", any("no populated mapping table" in e for e in mapping("# M\n\nview-a and view-b.\n")))
+check("a mapping that names one view is flagged",
+      any("names 1 view" in e for e in mapping("# M\n\n| Module | Runtime |\n|---|---|\n| a | b |\n\nSee view-a.\n")))
+check("a mapping with TBD is flagged", any("placeholders" in e for e in mapping(MAP_EX + "\nTBD\n")))
+
+IDX_EX = (EX / "drivers" / "README.md").read_text(encoding="utf-8")
+
+
+def index(text: str) -> list[str]:
+    return run_checker(validate.check_drivers_index, "drivers/README.md", text)
+
+
+check("the example drivers README passes", index(IDX_EX) == [])
+check("a drivers README with no change log is flagged",
+      "drivers README has no change log" in index(IDX_EX.replace("Change log", "History").replace("change log", "history")))
+check("a drivers README with backtick paths instead of links is flagged",
+      any("not linked as relative Markdown links" in e
+          for e in index(re.sub(r"\[[^\]]+\]\(((?:business-goals|use-cases|constraints|quality-attributes)/[A-Za-z0-9-]+\.md)\)", r"`\1`", IDX_EX))))
+check("a drivers README without a coverage check is flagged",
+      "drivers README has no coverage check" in index(IDX_EX.replace("overage", "heck")))
+
+LEGACY = ("# Drivers\n\n| ID | Goal |\n|---|---|\n| BG-1 | Founder needs revenue so that the company survives |\n\n"
+          "UC-1 realises BG-1.\n\n| ID | One-line scenario |\n|---|---|\n| PQA-1 | dashboard < 2 s |\n\n"
+          "## Traceability\n\n| Driver | Supports |\n|---|---|\n| UC-1 | BG-1 |\n| PQA-1 | BG-1 |\n")
+
+
+def legacy(text: str) -> list[str]:
+    return run_checker(validate.check_drivers, "drivers.md", text)
+
+
+check("a single-file drivers register passes", legacy(LEGACY) == [])
+check("a goal not in who-needs-what-so-that form is flagged",
+      any("not in '<who> needs" in e for e in legacy(LEGACY.replace("Founder needs revenue so that the company survives", "More revenue"))))
+check("a QA scenario row with no number is flagged",
+      any("no numeric measure" in e for e in legacy(LEGACY.replace("dashboard < 2 s", "dashboard is quick"))))
+check("an ID's digits do not count as a measure", validate.has_measure("PQA-1 (CS-2) quick") is False
+      and validate.has_measure("PQA-1 < 2 s") is True)
+check("a register with no use cases is flagged", "no use cases (UC-n)" in legacy(LEGACY.replace("UC-1", "the import")))
+
+check("a concern file passes with its ID, concern and status",
+      run_checker(validate.check_ac_file, "drivers/concerns/AC-1.md", "# AC-1\n\nConcern: logging.\n\n- **Status**: open\n") == [])
+check("a concern file with nothing in it reports all three gaps",
+      len(run_checker(validate.check_ac_file, "drivers/concerns/AC-1.md", "# Notes\n")) == 3)
+
+# --------------------------------------------------------------------------- #
+# Every example artifact passes its checker, and the CLI and self-check agree
+# --------------------------------------------------------------------------- #
+
+for ex in sorted((EX.parent).glob("personal-finance-tracker-*")):
+    failures = {str(f.relative_to(ex)): r for f in sorted([*ex.rglob("*.md"), *ex.rglob("*.mmd")])
+                if (r := validate.validate_file(f))}
+    check(f"every artifact in {ex.name} passes ({list(failures)[:3]})", failures == {})
+    check(f"{ex.name}/drivers passes the cross-file check", validate.check_drivers_dir(ex / "drivers") == [])
+
+check("the plugin passes its own self-check", validate.check_self() == [])
+with tempfile.TemporaryDirectory() as td:
+    import contextlib, io
+    root = Path(td)
+    bad = write(root, "atam/atam-report.md", "# ATAM\n")
+    def cli(*args: str) -> int:
+        with contextlib.redirect_stdout(io.StringIO()):
+            return validate.main(list(args))
+    check("the CLI exits 0 on a valid file", cli(str(EX / "qaw" / "qaw-report.md")) == 0)
+    check("the CLI exits 1 on an invalid file", cli(str(bad)) == 1)
+    check("the CLI exits 1 on a missing path", cli(str(root / "missing.md")) == 1)
+    check("the CLI validates a drivers directory and the files in it", cli(str(EX / "drivers")) == 0)
+    check("the CLI skips a file it does not recognise", cli(str(write(root, "notes.txt", "x"))) == 0)
+    check("the CLI runs the self-check", cli("--self") == 0)
+
 print(f"{PASSES} passed, {FAILS} failed")
 sys.exit(1 if FAILS else 0)
