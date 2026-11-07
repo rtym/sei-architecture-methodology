@@ -72,7 +72,7 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 
 - One API Service process holds the tenant guard so `SQA-1` isolation is enforced on every
   interactive path in a single auditable place ([`rationale.md`](rationale.md) ADR-2).
-- Cache-aside with a bounded TTL meets `PQA-1`'s p95 budget while keeping the cache strictly
+- Cache-aside with a bounded TTL meets `PQA-1`'s latency budget at the 95th percentile (p95) while keeping the cache strictly
   derived, so its failure never threatens `AQA-1` correctness ([`rationale.md`](rationale.md) ADR-1).
 - CSV import is pushed to a queue + worker so a large import cannot consume the request threads
   that serve interactive traffic (`PQA-2`).

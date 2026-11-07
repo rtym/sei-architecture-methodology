@@ -46,10 +46,10 @@ The Tenant Guard's contract (four agreement points — see `references/interface
 
 ### 2.4 Element behavior
 
-Denied-access sequence: the attacker requests another user's transaction by ID → the Tenant
-Guard scopes the query to the attacker's own `user_id` → the row is not found → `403` returned →
-a denied-access event is written to the append-only audit log and an alert is raised within
-1 minute. 0 rows of another tenant's data are ever returned.
+Denied-access sequence: the attacker requests another user's transaction by ID. The Tenant
+Guard scopes the query to the attacker's own `user_id`, so the row is not found and the API
+returns `403`; a denied-access event is written to the append-only audit log and an alert is
+raised within 1 minute. No row of another tenant's data is ever returned.
 
 ## 3. Context diagram
 

@@ -1,5 +1,8 @@
 # Directory — <SystemName>
 
+<One sentence: where each element is defined, what the terms and acronyms mean, and which ID
+prefixes the package uses.>
+
 ## Index — where elements are defined
 
 | Element | Defined in | Also appears in |

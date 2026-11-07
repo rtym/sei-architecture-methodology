@@ -32,4 +32,4 @@ One auditable place to test and to show an auditor (SQA-1, BG-2); fewer moving p
 
 ## Related
 
-[`../personal-finance-tracker-Architecture.md`](../personal-finance-tracker-Architecture.md) §9 · [`../../docs/rationale.md`](../../docs/rationale.md) · [drivers](../../drivers/README.md)
+See §9 of the [architecture document](../personal-finance-tracker-Architecture.md), the [rationale](../../docs/rationale.md) in the documentation package, and the [drivers register](../../drivers/README.md).

@@ -6,6 +6,9 @@
 - **Architecture**: `personal-finance-tracker-Architecture.md`
 - **Drivers imported from**: [`../drivers/README.md`](../drivers/README.md)
 
+Log of the ADD 3.0 session: the drivers it started from, the iteration plan, and one section per
+iteration with its goal, decisions and analysis. Start with the iteration plan. `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
+
 ## Drivers
 
 ### Quality Attribute Scenarios
@@ -44,8 +47,8 @@ Register files: [AC-1](../drivers/concerns/AC-1.md), [AC-2](../drivers/concerns/
 
 ## Iteration Plan
 
-Ordered by the design roadmap (greenfield mature domain → overall structure → primary use
-cases → refine for QAs). The plan is a **design backlog** on a Kanban board; a card moves to
+Ordered by the design roadmap for a greenfield system in a mature domain: overall structure
+first, then the primary use cases, then refinement for the quality attributes. The plan is a **design backlog** on a Kanban board; a card moves to
 *Partially Addressed* when its iteration goal selects it and to *Completely Addressed* when
 Step 7's analysis confirms it. **"Completely Addressed" criterion here**: analysed against the
 scenario's response measure, or verified in a prototype.

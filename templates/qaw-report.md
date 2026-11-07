@@ -31,7 +31,7 @@ Imported from [`../drivers/stakeholders.md`](../drivers/stakeholders.md) (create
 | ST-1 | | architect / dev / test / integrator / ops / security / product / sponsor / user rep | |
 
 ### Expected outputs
-Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six-part) scenarios.
+Raw scenarios first, then consolidated, prioritised and refined (six-part) scenarios.
 
 ## Step 2 — Business / mission drivers
 

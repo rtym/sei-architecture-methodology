@@ -1,6 +1,6 @@
 # ATAM Evaluation — Personal Finance Tracker
 
-- **Date(s)**: 2026-09-05
+- **Date(s)**: 2026-09-07
 - **Evaluation team**: external reviewer (lead), scenario scribe
 - **Architect(s)**: Eng lead
 - **Architecture evaluated**: `../add/personal-finance-tracker-Architecture.md` (after ADD iteration 1–2)
@@ -56,7 +56,7 @@ Method, phases, and the seven output kinds explained.
 
 A **table** (the same tree the drivers register carries —
 [`../drivers/quality-attributes/utility-tree.md`](../drivers/quality-attributes/utility-tree.md)).
-`(V, R)` = (business value, technical risk); `★` = architecturally significant `(H, H)`.
+`(V, R)` = (business value, technical risk); `★` = architecturally significant `(H, H)`. `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 | Quality attribute (ISO/IEC 25010) | Refinement (concern) | Leaf scenario | Priority (V, R) | Status |
 |-----------------------------------|----------------------|---------------|:---------------:|:------:|
@@ -149,7 +149,11 @@ themes align; data-residency (P-3) is new and not in the tree.
 ## Step 9 — Results
 
 ### Architectural approaches
-AA-1 modular monolith · AA-2 security choke point · AA-3 cache-aside · AA-4 stateless + managed HA · AA-5 async import.
+- AA-1 modular monolith
+- AA-2 security choke point
+- AA-3 cache-aside read cache
+- AA-4 stateless replicas with a managed high-availability data tier
+- AA-5 asynchronous import through a queue and worker
 
 ### Risks
 | ID | Risk | Affected attribute | Related driver |
@@ -203,7 +207,7 @@ Turn the risk themes into a prioritised backlog by rough ROI (utility gained ÷ 
 
 ### Drivers register write-back
 
-- [SQA-1](../drivers/quality-attributes/SQA-1.md) → `at risk` (R-1, R-2); [AQA-1](../drivers/quality-attributes/AQA-1.md) → `at risk` (R-3, R-4) — set in the files and in the [drivers README](../drivers/README.md) matrix.
+- [SQA-1](../drivers/quality-attributes/SQA-1.md) (R-1, R-2) and [AQA-1](../drivers/quality-attributes/AQA-1.md) (R-3, R-4) are set to `at risk` in their files, their index, the [drivers README](../drivers/README.md) matrix and the utility tree.
 - Change-log line `2026-09-07 · ATAM` appended to the drivers README and the [package index](../README.md).
 
 ---
