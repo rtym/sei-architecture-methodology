@@ -58,9 +58,8 @@ reuses it.
 
 **QA ID legend** — scenario IDs are prefixed by attribute, numbered within each prefix. Used in
 this register: <only the prefixes that actually appear, e.g. AQA availability · SQA security>.
-A scenario for a new attribute gets its own prefix, recorded here (the full prefix table is in
-the plugin's quality-attribute taxonomy reference). Never the flat `QAS-`.
-<!-- List only the prefixes in use — the full 19-prefix table lives in
+<!-- A scenario for a new attribute gets its own prefix, added to this list; never the flat
+     QAS- prefix. List only the prefixes in use — the full 19-prefix table lives in
      ${CLAUDE_PLUGIN_ROOT}/references/quality-attribute-taxonomy.md and the
      architectural-drivers SKILL.md; dumping it here buries the reader. -->
 

@@ -41,5 +41,5 @@ architecturally significant — mark it `★`.
 
 ## Analysis targets
 
-The `(H,H)` and `(H,M)` leaves are analysed first by ADD iterations and ATAM: e.g. `SQA-1`,
-`AQA-1`, `PQA-1`.
+The `(H,H)` and `(H,M)` leaves are analysed first by ADD iterations and ATAM:
+<the (H, H) and (H, M) leaf IDs>.
