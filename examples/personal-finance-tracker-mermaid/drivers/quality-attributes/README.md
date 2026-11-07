@@ -3,7 +3,8 @@
 Index for `drivers/quality-attributes/`. The authoritative traceability matrix is in the
 [drivers README](../README.md). Grouped by ISO/IEC 25010 characteristic, in the same order as
 the [utility tree](utility-tree.md). Each scenario has its own horizontal six-part scenario
-diagram.
+diagram. `(V, R)` is the scenario's business value and technical risk, each rated high, medium or
+low. `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 | ID | ISO 25010 characteristic / sub | One-line scenario | (V, R) | Diagram | Status |
 |----|-------------------------------|-------------------|:------:|---------|:------:|

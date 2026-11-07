@@ -10,7 +10,8 @@ with a short *refinement* naming the concern), and the **leaf scenarios**.
 
 Each leaf carries a priority pair **`(V, R)`** — **business value** V and **technical risk** R,
 each `H`/`M`/`L` (`V ≈ Importance to the business`, `R ≈ architectural difficulty`). A `(H, H)`
-leaf is architecturally significant — marked `★`.
+leaf is architecturally significant — marked `★`. A measure at `p95` (the 95th percentile) holds
+for 95 % of requests.
 
 ## Utility tree — Root: Utility (fitness for purpose)
 

@@ -68,7 +68,7 @@ Importance`, `R ≈ Difficulty`). Built from the QAW Step 9; ATAM step 5 reuses 
 
 **QA ID legend** — scenario IDs are prefixed by attribute, numbered within each prefix. Used in
 this register: AQA availability · PQA performance · SQA security · MQA modifiability ·
-UQA usability.
+UQA usability. In response measures, `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 ## Traceability matrix
 

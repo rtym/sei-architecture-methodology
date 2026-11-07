@@ -32,4 +32,4 @@ Managed failover meets the AQA-1 recovery target without operating HA ourselves 
 
 ## Related
 
-[`../personal-finance-tracker-Architecture.md`](../personal-finance-tracker-Architecture.md) §9 · [`../../docs/rationale.md`](../../docs/rationale.md) · [drivers](../../drivers/README.md)
+See §9 of the [architecture document](../personal-finance-tracker-Architecture.md), the [rationale](../../docs/rationale.md) in the documentation package, and the [drivers register](../../drivers/README.md).

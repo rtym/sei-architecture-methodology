@@ -48,6 +48,9 @@ flowchart LR
 
 ## Notes / assumptions
 
+`p95` is the 95th percentile: the limit holds for 95 % of requests, and the slowest 5 % may
+exceed it.
+
 See [`../README.md`](../README.md) for traceability and the utility tree.
 
 ---

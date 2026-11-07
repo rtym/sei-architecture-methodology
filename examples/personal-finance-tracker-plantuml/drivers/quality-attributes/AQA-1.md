@@ -24,7 +24,8 @@ six-part scenario diagram**.
 
 ## Six-part scenario diagram
 
-Drawn with the house PlantUML pattern: five boxes left-to-right — source of stimulus → stimulus → artifact → response → response measure — with the environment attached to the artifact.
+Read left to right: the source of stimulus produces the stimulus, which arrives at the artifact in
+the environment shown; the artifact's response follows, and the last box is how it is measured.
 
 ![AQA-1 six-part scenario](diagrams/scenario-AQA-1.png)
 

@@ -9,8 +9,8 @@ The three ADRs were taken during ADD and are canonical there — [`ADR-1`](../ad
 - **Status**: accepted · 2026-09-06
 - **Drivers addressed**: `PQA-1`, `AQA-1`, `MQA-1`
 
-**Context.** The dashboard (`UC-2`) must be interactive in < 1.5 s at p95 with 500 concurrent
-users. Computing every load from the transaction store does not meet the budget.
+**Context.** The dashboard (`UC-2`) must be interactive in < 1.5 s at p95 (the 95th percentile) with 500
+concurrent users. Computing every load from the transaction store does not meet the budget.
 
 **Decision.** We will precompute per-user, per-month aggregates in a Redis cache using the
 cache-aside pattern with a 15-minute TTL; a transaction write invalidates the affected key.
@@ -23,7 +23,7 @@ not correctness (`AQA-1`); aggregate logic stays in the `reporting` module, so n
 (per-user private data — unsafe); no cache (fails `PQA-1`).
 
 **Consequences.** Dashboard data can be up to 15 minutes stale on the read path (tradeoff point
-`T-1` in the ATAM). Cache warm-up cost on cold start.
+`TP-1` in the ATAM). Cache warm-up cost on cold start.
 
 ## ADR-2: Single tenant-guard choke point
 

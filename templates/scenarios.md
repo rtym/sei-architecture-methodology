@@ -26,7 +26,6 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 <!-- One section per scenario, in table order. Register mode leaves these sections out: the
      diagrams live beside the per-scenario files, linked from the section below. -->
 
-
 ```mermaid
 flowchart LR
   %% Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour
@@ -76,6 +75,7 @@ leaves get the most attention.
 ## Architectural drivers (prioritised)
 
 1. <ATTR>QA-<n> (V, R) — <one line>
+
 ---
 
 **Navigation**: [architecture package](../README.md) · [drivers](../drivers/README.md)

@@ -163,7 +163,7 @@ See [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md) f
 
 - `SQA-1` (security / confidentiality) — cross-user access rejected and logged; 0 successful reads.
 - `AQA-1` (reliability / availability) — survive a single-AZ failure, recover < 60 s, ≥ 99.5 %/mo.
-- `PQA-1` (performance / time behaviour) — dashboard interactive < 1.5 s at p95, 500 concurrent users.
+- `PQA-1` (performance / time behaviour) — dashboard interactive < 1.5 s at p95 (the 95th percentile) with 500 concurrent users.
 - `MQA-1` (maintainability / modifiability) — add a report type in ≤ 1 person-day, 0 regressions.
 
 ---
@@ -335,7 +335,7 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 
 - One API Service process holds the tenant guard so `SQA-1` isolation is enforced on every
   interactive path in a single auditable place ([`rationale.md`](../docs/rationale.md) ADR-2).
-- Cache-aside with a bounded TTL meets `PQA-1`'s p95 budget while keeping the cache strictly
+- Cache-aside with a bounded TTL meets `PQA-1`'s latency budget at the 95th percentile (p95) while keeping the cache strictly
   derived, so its failure never threatens `AQA-1` correctness ([`rationale.md`](../docs/rationale.md) ADR-1).
 - CSV import is pushed to a queue + worker so a large import cannot consume the request threads
   that serve interactive traffic (`PQA-2`).
@@ -470,10 +470,10 @@ The Tenant Guard's contract (four agreement points — see `references/interface
 
 ### 2.4 Element behavior
 
-Denied-access sequence: the attacker requests another user's transaction by ID → the Tenant
-Guard scopes the query to the attacker's own `user_id` → the row is not found → `403` returned →
-a denied-access event is written to the append-only audit log and an alert is raised within
-1 minute. 0 rows of another tenant's data are ever returned.
+Denied-access sequence: the attacker requests another user's transaction by ID. The Tenant
+Guard scopes the query to the attacker's own `user_id`, so the row is not found and the API
+returns `403`; a denied-access event is written to the append-only audit log and an alert is
+raised within 1 minute. No row of another tenant's data is ever returned.
 
 ## 3. Context diagram
 
@@ -560,8 +560,8 @@ The three ADRs were taken during ADD and are canonical there — [`ADR-1`](../ad
 - **Status**: accepted · 2026-09-06
 - **Drivers addressed**: `PQA-1`, `AQA-1`, `MQA-1`
 
-**Context.** The dashboard (`UC-2`) must be interactive in < 1.5 s at p95 with 500 concurrent
-users. Computing every load from the transaction store does not meet the budget.
+**Context.** The dashboard (`UC-2`) must be interactive in < 1.5 s at p95 (the 95th percentile) with 500
+concurrent users. Computing every load from the transaction store does not meet the budget.
 
 **Decision.** We will precompute per-user, per-month aggregates in a Redis cache using the
 cache-aside pattern with a 15-minute TTL; a transaction write invalidates the affected key.
@@ -574,7 +574,7 @@ not correctness (`AQA-1`); aggregate logic stays in the `reporting` module, so n
 (per-user private data — unsafe); no cache (fails `PQA-1`).
 
 **Consequences.** Dashboard data can be up to 15 minutes stale on the read path (tradeoff point
-`T-1` in the ATAM). Cache warm-up cost on cold start.
+`TP-1` in the ATAM). Cache warm-up cost on cold start.
 
 ## ADR-2: Single tenant-guard choke point
 
@@ -626,6 +626,9 @@ runbook yet (`R-4`); single-region only, no data-residency seam (`R-6`).
 ---
 
 # Directory — Personal Finance Tracker
+
+Where each element of this package is defined, what its terms and acronyms mean, and which driver
+ID prefixes it uses.
 
 ## Index — where elements are defined
 

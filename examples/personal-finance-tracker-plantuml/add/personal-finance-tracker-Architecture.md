@@ -28,6 +28,8 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 
 ### Quality Attribute Scenarios (key)
 
+`p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
+
 | ID | QA (ISO 25010) | Stimulus | Response | Measure | Priority |
 |----|----------------|----------|----------|---------|----------|
 | SQA-1 | Security / confidentiality | Cross-user data access attempt | Rejected and logged | 0 reads; 100 % logged | (H,H) |
@@ -63,7 +65,7 @@ The Redis read cache serves the dashboard (PQA-1); it is a performance element, 
 record, so its loss degrades latency but not correctness (AQA-1). A CSV import goes through the
 Import Queue to the Import Worker, so a 5 000-row file never holds an API request thread (PQA-1,
 PQA-2). The worker reuses the Data Access module but not yet the tenant guard: ATAM risk R-1,
-closed by ADD iteration 1b.
+to be closed by ADD iteration 1b.
 
 ## 5. Component and module views
 

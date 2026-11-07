@@ -25,7 +25,7 @@
 
 ## Architectural significance
 
-- **Drivers exercised**: Dominates write load; sits on the p95 latency path (PQA-1); every modifiability change touches it (MQA-1); `<<include>>`s [UC-4](UC-4.md) (categorisation).
+- **Drivers exercised**: Dominates write load; sits on the latency path PQA-1 measures at the 95th percentile; every modifiability change touches it (MQA-1); `<<include>>`s [UC-4](UC-4.md) (categorisation).
 
 ## Related drivers
 

@@ -6,6 +6,8 @@
 - **Architecture**: `<slug>-Architecture.md`
 - **Drivers imported from**: <path or "entered here">
 
+<One or two plain sentences: what this session designs, where to start, and the notation used.>
+
 ## Drivers
 
 ### Quality Attribute Scenarios
