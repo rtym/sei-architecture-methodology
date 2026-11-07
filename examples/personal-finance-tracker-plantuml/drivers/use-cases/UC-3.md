@@ -3,12 +3,11 @@
 - **Scope**: Personal Finance Tracker
 - **Level**: user goal
 - **Primary actor**: Registered user
-- **Supporting actors**: Bank Import API (system actor — drawn as a `«system»` rectangle, not a
-  stick figure, in the use case diagram)
+- **Supporting actors**: none — the user uploads the file; no external system takes part
 - **Trigger**: The user uploads a CSV file
 - **Preconditions**: The user is authenticated
 - **Postconditions**: the requested change is persisted and the dashboard reflects it
-- **Priority**: high
+- **Priority**: medium
 - **Status**: open
 
 ## Main success scenario
@@ -34,13 +33,12 @@
 
 ## Use case diagram
 
-Native PlantUML `usecase` notation (this is the PlantUML tree): stick-figure actors outside the
-boundary rectangle, ellipse use cases inside, dashed `<<include>>` dependency. Source:
-[`diagrams/UC-3.puml`](diagrams/UC-3.puml) · rendered + visually verified.
+Native PlantUML `usecase` notation: stick-figure actors outside the
+boundary rectangle, ellipse use cases inside, dashed `<<include>>` dependency.
 
 ![UC-3 — Import a bank statement (CSV)](diagrams/UC-3.png)
 
-Source: [`diagrams/UC-3.puml`](diagrams/UC-3.puml) · rendered + visually verified.
+Source: [`diagrams/UC-3.puml`](diagrams/UC-3.puml).
 
 ---
 

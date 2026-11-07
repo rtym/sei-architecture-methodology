@@ -2,7 +2,7 @@
 
 Index for `drivers/use-cases/`. The authoritative traceability matrix is in the
 [drivers README](../README.md). Each use case has its own proper UML use case diagram (native
-PlantUML `usecase` — this is the PlantUML tree).
+PlantUML `usecase`).
 
 | ID | Use case | Primary actor | Priority | Diagram | Status |
 |----|----------|---------------|:--------:|---------|:------:|

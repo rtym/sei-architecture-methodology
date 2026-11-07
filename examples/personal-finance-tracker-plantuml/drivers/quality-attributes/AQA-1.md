@@ -24,11 +24,11 @@ six-part scenario diagram**.
 
 ## Six-part scenario diagram
 
-Drawn with the house PlantUML pattern (this is the PlantUML tree): five boxes left-to-right — source of stimulus → stimulus → artifact → response → response measure — with the environment attached to the artifact.
+Drawn with the house PlantUML pattern: five boxes left-to-right — source of stimulus → stimulus → artifact → response → response measure — with the environment attached to the artifact.
 
 ![AQA-1 six-part scenario](diagrams/scenario-AQA-1.png)
 
-Source: [`diagrams/scenario-AQA-1.puml`](diagrams/scenario-AQA-1.puml) · rendered + visually verified.
+Source: [`diagrams/scenario-AQA-1.puml`](diagrams/scenario-AQA-1.puml).
 
 ## Notes / assumptions
 

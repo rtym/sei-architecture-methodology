@@ -37,9 +37,8 @@
 
 ## Use case diagram
 
-Mermaid `flowchart` fallback (this is the Mermaid tree): the actor sits outside the system
-boundary, the use case inside. Source: [`diagrams/UC-4.mmd`](diagrams/UC-4.mmd) · rendered +
-visually verified.
+Mermaid `flowchart` fallback: the actor sits outside the system
+boundary, the use case inside. Source: [`diagrams/UC-4.mmd`](diagrams/UC-4.mmd).
 
 ```mermaid
 flowchart LR

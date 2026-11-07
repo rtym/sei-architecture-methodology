@@ -33,9 +33,9 @@
 
 ## Use case diagram
 
-Mermaid `flowchart` fallback (this is the Mermaid tree): the actor sits outside the system
+Mermaid `flowchart` fallback: the actor sits outside the system
 boundary, the use cases inside, and `include` is a dashed dependency. Source:
-[`diagrams/UC-1.mmd`](diagrams/UC-1.mmd) · rendered + visually verified.
+[`diagrams/UC-1.mmd`](diagrams/UC-1.mmd).
 
 ```mermaid
 flowchart LR

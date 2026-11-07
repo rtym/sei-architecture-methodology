@@ -10,14 +10,11 @@
 
 ![View: Module decomposition](diagrams/view-module-decomposition-01.png)
 
-Source: [`diagrams/view-module-decomposition-01.puml`](diagrams/view-module-decomposition-01.puml)
-· rendered + visually verified.
+Source: [`diagrams/view-module-decomposition-01.puml`](diagrams/view-module-decomposition-01.puml).
 
 > The **allowed-to-use** relation is shown between layers. `platform` is a cross-cutting utility
 > used by every layer above it; those edges are omitted to keep the primary presentation legible
 > (§2.2 lists them). Domain modules must not use one another.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
 
 Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 

@@ -10,9 +10,7 @@
 
 ![Security view — Personal Finance Tracker](diagrams/view-security-01.png)
 
-Source: [`diagrams/view-security-01.puml`](diagrams/view-security-01.puml) · rendered + visually verified.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
+Source: [`diagrams/view-security-01.puml`](diagrams/view-security-01.puml).
 
 Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 

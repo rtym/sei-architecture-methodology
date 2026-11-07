@@ -39,7 +39,8 @@ Method, phases, and the seven output kinds explained.
 - **Overview**: SPA → single API (tenant guard + services + data access) → PostgreSQL, with a
   Redis read cache for dashboard aggregates and a Redis-Streams queue + worker for CSV import.
   Stateless API replicas across two AZs; managed primary/standby PostgreSQL.
-- Diagrams: `../diagrams/container.png`, `../add/diagrams/deployment.png` (visually verified: yes)
+- Diagrams: the [container diagram](../add/diagrams/container.png) and the
+  [deployment diagram](../add/diagrams/deployment.png) from the ADD architecture document.
 
 ## Step 4 — Identify architectural approaches
 
@@ -164,7 +165,7 @@ AA-1 modular monolith · AA-2 security choke point · AA-3 cache-aside · AA-4 s
 | ID | Non-risk | Assumption under which it holds |
 |----|----------|--------------------------------|
 | N-1 | One security choke point for interactive traffic | no code path reaches Data Access except via the guard |
-| N-2 | Cache loss = latency only | Redis holds strictly derived data |
+| N-2 | Cache loss = latency only | The Redis read cache holds strictly derived data |
 | N-3 | API tier scales out freely | sessions stay externalised |
 
 ### Sensitivity points

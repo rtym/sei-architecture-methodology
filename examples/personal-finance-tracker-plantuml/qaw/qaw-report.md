@@ -143,7 +143,7 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 
 ![CS-1 six-part scenario](diagrams/scenario-CS-1.png)
 
-Source: [`diagrams/scenario-CS-1.puml`](diagrams/scenario-CS-1.puml) · rendered + visually verified.
+Source: [`diagrams/scenario-CS-1.puml`](diagrams/scenario-CS-1.puml).
 
 - **Questions**: Where is tenant scoping enforced — one place or many? Is the audit log tamper-evident?
 - **Issues / assumptions**: assumes all data access goes through the API (no direct DB clients).
@@ -165,7 +165,7 @@ Source: [`diagrams/scenario-CS-1.puml`](diagrams/scenario-CS-1.puml) · rendered
 
 ![CS-5 six-part scenario](diagrams/scenario-CS-5.png)
 
-Source: [`diagrams/scenario-CS-5.puml`](diagrams/scenario-CS-5.puml) · rendered + visually verified.
+Source: [`diagrams/scenario-CS-5.puml`](diagrams/scenario-CS-5.puml).
 
 - **Questions**: Does the form need progressive disclosure? Are categories pre-seeded?
 - **Issues / assumptions**: usability test to be run on a clickable prototype before build.

@@ -7,8 +7,8 @@ diagram.
 
 | ID | ISO 25010 characteristic / sub | One-line scenario | (V, R) | Diagram | Status |
 |----|-------------------------------|-------------------|:------:|---------|:------:|
-| [SQA-1](SQA-1.md) | Security / confidentiality | Cross-user access rejected + logged; 0 reads | (H, H) | [scenario](diagrams/scenario-SQA-1.png) | in design |
-| [AQA-1](AQA-1.md) | Reliability / availability | Single-AZ failure recovers < 60 s; ≥ 99.5 %/mo | (H, H) | [scenario](diagrams/scenario-AQA-1.png) | open |
+| [SQA-1](SQA-1.md) | Security / confidentiality | Cross-user access rejected + logged; 0 reads | (H, H) | [scenario](diagrams/scenario-SQA-1.png) | at risk |
+| [AQA-1](AQA-1.md) | Reliability / availability | Single-AZ failure recovers < 60 s; ≥ 99.5 %/mo | (H, H) | [scenario](diagrams/scenario-AQA-1.png) | at risk |
 | [PQA-1](PQA-1.md) | Performance efficiency / time behaviour | Dashboard < 1.5 s @ p95, 500 concurrent | (H, M) | [scenario](diagrams/scenario-PQA-1.png) | open |
 | [PQA-2](PQA-2.md) | Performance efficiency / capacity | 5 000-row CSV import < 30 s, interactive unaffected | (M, M) | [scenario](diagrams/scenario-PQA-2.png) | open |
 | [MQA-1](MQA-1.md) | Maintainability / modifiability | Add a report type in ≤ 1 person-day, 0 regressions | (M, M) | [scenario](diagrams/scenario-MQA-1.png) | open |

@@ -52,9 +52,9 @@ scenario's response measure, or verified in a prototype.
 
 | Iteration | Goal | Drivers | Kanban status |
 |-----------|------|---------|---------------|
-| 1 | Establish overall structure, security choke point, availability topology | SQA-1, AQA-1, MQA-1, UC-1, CON-2, CON-4, CON-5, AC-1 | SQA-1 ✅ Completely · AQA-1 ◐ Partially (failover time unverified — see ATAM R-3) · MQA-1 ◐ Partially · UC-1 ✅ · CON-4 ✅ · CON-5 ✅ · AC-1 ✅ |
+| 1 | Establish overall structure, security choke point, availability topology | SQA-1, AQA-1, MQA-1, UC-1, CON-2, CON-4, CON-5, AC-1 | SQA-1 ◐ Partially (alerting and pen-test in iteration 1b) · AQA-1 ◐ Partially (failover time unverified — see ATAM R-3) · MQA-1 ◐ Partially · UC-1 ✅ · CON-4 ✅ · CON-5 ✅ · AC-1 ✅ |
 | 2 | Dashboard read path meets the latency budget | PQA-1, UC-2, AC-2, UQA-1 | PQA-1 ◐ Partially (cache-aside chosen; load test pending) · UC-2 ✅ · AC-2 ◐ · UQA-1 ⬜ Not Yet |
-| 3 | Bulk CSV import without hurting interactive latency | PQA-2, UC-3 | ⬜ Not Yet (deferred to the next project increment) |
+| 3 | Bulk CSV import without hurting interactive latency | PQA-2, UC-3 | ⬜ Not Yet — iteration 1 already moved import onto a queue + worker; batching, backpressure and the PQA-2 load test are deferred to the next project increment |
 | — | *Spike*: measure managed-PostgreSQL failover time against the < 60 s target | AQA-1 | ⬜ Not Yet (game-day scheduled pre-launch) |
 
 ## Iteration 1 — Establish overall structure, security, availability
@@ -81,10 +81,11 @@ The whole system (greenfield, iteration 1).
 |----------------|----------|-----------------------------|------------------------|
 | 3-tier web app (SPA + single API + relational DB) | chosen | Minimises moving parts under CON-2; one API means one place to enforce SQA-1; supports MQA-1 via a modular monolith | Microservices (CON-2 time), serverless functions (cold-start vs PQA-1, harder SOC 2 story) |
 | Tenant-scoping middleware (single guard) | chosen | SQA-1 needs one auditable choke point rather than per-endpoint checks | Row-level security in PostgreSQL (viable later; team unfamiliarity now) |
-_Prototyping decision_: no throwaway prototype for iteration 1 — the 3-tier web app is a mature-domain reference architecture the team has used before (low technical risk), and the design-concept selection table plus a back-of-the-envelope latency estimate resolved the choice. A **spike** to measure the managed-PostgreSQL failover time *is* on the backlog (the one AQA-1 parameter the vendor doc leaves uncertain — a Value-of-Information call: the cost of being wrong about failover time is a missed SLA, so the ~1-day game-day is worth it).
-
 | Managed PostgreSQL, multi-AZ primary/standby, automated failover | chosen | AQA-1 recovery target; CON-5 mandate; available on CON-3 tiers | Self-managed HA (CON-2), single instance (fails AQA-1) |
 | Stateless API replicas across 2 AZs | chosen | AQA-1; enables horizontal scale for PQA-1 later | Sticky sessions (limits failover) |
+| Import queue + worker (Redis Streams) | chosen | A 5 000-row import (PQA-2) must not hold the API's request threads, or PQA-1 suffers; placing the queue now keeps the import path out of the API's latency budget. The worker reuses the Data Access module. | Import inside the request (blocks API threads under PQA-2 load) |
+
+_Prototyping decision_: no throwaway prototype for iteration 1 — the 3-tier web app is a mature-domain reference architecture the team has used before (low technical risk), and the design-concept selection table plus a back-of-the-envelope latency estimate resolved the choice. A **spike** to measure the managed-PostgreSQL failover time *is* on the backlog (the one AQA-1 parameter the vendor doc leaves uncertain — a Value-of-Information call: the cost of being wrong about failover time is a missed SLA, so the ~1-day game-day is worth it).
 
 ### Step 5 — Instantiation, responsibilities, interfaces
 
@@ -94,6 +95,7 @@ _Prototyping decision_: no throwaway prototype for iteration 1 — the 3-tier we
 | API Service (Fastify) | Auth, tenant guard, transaction + dashboard services, data access |
 | Tenant Guard middleware | Inject `user_id` scoping into every query; log denied access (SQA-1) |
 | Primary Database (PostgreSQL) | System of record; encrypted at rest (CON-4) |
+| Import Queue (Redis Streams) + Import Worker | Take CSV import jobs off the request path; batching and backpressure are designed in iteration 3 (PQA-2) |
 
 | Element | Provided interface | Required interface | Protocol |
 |---------|-------------------|-------------------|----------|
@@ -107,6 +109,7 @@ Updated Architecture.md: §2 Context, §3 Drivers, §4 Container, §5 Component 
 |----------|-----------------------------|------------------------|
 | Single API owns all writes + tenant guard | SQA-1 choke point; CON-2 simplicity | per-service checks |
 | Managed multi-AZ PostgreSQL with failover | AQA-1; CON-5 | self-managed HA; single instance |
+| CSV import through a queue + worker | PQA-1 protected from bulk work; PQA-2 detail deferred to iteration 3 | import in the request |
 
 ### Step 7 — Analysis
 
@@ -118,7 +121,7 @@ Updated Architecture.md: §2 Context, §3 Drivers, §4 Container, §5 Component 
 | UC-1 | yes | Write path defined end to end |
 
 - **Iteration goal achieved:** partially
-- **Remaining drivers/concerns:** SQA-1 hardening (alerting, pen-test); PQA-1, UC-2 (iteration 2); AC-2 extension point (iteration 2)
+- **Remaining drivers/concerns:** SQA-1 hardening (alerting, pen-test); PQA-1, UC-2 (iteration 2); AC-2 extension point (iteration 2); UC-3, PQA-2 import sizing (iteration 3)
 
 ---
 

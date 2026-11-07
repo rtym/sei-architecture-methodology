@@ -14,7 +14,7 @@ no native app at launch (`CON-1`).
 
 ![System context — Personal Finance Tracker](diagrams/system-overview-01.png)
 
-Source: [`diagrams/system-overview-01.puml`](diagrams/system-overview-01.puml) · rendered + visually verified.
+Source: [`diagrams/system-overview-01.puml`](diagrams/system-overview-01.puml).
 
 ## Primary functional requirements (use cases)
 

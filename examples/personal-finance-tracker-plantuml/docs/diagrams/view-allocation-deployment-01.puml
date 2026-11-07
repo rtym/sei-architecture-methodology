@@ -13,10 +13,10 @@ Deployment_Node(cloud, "Managed cloud", "eu-west-1 · 2 availability zones") {
   }
   Deployment_Node(datatier, "Managed data tier", "Multi-AZ") {
     ContainerDb(db, "PostgreSQL 15", "Primary + standby", "Automated failover 35-70 s (vendor)")
-    ContainerDb(redis, "Redis 7", "Primary + replica", "Cache + streams; derived data")
+    ContainerDb(redis, "Redis 7", "Primary + replica", "Cache + streams; not a system of record")
   }
 }
-Rel(spa, api, "Served to browser", "HTTPS")
+Rel(spa, api, "Calls the API from the browser", "HTTPS")
 Rel(api, db, "Reads / writes", "SQL/TLS")
 Rel(api, redis, "Cache + enqueue", "RESP/TLS")
 Rel(worker, redis, "Consume jobs", "RESP/TLS")

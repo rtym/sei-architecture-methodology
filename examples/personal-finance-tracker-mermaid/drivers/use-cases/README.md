@@ -2,7 +2,7 @@
 
 Index for `drivers/use-cases/`. The authoritative traceability matrix is in the
 [drivers README](../README.md). Each use case has its own use case diagram (Mermaid `flowchart`
-fallback — this is the Mermaid tree).
+fallback).
 
 | ID | Use case | Primary actor | Priority | Diagram | Status |
 |----|----------|---------------|:--------:|---------|:------:|
