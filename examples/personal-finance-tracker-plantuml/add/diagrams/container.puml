@@ -9,11 +9,16 @@ System_Boundary(sys, "Personal Finance Tracker") {
   Container(spa, "Web App", "React 18 / TS PWA", "Delivers the UI")
   Container(api, "API Service", "Node.js 20 / Fastify", "Single write path; enforces tenant scoping")
   ContainerDb(db, "Primary Database", "PostgreSQL 15 (encrypted)", "System of record; tenant-scoped rows")
+  Container(worker, "Import Worker", "Node.js 20 queue consumer", "Parses CSV imports; bulk-inserts transactions")
   ContainerDb(cache, "Read Cache", "Redis 7", "Dashboard aggregates; cache-aside, 15-min TTL")
+  ContainerQueue(queue, "Import Queue", "Redis Streams", "Import jobs; at-least-once delivery")
 }
 Rel(user, spa, "Uses over HTTPS", "TLS 1.3")
 Rel(spa, api, "Calls REST API", "JSON")
 Rel(api, db, "Reads / writes tenant-scoped rows", "SQL/TLS")
 Rel(api, cache, "Reads aggregates, invalidates on write", "RESP")
+Rel(api, queue, "Enqueues import jobs", "RESP")
+Rel(queue, worker, "Delivers jobs", "RESP")
+Rel(worker, db, "Bulk-inserts transactions", "SQL/TLS")
 Rel(api, mail, "Sends verification & alert email", "SMTP")
 @enduml

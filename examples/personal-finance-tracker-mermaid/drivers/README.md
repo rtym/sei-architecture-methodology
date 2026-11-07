@@ -32,7 +32,7 @@ matters most, or the [traceability matrix](#traceability-matrix) to see how the 
 | UC-4 | Categorise transaction (`<<include>>`d by UC-1, UC-3) | Registered user | [diagram](use-cases/diagrams/UC-4.png) | [UC-4](use-cases/UC-4.md) |
 
 Overview use case diagram: [`use-cases/diagrams/overview-core.png`](use-cases/diagrams/overview-core.png)
-(Mermaid `flowchart` fallback — this is the Mermaid tree).
+(Mermaid `flowchart` fallback).
 
 ### Constraints — [`constraints/`](constraints/README.md)
 | ID | Type | Constraint (short) | Hard / negotiable | File |
@@ -68,8 +68,7 @@ Importance`, `R ≈ Difficulty`). Built from the QAW Step 9; ATAM step 5 reuses 
 
 **QA ID legend** — scenario IDs are prefixed by attribute, numbered within each prefix. Used in
 this register: AQA availability · PQA performance · SQA security · MQA modifiability ·
-UQA usability. A scenario for a new attribute gets its own prefix, recorded here (the full
-prefix table is in the plugin's quality-attribute taxonomy reference). Never the flat `QAS-`.
+UQA usability.
 
 ## Traceability matrix
 
@@ -111,7 +110,7 @@ scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
 | Date | Change |
 |------|--------|
 | 2026-09-06 | initial driver set; reviewed with founder + eng lead; utility tree imported from the QAW |
-| 2026-09-06 | ADD iterations 1–2: UC-1, UC-4, SQA-1 → in design; concerns AC-1, AC-2 recorded |
+| 2026-09-06 | ADD iterations 1–2: UC-1, UC-4, SQA-1, CON-4 → in design; concerns AC-1, AC-2 recorded |
 | 2026-09-07 | ATAM: SQA-1 (R-1, R-2) and AQA-1 (R-3, R-4) → at risk; see [ATAM report](../atam/atam-report.md) |
 
 ---

@@ -37,13 +37,12 @@
 
 ## Use case diagram
 
-Native PlantUML `usecase` notation (this is the PlantUML tree): stick-figure actor outside the
-boundary rectangle, ellipse use case inside. Source:
-[`diagrams/UC-4.puml`](diagrams/UC-4.puml) · rendered + visually verified.
+Native PlantUML `usecase` notation: stick-figure actor outside the
+boundary rectangle, ellipse use case inside.
 
 ![UC-4 — Categorise transaction](diagrams/UC-4.png)
 
-Source: [`diagrams/UC-4.puml`](diagrams/UC-4.puml) · rendered + visually verified.
+Source: [`diagrams/UC-4.puml`](diagrams/UC-4.puml).
 
 ---
 

@@ -30,7 +30,7 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ### Scenario files and diagrams (register)
 
-| Scenario | Six-part diagram (rendered + visually verified) |
+| Scenario | Six-part diagram |
 |----------|--------------------------------------------------|
 | [PQA-1](../drivers/quality-attributes/PQA-1.md) | [scenario-PQA-1.png](../drivers/quality-attributes/diagrams/scenario-PQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-1.puml) |
 | [PQA-2](../drivers/quality-attributes/PQA-2.md) | [scenario-PQA-2.png](../drivers/quality-attributes/diagrams/scenario-PQA-2.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-2.puml) |
