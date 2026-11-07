@@ -223,6 +223,14 @@ with tempfile.TemporaryDirectory() as td:
     check("the bundled prep reads the bundled guide", r.returncode == 0 and "### Regulated data" in (work / "prep.md").read_text())
     r = run(str(qaw / "tests/validate.py"), str(ex / "qaw" / "qaw-report.md"))
     check("the bundled validator passes the example report", r.returncode == 0)
+    check("the bundled validator has every template its structure check reads",
+          sorted(p.name for p in (qaw / "templates").glob("*.md")) == sorted(p.name for p in (ROOT / "templates").glob("*.md")))
+    broken = ex / "drivers" / "use-cases" / "UC-1.md"
+    moved = work / "drivers" / "use-cases" / "UC-1.md"
+    moved.parent.mkdir(parents=True)
+    moved.write_text(broken.read_text().replace("## Extensions / alternate flows", "## Edge cases"))
+    r = run(str(qaw / "tests/validate.py"), str(moved))
+    check("the bundled validator enforces the template structure", r.returncode == 1 and "templates/use-case.md" in r.stdout)
     r = subprocess.run(["bash", str(qaw / "scripts/build-report.sh"), str(ex / "qaw" / "qaw-summary.md"),
                         "--format", "html", "--out", str(work / "s.html")], cwd=work, capture_output=True, text=True)
     check("the bundled report builder finds its converter", r.returncode == 0 and (work / "s.html").is_file())

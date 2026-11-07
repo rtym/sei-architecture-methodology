@@ -878,5 +878,96 @@ with tempfile.TemporaryDirectory() as td:
     check("the CLI skips a file it does not recognise", cli(str(write(root, "notes.txt", "x"))) == 0)
     check("the CLI runs the self-check", cli("--self") == 0)
 
+# --------------------------------------------------------------------------- #
+# Generated artifacts keep their template's structure
+# --------------------------------------------------------------------------- #
+
+check("heading keys ignore links, code marks, parentheses, case and separator style",
+      validate.heading_key("Use cases — [`use-cases/`](use-cases/README.md)  (primary)") == "use cases — use-cases/"
+      and validate.heading_key("Utility Tree: Acme") == validate.heading_key("Utility tree — Acme"))
+check("headings inside code fences and comments are not headings",
+      validate.heading_list("# A\n```\n# not\n```\n<!--\n## nor\n-->\n## B\n") == [(1, "A"), (2, "B")])
+
+TPL = """# Report — <SystemName>
+
+## Inputs
+
+## Item <n> — <name>
+
+### Detail
+
+### Notes (optional)
+
+## Extras — optional, only when asked
+
+### Why
+
+## Results
+"""
+nodes = validate.template_structure(TPL)
+check("a heading with a placeholder repeats; one marked optional may be left out",
+      [(n["repeat"], n["optional"]) for n in nodes] ==
+      [(False, False), (False, False), (True, False), (False, False), (False, True), (False, True), (False, False),
+       (False, False)])
+check("a when-to-include note is not part of the heading name", nodes[5]["re"].fullmatch("extras") is not None)
+
+
+def struct(text: str) -> list[str]:
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        tpl = write(root, "t.md", TPL)
+        return validate.structure_errors(write(root, "a.md", text), tpl)
+
+
+GOOD = ("# Report — Acme\n\n## Inputs\n\n## Item 1 — Alpha\n\n### Detail\n\n### Notes\n\n"
+        "## Item 2 — Beta (late)\n\n### Detail\n\n## Results\n")
+check("an artifact that follows the template passes, repeats and optional parts included", struct(GOOD) == [])
+check("an artifact may add words after the template's heading", struct(GOOD.replace("## Results", "## Results and next steps")) == [])
+check("a dropped section is named",
+      struct(GOOD.replace("## Inputs\n\n", "")) == ["missing the template section '## Inputs' (templates/t.md)"])
+check("an added section is named",
+      struct(GOOD.replace("## Results", "## Appendix\n\n## Results")) ==
+      ["section '## Appendix' is not in templates/t.md — use the template's sections and put this content under the one it belongs to"])
+check("a renamed section is reported as extra plus missing",
+      struct(GOOD.replace("## Inputs", "## Sources")) == [
+          "section '## Sources' is not in templates/t.md — use the template's sections and put this content under the one it belongs to",
+          "missing the template section '## Inputs' (templates/t.md)"])
+moved = "# Report — Acme\n\n## Item 1 — Alpha\n\n### Detail\n\n## Inputs\n\n## Results\n"
+check("a section out of order is named with what it follows",
+      "section '## Inputs' comes after 'Detail'; templates/t.md puts it before" in struct(moved))
+check("a section at the wrong level fails",
+      struct(GOOD.replace("### Detail\n\n### Notes", "## Detail\n\n### Notes", 1)) != [])
+check("a repeated section needs at least one occurrence",
+      "missing the template section '## Item <n> — <name>' (templates/t.md)" in
+      struct("# Report — Acme\n\n## Inputs\n\n## Results\n"))
+check("a required child of a repeated section is required in every round",
+      struct(GOOD.replace("## Item 2 — Beta (late)\n\n### Detail\n\n", "## Item 2 — Beta\n\n")) != [])
+check("an optional section's required children are not required when it is left out",
+      struct(GOOD) == [] and "Extras" not in GOOD)
+check("an optional section that is present needs its required children",
+      "missing the template section '### Why' (templates/t.md)" in struct(GOOD.replace("## Results", "## Extras\n\n## Results")))
+check("a section that fits only a placeholder slot elsewhere is reported as extra, not as moved",
+      validate.structure_errors(
+          write(Path(tempfile.mkdtemp()), "a.md", "# R — A\n\n## Inputs\n\n## Item 1 — x\n\n### Detail\n\n## Results\n\n## Item 9 — late\n"),
+          write(Path(tempfile.mkdtemp()), "t.md", TPL)) != [])
+
+ROOTP = Path(__file__).resolve().parent.parent
+for rel, name in (("architecture/add/acme-session.md", "add-session.md"), ("architecture/add/adr/ADR-3.md", "adr.md"),
+                  ("architecture/drivers/use-cases/UC-1.md", "use-case.md"), ("architecture/drivers/README.md", "drivers-readme.md"),
+                  ("architecture/drivers/use-cases/README.md", "subdir-readme.md"), ("architecture/docs/view-x.md", "view-packet.md"),
+                  ("architecture/docs/README.md", "docs-readme.md"), ("architecture/qaw/qaw-report-2026-01-02.md", "qaw-report.md"),
+                  ("architecture/README.md", "architecture-readme.md"), ("architecture/quality-attributes/scenarios.md", "scenarios.md")):
+    check(f"{rel} is held to templates/{name}", validate.template_for(Path(rel)) == ROOTP / "templates" / name)
+for rel in ("architecture/qaw/qaw-prep.md", "architecture/reports/x.md", "examples/acme/README.md", "notes.md"):
+    check(f"{rel} has no template to follow", validate.template_for(Path(rel)) is None)
+check("a file with no template has no structure errors", validate.structure_errors(Path("notes.md")) == [])
+with tempfile.TemporaryDirectory() as td:
+    uc = write(Path(td), "drivers/use-cases/UC-1.md",
+               (ROOTP / "examples/personal-finance-tracker-mermaid/drivers/use-cases/UC-1.md").read_text(encoding="utf-8")
+               .replace("## Extensions / alternate flows", "## Edge cases"))
+    check("validate_file reports a structure error for a generated artifact",
+          any("is not in templates/use-case.md" in e for e in validate.validate_file(uc)))
+check("every template is mapped and matches its own structure", validate.check_template_structures() == [])
+
 print(f"{PASSES} passed, {FAILS} failed")
 sys.exit(1 if FAILS else 0)
