@@ -270,7 +270,8 @@ when a drivers register exists), `qaw-agenda.md` (before the session), `qaw-vote
   open every artifact with one to three plain sentences saying what it covers and where to start,
   explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
   use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
-  HTML comments, never in the artifact's visible text.
+  HTML comments, never in the artifact's visible text. Keep the template's sections
+  exactly — the same headings, levels and order; `validate.py` checks them.
 
 - Facilitator stays neutral on scenario *content*; drives *process* only.
 - **Rely on the documentation available** (section above): read it before each step, confirm

@@ -39,7 +39,7 @@
     - [Description](#description-4)
   - [8. Interfaces and events](#8-interfaces-and-events)
     - [Interfaces](#interfaces)
-    - [`POST /transactions` — full interface spec (the four agreement points)](#post-transactions--full-interface-spec-the-four-agreement-points)
+      - [`POST /transactions` — full interface spec (the four agreement points)](#post-transactions--full-interface-spec-the-four-agreement-points)
     - [Events](#events)
   - [9. Design decisions](#9-design-decisions)
 
@@ -455,7 +455,7 @@ cache and the import stream; neither is a system of record.
 | API Service | `GET /dashboard?month=` | REST / HTTPS | Monthly aggregates + recent activity (UC-2) |
 | Data Access | `query(userId, spec)` | in-process | Always injects `WHERE user_id = $userId` |
 
-### `POST /transactions` — full interface spec (the four agreement points)
+#### `POST /transactions` — full interface spec (the four agreement points)
 
 The one interface `UC-1` and `SQA-1` both run through, specified per `references/interfaces.md`:
 

@@ -1,4 +1,4 @@
-# Architectural Drivers — `drivers/README.md`: <SystemName>
+# Architectural Drivers — <SystemName>
 
 - **Date**: <YYYY-MM-DD>
 - **Owner**: <name>

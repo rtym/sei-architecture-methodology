@@ -196,15 +196,15 @@ Turn the risk themes into a prioritised backlog by rough ROI (utility gained ÷ 
 | 2 | Game-day the managed-DB failover; write + automate a rollback runbook (RT-2) | High — proves AQA-1; removes a launch blocker | ~2 person-days | high |
 | 3 | Read-replica + repository read/write split; region seam in the data model (RT-3) | Medium — head-room for BG-1 growth and future data-residency | ~1 ADD iteration (3) | medium — defer until growth signal |
 
-### Drivers register write-back
-
-- [SQA-1](../drivers/quality-attributes/SQA-1.md) → `at risk` (R-1, R-2); [AQA-1](../drivers/quality-attributes/AQA-1.md) → `at risk` (R-3, R-4) — set in the files and in the [drivers README](../drivers/README.md) matrix.
-- Change-log line `2026-09-07 · ATAM` appended to the drivers README and the [package index](../README.md).
-
 ### Recommendations / next steps
 - Run `/add` iteration 1b for RT-1 and iteration 3 for RT-3.
 - Schedule a DB failover game-day; add a rollback runbook (RT-2).
 - Re-run this ATAM after the risk themes are addressed. A full ATAM is not needed each time — a **Lightweight Architecture Evaluation** (steps 3–8, internal team, ~half a day, no report) each ADD round or before a release keeps the registers current.
+
+### Drivers register write-back
+
+- [SQA-1](../drivers/quality-attributes/SQA-1.md) → `at risk` (R-1, R-2); [AQA-1](../drivers/quality-attributes/AQA-1.md) → `at risk` (R-3, R-4) — set in the files and in the [drivers README](../drivers/README.md) matrix.
+- Change-log line `2026-09-07 · ATAM` appended to the drivers README and the [package index](../README.md).
 
 ---
 

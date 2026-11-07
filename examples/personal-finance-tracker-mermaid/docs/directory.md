@@ -39,7 +39,7 @@
 ## Driver ID prefixes used here
 
 `BG-` business goal · `UC-` use case · `CON-` constraint · `AQA-` availability · `SQA-` security
-· `PQA-` performance · `MQA-` modifiability · `UQA-` usability · `RQA-` reliability(other).
+· `PQA-` performance · `MQA-` modifiability · `UQA-` usability.
 
 ---
 

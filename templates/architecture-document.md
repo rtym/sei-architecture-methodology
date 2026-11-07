@@ -170,6 +170,10 @@ flowchart TB
 ### Interfaces
 | Component | Interface | Protocol | Description |
 |-----------|-----------|----------|-------------|
+
+#### <operation> — full interface spec (optional, one per significant interface)
+<!-- The four agreement points for an interface others build against: syntax, semantics,
+     error model, quality of service (${CLAUDE_PLUGIN_ROOT}/references/interfaces.md). -->
 ### Events
 | Event | Publisher | Consumers | Description |
 |-------|-----------|-----------|-------------|
