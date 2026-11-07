@@ -150,6 +150,12 @@ def diagrams_in_markdown(text: str) -> list[str]:
 # --------------------------------------------------------------------------- #
 
 NUM_RE = re.compile(r"\d")
+# IDs carry digits too (PQA-1, BG-2, CS-3); a "has a number" check must not count them.
+ID_TOKEN_RE = re.compile(r"\b[A-Z][A-Z0-9]{0,6}-\d+\b")
+
+
+def has_measure(text: str) -> bool:
+    return bool(NUM_RE.search(ID_TOKEN_RE.sub("", text)))
 BEST_PRACTICE = True  # deep, best-practice checks on produced artifacts (not just syntax)
 
 
@@ -285,7 +291,7 @@ def check_drivers(path: Path) -> list[str]:
         or _table_rows(text, "ISO 25010")
     for r in qa_rows:
         joined = " ".join(r)
-        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not NUM_RE.search(joined):
+        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not has_measure(joined):
             errs.append(f"QA scenario row has no numeric measure: {joined[:80]!r}")
 
     # best practice: traceability has no orphans
@@ -467,6 +473,7 @@ def check_drivers_dir(root: Path) -> list[str]:
         errs.append("no quality-attributes/<ATTR>QA-*.md files")
     if not (root / "quality-attributes" / "utility-tree.md").is_file():
         errs.append("quality-attributes/utility-tree.md is missing")
+    errs += _driver_status_errors(root)
     # every id in the top README has a file and vice versa
     if idx.is_file():
         itext = idx.read_text(encoding="utf-8")
@@ -475,6 +482,59 @@ def check_drivers_dir(root: Path) -> list[str]:
             for fid in ids_in_files:
                 if fid not in itext:
                     errs.append(f"{sub}/{fid}.md exists but {fid} is not listed in the drivers README")
+    return errs
+
+
+DRIVER_ID_RE = re.compile(r"(?<![\w-])(?:BG|UC|CON|AC)-\d+(?![\w-])|(?<![\w-])[A-Z]{1,4}QA-\d+(?![\w-])")
+
+
+def _field(text: str, name: str) -> str:
+    """A driver file's `- **Name**: value`, lower-cased, without emphasis or a parenthetical note."""
+    m = re.search(r"^[ \t]*-[ \t]*\*\*" + name + r"\*\*[ \t]*:[ \t]*(.*?)[ \t]*$", text, re.MULTILINE)
+    return re.sub(r"\s*\(.*$", "", m.group(1)).strip(" `*_").lower() if m else ""
+
+
+def _driver_status_errors(root: Path) -> list[str]:
+    """Every copy of a driver's status — its kind's index, the README matrix, the utility tree —
+    and its priority in the kind's index agree with the driver file. scripts/driverstatus.py
+    writes them together; this catches a copy edited by hand."""
+    files = {f.stem: f for f in root.glob("*/*.md") if DRIVER_ID_RE.fullmatch(f.stem)}
+    facts = {k: (_field(f.read_text(encoding="utf-8"), "Status"),
+                 _field(f.read_text(encoding="utf-8"), "Priority")) for k, f in files.items()}
+    errs: list[str] = []
+    tables = [p for p in sorted(root.glob("*/README.md"))] + [root / "README.md",
+                                                             root / "quality-attributes" / "utility-tree.md"]
+    for path in tables:
+        if not path.is_file():
+            continue
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for i, ln in enumerate(lines[:-1]):
+            if not (ln.lstrip().startswith("|") and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1])):
+                continue
+            head = [c.strip().lower() for c in ln.strip().strip("|").split("|")]
+            if "status" not in head:
+                continue
+            id_col = next((j for j, h in enumerate(head) if h.startswith("leaf")), 0)
+            st_col = head.index("status")
+            pr_col = head.index("priority") if "priority" in head else -1
+            for row in lines[i + 2:]:
+                if not row.lstrip().startswith("|"):
+                    break
+                cells = [c.strip() for c in row.strip().strip("|").split("|")]
+                m = DRIVER_ID_RE.search(cells[id_col]) if len(cells) > id_col else None
+                if not m or m.group(0) not in facts:
+                    continue
+                did, (fstatus, fprio) = m.group(0), facts[m.group(0)]
+                rel = path.relative_to(root).as_posix()
+                if len(cells) > st_col:
+                    status = re.sub(r"\s*\(.*$", "", cells[st_col]).strip(" `*_").lower()
+                    if fstatus and status and status != fstatus:
+                        errs.append(f"{rel}: {did} status is '{status}' but {did}.md says '{fstatus}' "
+                                    f"(set statuses with scripts/driverstatus.py)")
+                if pr_col >= 0 and len(cells) > pr_col:
+                    prio = cells[pr_col].strip(" `*_").lower()
+                    if prio in ("high", "medium", "low") and fprio in ("high", "medium", "low") and prio != fprio:
+                        errs.append(f"{rel}: {did} priority is '{prio}' but {did}.md says '{fprio}'")
     return errs
 
 
@@ -489,7 +549,7 @@ def check_scenarios(path: Path) -> list[str]:
         errs.append(f"{n} quality attribute scenarios — expected 8–15 (min 5, max 20)")
     for r in rows:
         joined = " ".join(r)
-        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not NUM_RE.search(joined):
+        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not has_measure(joined):
             errs.append(f"scenario row has no numeric response measure: {joined[:80]!r}")
     if rows and "25010" not in text:
         errs.append("no ISO/IEC 25010 classification anywhere in the file")
@@ -848,6 +908,45 @@ def check_utility_tree(path: Path) -> list[str]:
 _LINK_RE = re.compile(r"!?\[[^\]]*\]\(\s*(<[^>]+>|[^)\s]+)")
 
 
+def headerless_tables(text: str) -> list[int]:
+    """1-based line numbers of pipe-table blocks with no separator row under the first line —
+    GitHub renders them as plain text (usually a paragraph or blank line wedged into a table)."""
+    lines = _FENCE_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text).splitlines()
+    bad, i = [], 0
+    while i < len(lines):
+        if lines[i].lstrip().startswith("|"):
+            j = i
+            while j < len(lines) and lines[j].lstrip().startswith("|"):
+                j += 1
+            if not (j > i + 1 and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1])):
+                bad.append(i + 1)
+            i = j
+        else:
+            i += 1
+    return bad
+
+
+def template_meta_errors(path: Path) -> list[str]:
+    """Self-description in a template's visible text is copied into every artifact made from it;
+    instructions to the writer belong in HTML comments."""
+    visible = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.DOTALL)
+    return [f"visible text {m!r} would be copied into every artifact — move the instruction into "
+            f"an HTML comment" for m in sorted({m.group(0).lower() for m in META_RE.finditer(_without_code(visible))})]
+
+
+def mermaid_source_drift(path: Path) -> list[str]:
+    """A ```mermaid block above an image line whose PNG has a .mmd source beside it must be that
+    source: two sources for one picture drift, and re-rendering the .mmd silently replaces it."""
+    text = path.read_text(encoding="utf-8")
+    errs = []
+    for m in re.finditer(r"```mermaid\n(.*?)```\s*\n+!\[[^\]]*\]\(([^)\s]+\.png)\)", text, re.DOTALL):
+        src = (path.parent / m.group(2)).with_suffix(".mmd")
+        if src.is_file() and src.read_text(encoding="utf-8").strip() != m.group(1).strip():
+            errs.append(f"the mermaid block above {m.group(2)} differs from {src.name} beside it — "
+                        f"keep one source (delete the .mmd, or make the block identical)")
+    return errs
+
+
 def broken_links(path: Path) -> list[str]:
     """Report relative Markdown links / images whose target file does not exist on disk."""
     errs: list[str] = []
@@ -869,6 +968,11 @@ def broken_links(path: Path) -> list[str]:
         dest = (path.parent / target).resolve()
         if not dest.exists():
             errs.append(f"broken link: {target!r} -> {dest}")
+    # a relative path written as code (`../x.png`) is a reference the reader will follow too
+    # (a code span that is a link's text is already covered by the link check above)
+    for m in re.finditer(r"(?<!\[)`(\.\.?/[^`\s]+\.(?:png|svg|md|mmd|puml))`(?!\]\()", _without_code(text)):
+        if not (path.parent / m.group(1)).exists():
+            errs.append(f"names a file that does not exist: `{m.group(1)}`")
     return errs
 
 
@@ -888,9 +992,15 @@ PLACEHOLDER_TOKENS = (
     "<YYYY-MM-DD>", "<SystemName>", "<System name>", "<name>", "<one line>", "<slug>",
     "<role>", "<short title>", "<who needs", "<goal-phrased",
     "<One or two plain sentences", "<Two or three plain sentences",
+    "<only the prefixes that actually appear", "<the (H, H) and (H, M) leaf IDs>",
 )
 
 _FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+
+# An artifact describing how it was produced is meta-commentary (writing-style.md): the reader
+# needs what the diagram shows, not that someone rendered and checked it.
+META_RE = re.compile(r"visually verified|rendered (?:\+|and) (?:visually )?verified"
+                     r"|this is the (?:mermaid|plantuml) tree", re.IGNORECASE)
 
 
 def _without_code(text: str) -> str:
@@ -910,6 +1020,11 @@ def prose_errors(path: Path) -> list[str]:
     for tok in PLACEHOLDER_TOKENS:
         if tok in prose:
             errs.append(f"unfilled template placeholder {tok!r}")
+    for m in sorted({m.group(0).lower() for m in META_RE.finditer(prose)}):
+        errs.append(f"self-description {m!r} — say what the artifact shows, not how it was made "
+                    f"(references/writing-style.md)")
+    for n in headerless_tables(text):
+        errs.append(f"line {n}: table rows without a header separator — they render as plain text")
     # duplicated '- **Key**:' bullets in the header block (before the first '## ') are
     # copy-paste bugs: one Date, one Status, one Owner …
     head = text.split("\n## ", 1)[0]
@@ -939,7 +1054,7 @@ def validate_file(path: Path) -> list[str] | None:
     parent = path.parent.name
 
     def _md(res: list[str]) -> list[str]:
-        return res + broken_links(path) + prose_errors(path)
+        return res + broken_links(path) + prose_errors(path) + mermaid_source_drift(path)
 
     if name.endswith("-Architecture.md"):
         return _md(check_architecture(path))
@@ -1360,7 +1475,7 @@ def check_self() -> list[str]:
     BARE_PATH_RE = re.compile(
         r"(?<![/{\w-])(references|templates|assets)/[A-Za-z0-9_./-]+"
         r"|(?<![/{\w-])scripts/(?:build-report|render|render-plantuml|setup)\.sh"
-        r"|(?<![/{\w-])scripts/qawkit\.py"
+        r"|(?<![/{\w-])scripts/(?:qawkit|driverstatus)\.py"
         r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md"
         r"|(?<![/{\w-])tests/validate\.py")
     template_files = sorted((ROOT / "templates").glob("*.md"))
@@ -1397,6 +1512,12 @@ def check_self() -> list[str]:
                *sorted((ROOT / "references").glob("*.md"))]:
         if BARE_QAS_RE.search(md.read_text(encoding="utf-8")):
             errs.append(f"{md.relative_to(ROOT)}: contains deprecated flat 'QAS-<n>' ID")
+
+    for md in [*cmds, *skill_files, *template_files, *reference_files]:
+        for n in headerless_tables(md.read_text(encoding="utf-8")):
+            errs.append(f"{md.relative_to(ROOT)}:{n}: table rows without a header separator")
+    for md in template_files:
+        errs += [f"{md.relative_to(ROOT)}: {e}" for e in template_meta_errors(md)]
 
     # the plugin's own prose honours the writing-style rules it imposes on artifacts
     # (writing-style.md itself is the one file allowed to name the banned phrases)

@@ -277,10 +277,13 @@ Append a dated line to the top `README.md`'s change log for every run: what was 
 ## Tracking across the engagement
 
 - `/attribute-driven-design` reads this directory (drivers, design purpose, `AC-` concerns) as its
-  Step-1 input and, after each iteration, sets the affected driver files' `**Status**` and the
-  `README.md` matrix to `partially` / `addressed`.
+  Step-1 input and, after each iteration, sets the affected drivers to `partially` / `addressed`.
 - `/atam` reads it for business drivers, stakeholders and the utility tree; ATAM risk themes map
   back to `BG-n`, and every scenario with a Risk is set to `at risk` here.
+- A status lives in up to four places — the driver file, its kind's index, the `README.md` matrix
+  and the utility tree. Change it only with
+  `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/driverstatus.py architecture/drivers <ID> <status>`, which
+  writes all of them or none; `validate.py` on the directory reports any copy that disagrees.
 - Re-run `/drivers` whenever scope changes; add files, never rewrite history — retire, don't delete.
 
 ## Rules
