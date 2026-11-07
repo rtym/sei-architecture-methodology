@@ -37,6 +37,20 @@ template's structure.
   came before its context, the ATAM's recommendations came after the register write-back, and the
   ADD architecture's interface specification sat beside *Interfaces* instead of under it. The
   docs directory listed an ID prefix the register does not use.
+- The example ATAM was dated 2026-09-05, a day before the architecture it evaluates was designed;
+  it is 2026-09-07, as the drivers change log already said. The docs rationale cited tradeoff
+  point `T-1`, which the ATAM calls `TP-1`, and the architecture document called ATAM risk R-1
+  closed by an ADD iteration that has not run yet.
+- The ATAM template's Step 8 now says it is omitted in Lightweight mode, as Step 7 did, so a
+  Lightweight report keeps the template's structure.
+- Language in the examples: `p95` appeared in 15 files and was explained in none, and `(V, R)`
+  was unexplained in two indexes; each now explains the notation at first use. Six passages
+  written as arrow or dot chains (the ADD roadmap, the security view's denied-access sequence,
+  the ATAM's approach list and register write-back, the ADRs' related links, the QAW's expected
+  outputs) are sentences or lists. The directory, the scenario summary and the ADD session open
+  with a sentence saying what they cover, and the PlantUML scenario files' diagram caption tells
+  the reader how to read the diagram instead of how it was drawn. The three templates these
+  came from carry the same changes.
 
 ### Changed
 - Templates: the ADD session's plan heading is *Iteration Plan (design backlog)*, the drivers
@@ -48,7 +62,8 @@ template's structure.
 - Generated artifacts keep their template's structure. `validate.py` compares each artifact's
   headings with its template: the same sections, at the same levels, in the same order. A
   section whose heading has a placeholder repeats; one the template marks optional may be left
-  out. A failure names the section that is missing, added or out of order. Every template must
+  out. A failure names the section that is missing, added, repeated, out of order or at the
+  wrong level. Every template must
   govern some artifact and match its own structure (`--self`). The rule is in
   `references/writing-style.md` and in every skill's writing rule.
 - Templates for the Views-and-Beyond package files that had none — `docs-readme.md`,
@@ -63,7 +78,7 @@ template's structure.
 - PlantUML diagrams render at 240 dpi (`PLANTUML_DPI` to change) with the size limit raised, so
   they are as sharp as the Mermaid renders; every PlantUML example diagram was re-rendered (same
   layouts, 2.5 × the pixels). `tests/run.sh` fails if the default resolution drops.
-- Tests: `tests/test_driverstatus.py` (45), and `tests/test_validate.py` grows to 226 with a case
+- Tests: `tests/test_driverstatus.py` (45), and `tests/test_validate.py` grows to 230 with a case
   per rule of the architecture, session, ATAM, view-packet, mapping and drivers checkers, the
   template-structure check, the self-check and the CLI. Line coverage of `validate.py` rises from
   59 % to 88 %. The Claude app edition bundles every template with the validator so the structure
