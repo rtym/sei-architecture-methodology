@@ -1049,12 +1049,172 @@ def check_mmd(path: Path) -> list[str]:
     return check_diagram(path.read_text(encoding="utf-8"), path.name)
 
 
+# --------------------------------------------------------------------------- #
+# Template structure: every generated artifact keeps its template's headings
+# --------------------------------------------------------------------------- #
+
+# Artifact path (POSIX, matched at the end) → the template that fixes its structure. Files the
+# QAW kit writes (qawkit.py fixes their structure, test_qawkit.py pins it) and generated reports
+# have none; an example's root README is the package index plus notes on regenerating it.
+STRUCTURE_TEMPLATES: tuple[tuple[str, str], ...] = (
+    (r"/adr/ADR-\d+\.md$", "adr.md"),
+    (r"-session\.md$", "add-session.md"),
+    (r"-Architecture\.md$", "architecture-document.md"),
+    (r"/atam/atam-report\.md$", "atam-report.md"),
+    (r"/business-goals/BG-\d+\.md$", "business-goal.md"),
+    (r"/concerns/AC-\d+\.md$", "concern.md"),
+    (r"/constraints/CON-\d+\.md$", "constraint.md"),
+    (r"/use-cases/UC-\d+\.md$", "use-case.md"),
+    (r"/quality-attributes/[A-Z]{1,4}QA-\d+\.md$", "quality-attribute-scenario.md"),
+    (r"/drivers/(?:business-goals|use-cases|constraints|quality-attributes|concerns)/README\.md$", "subdir-readme.md"),
+    (r"/drivers/README\.md$", "drivers-readme.md"),
+    (r"/drivers/stakeholders\.md$", "stakeholders.md"),
+    (r"/quality-attributes/utility-tree\.md$", "utility-tree.md"),
+    (r"/quality-attributes/scenarios\.md$", "scenarios.md"),
+    (r"/qaw/qaw-report(?:-\d{4}-\d{2}-\d{2})?\.md$", "qaw-report.md"),
+    (r"/docs/view-[^/]+\.md$", "view-packet.md"),
+    (r"/docs/README\.md$", "docs-readme.md"),
+    (r"/docs/system-overview\.md$", "system-overview.md"),
+    (r"/docs/mapping-between-views\.md$", "mapping-between-views.md"),
+    (r"/docs/rationale\.md$", "rationale.md"),
+    (r"/docs/directory\.md$", "directory.md"),
+    (r"/docs/change-log\.md$", "change-log.md"),
+    (r"(?:^|/)architecture/README\.md$", "architecture-readme.md"),
+)
+_HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$", re.MULTILINE)
+_FENCES_RE = re.compile(r"^(```|~~~).*?^\1[ \t]*$", re.MULTILINE | re.DOTALL)
+
+
+def template_for(path: Path) -> Path | None:
+    posix = "/" + path.as_posix().lstrip("/")
+    for pattern, name in STRUCTURE_TEMPLATES:
+        if re.search(pattern, posix):
+            return ROOT / "templates" / name
+    return None
+
+
+def heading_list(text: str) -> list[tuple[int, str]]:
+    """(level, title) of every heading outside code fences and HTML comments."""
+    text = re.sub(r"<!--.*?-->", "", _FENCES_RE.sub("", text), flags=re.DOTALL)
+    return [(len(m.group(1)), m.group(2)) for m in _HEADING_RE.finditer(text)]
+
+
+def heading_key(title: str) -> str:
+    """What a heading says, compared loosely: link text only, no code marks or emphasis, no
+    parenthetical notes, one kind of separator, lower case."""
+    t = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", title).replace("`", "").replace("*", "")
+    t = re.sub(r"\s*\([^()]*\)", "", t)
+    t = re.sub(r"\s*(?::|—|–|\s-\s)\s*", " — ", t)
+    return re.sub(r"\s+", " ", t).strip(" .—").lower()
+
+
+def template_structure(template_text: str) -> list[dict]:
+    """The template's headings as nodes: level, title, a pattern for the artifact's heading key
+    (placeholders `<…>` and a lone `N` match anything; the artifact may add words after the
+    template's), whether it repeats (it has a placeholder) and whether it is optional (it says
+    optional / omit in)."""
+    nodes = []
+    for level, title in heading_list(template_text):
+        # a note on when to include the section is not part of its name
+        key = heading_key(re.sub(r"\s*[—–]\s*optional\b.*$", "", title, flags=re.IGNORECASE))
+        parts = re.split(r"(<[^>]+>|\bn\b)", key)
+        pattern = "".join(r"[^\n]+?" if (p.startswith("<") or p == "n") else re.escape(p) for p in parts)
+        nodes.append({"level": level, "title": title, "re": re.compile(pattern + r"[^\n]*"),
+                      "repeat": level > 1 and bool(re.search(r"<[^>]+>|\bN\b", title)),
+                      "optional": bool(re.search(r"\boptional\b|\bomit in\b", title, re.IGNORECASE)),
+                      "slot": not re.sub(r"<[^>]+>|\bn\b|[\s—]", "", key)})
+    return nodes
+
+
+def _structure_regex(nodes: list[dict]) -> re.Pattern:
+    def build(i: int, parent: int) -> tuple[str, int]:
+        out = []
+        while i < len(nodes) and nodes[i]["level"] > parent:
+            n = nodes[i]
+            sub, j = build(i + 1, n["level"])
+            group = f"(?:{n['level']}\\t{n['re'].pattern}\\n{sub})"
+            out.append(group + {(True, True): "*", (True, False): "+", (False, True): "?",
+                                (False, False): ""}[(n["repeat"], n["optional"])])
+            i = j
+        return "".join(out), i
+    return re.compile(build(0, 0)[0])
+
+
+def check_template_structures() -> list[str]:
+    """Every template governs some artifact and is itself a valid structure: the mapping names
+    only templates that exist, every template is mapped, and each template matches its own
+    heading pattern (so its optional and repeated sections are written the way the check reads
+    them)."""
+    errs: list[str] = []
+    mapped = {name for _, name in STRUCTURE_TEMPLATES}
+    for name in sorted(mapped):
+        if not (ROOT / "templates" / name).is_file():
+            errs.append(f"validate.py STRUCTURE_TEMPLATES names templates/{name}, which does not exist")
+    for t in sorted((ROOT / "templates").glob("*.md")):
+        if t.name not in mapped:
+            errs.append(f"templates/{t.name} is not mapped to the artifacts it governs (STRUCTURE_TEMPLATES)")
+        errs += [f"templates/{t.name}: {e}" for e in structure_errors(t, t)]
+    return errs
+
+
+def _ancestors(nodes: list[dict], k: int) -> list[int]:
+    out, level = [], nodes[k]["level"]
+    for j in range(k - 1, -1, -1):
+        if nodes[j]["level"] < level:
+            out.append(j)
+            level = nodes[j]["level"]
+    return out
+
+
+def structure_errors(path: Path, template: Path | None = None) -> list[str]:
+    """Headings the artifact adds, drops, moves or re-levels relative to its template. The
+    template's heading pattern decides; an in-order alignment explains a failure."""
+    template = template or template_for(path)
+    if template is None or not template.is_file():
+        return []
+    nodes = template_structure(template.read_text(encoding="utf-8"))
+    heads = heading_list(path.read_text(encoding="utf-8"))
+    if _structure_regex(nodes).fullmatch("".join(f"{lvl}\t{heading_key(t)}\n" for lvl, t in heads)):
+        return []
+    name = f"templates/{template.name}"
+
+    def fits(k: int, lvl: int, key: str) -> bool:
+        return nodes[k]["level"] == lvl and bool(nodes[k]["re"].fullmatch(key))
+
+    errs: list[str] = []
+    matched: set[int] = set()
+    t, prev = 0, None
+    for lvl, title in heads:
+        key = heading_key(title)
+        k = next((j for j in range(t, len(nodes)) if fits(j, lvl, key)), None)
+        if k is None:
+            # another round of the repeatable section we are still inside
+            k = next((r for r in range(t - 1, -1, -1) if nodes[r]["repeat"] and r in matched
+                      and all(nodes[x]["level"] > nodes[r]["level"] for x in range(r + 1, t))
+                      and fits(r, lvl, key)), None)
+        if k is None:
+            if any(fits(j, lvl, key) and not nodes[j]["slot"] for j in range(len(nodes))):
+                errs.append(f"section '{'#' * lvl} {title}' comes after '{prev}'; {name} puts it before")
+            else:
+                errs.append(f"section '{'#' * lvl} {title}' is not in {name} — use the template's sections "
+                            f"and put this content under the one it belongs to")
+            continue
+        matched.add(k)
+        t, prev = k + 1, title
+    for k, n in enumerate(nodes):
+        skippable = n["optional"] or any(nodes[a]["optional"] and a not in matched for a in _ancestors(nodes, k))
+        if k not in matched and not skippable:
+            errs.append(f"missing the template section '{'#' * n['level']} {n['title']}' ({name})")
+    return errs or [f"headings do not follow the structure of {name} (a section is at the wrong level or repeated)"]
+
+
 def validate_file(path: Path) -> list[str] | None:
     name = path.name
     parent = path.parent.name
 
     def _md(res: list[str]) -> list[str]:
-        return res + broken_links(path) + prose_errors(path) + mermaid_source_drift(path)
+        return (res + broken_links(path) + prose_errors(path) + mermaid_source_drift(path)
+                + structure_errors(path))
 
     if name.endswith("-Architecture.md"):
         return _md(check_architecture(path))
@@ -1493,6 +1653,7 @@ def check_self() -> list[str]:
 
     errs += check_qaw_question_guide()
     errs += check_qaw_playbook()
+    errs += check_template_structures()
     errs += check_plantuml_includes()
     errs += check_vendored_c4()
     errs += check_license()
