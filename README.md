@@ -484,7 +484,9 @@ example's kit with a fresh run, and `tests/test_appbundle.py` builds the Claude 
 runs its bundled scripts. The validator also checks that every copy of a driver's status
 agrees (`scripts/driverstatus.py` writes them together), that tables have a header separator,
 that a backticked relative path exists, that a Mermaid block matches the `.mmd` beside its PNG,
-and that no artifact describes how it was made ("visually verified").
+and that no artifact describes how it was made ("visually verified"). Every generated artifact
+must keep its template's structure — the same sections, levels and order — and a failure names
+the section that is missing, added or out of order.
 
 Validate produced artifacts in a target project:
 
