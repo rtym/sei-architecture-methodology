@@ -374,8 +374,10 @@ Analysis table: each selected driver → **yes / partially / no** + notes. Drive
 the **tactics-based questionnaire** for each attribute in play (`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md`):
 for every relevant tactic, is it used, where, and what is the risk if it is not? State whether
 the goal was achieved and which drivers/concerns remain. **Write back to the register**: for every
-driver analysed, set `**Status**` in its `architecture/drivers/…/<ID>.md` and in the drivers
-`README.md` matrix (`Addressed in` = this iteration; `partially` / `addressed`), and append a
+driver analysed, run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/driverstatus.py architecture/drivers <ID>
+<partially|addressed>` — it sets the status in the driver file, its kind's index, the `README.md`
+matrix and (for a scenario) the utility tree together, and refuses to change any of them if one
+does not list the driver. Then set `Addressed in` to this iteration in the matrix and append a
 change-log line there and in the package index `architecture/README.md`. Ask whether to run
 another iteration.
 Yes → Step 2 with remaining drivers. No → set **Status: completed**, print both file paths, and
@@ -387,7 +389,8 @@ offer to run `/architecture-docs` (Views & Beyond) and `/atam` (evaluation).
   open every artifact with one to three plain sentences saying what it covers and where to start,
   explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
   use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
-  HTML comments, never in the artifact's visible text.
+  HTML comments, never in the artifact's visible text. Keep the template's sections
+  exactly — the same headings, levels and order; `validate.py` checks them.
 
 - IDs are sequential per session: `BG-1`, `UC-1`, `CON-1`, `AC-1`, and attribute-prefixed QA scenarios (`PQA-1`, `SQA-1`, …).
 - Every Step-4 and Step-6 rationale cites ≥ 1 driver ID.

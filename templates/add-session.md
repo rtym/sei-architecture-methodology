@@ -6,6 +6,8 @@
 - **Architecture**: `<slug>-Architecture.md`
 - **Drivers imported from**: <path or "entered here">
 
+<One or two plain sentences: what this session designs, where to start, and the notation used.>
+
 ## Drivers
 
 ### Quality Attribute Scenarios
@@ -25,7 +27,7 @@
 | ID | Concern |
 |----|---------|
 
-## Iteration Plan / design backlog
+## Iteration Plan (design backlog)
 
 Ordered by the design roadmap for the system type (greenfield mature → overall structure, then
 primary use cases, then refine for QAs; novel → prototype-led; brownfield → refine the existing

@@ -13,8 +13,6 @@
 
 ![View: <name>](diagrams/view-<name>.png)
 
-_visually verified: yes/no · relative path renders on GitHub / GitLab_
-
 ## 2. Element catalog
 
 ### 2.1 Elements and their properties

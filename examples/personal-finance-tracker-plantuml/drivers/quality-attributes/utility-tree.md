@@ -10,20 +10,21 @@ with a short *refinement* naming the concern), and the **leaf scenarios**.
 
 Each leaf carries a priority pair **`(V, R)`** — **business value** V and **technical risk** R,
 each `H`/`M`/`L` (`V ≈ Importance to the business`, `R ≈ architectural difficulty`). A `(H, H)`
-leaf is architecturally significant — marked `★`.
+leaf is architecturally significant — marked `★`. A measure at `p95` (the 95th percentile) holds
+for 95 % of requests.
 
 ## Utility tree — Root: Utility (fitness for purpose)
 
 | Quality attribute | Refinement (concern) | Leaf scenario (ID — one line, with response measure) | Priority (V, R) | Status |
 |-------------------|----------------------|-----------------------------------------------------|:---------------:|:------:|
-| Security | Confidentiality | [SQA-1](SQA-1.md) — cross-user access rejected and logged (0 successful reads; 100 % logged; alert < 1 min) | (H, H) `★` | in design |
-| Reliability | Availability | [AQA-1](AQA-1.md) — traffic shifts to the healthy AZ; data tier fails over (≥ 99.5 %/month; recovery < 60 s) | (H, H) `★` | open |
+| Security | Confidentiality | [SQA-1](SQA-1.md) — cross-user access rejected and logged (0 successful reads; 100 % logged; alert < 1 min) | (H, H) `★` | at risk |
+| Reliability | Availability | [AQA-1](AQA-1.md) — traffic shifts to the healthy AZ; data tier fails over (≥ 99.5 %/month; recovery < 60 s) | (H, H) `★` | at risk |
 | Performance efficiency | Time behaviour | [PQA-1](PQA-1.md) — dashboard interactive < 1.5 s @ p95 at 500 concurrent users | (H, M) | open |
 | Performance efficiency | Capacity | [PQA-2](PQA-2.md) — 5 000-row CSV import < 30 s without hurting interactive p95 | (M, M) | open |
 | Maintainability | Modifiability | [MQA-1](MQA-1.md) — add a report type in ≤ 1 person-day, ≤ 3 modules, 0 regressions | (M, M) | open |
 | Interaction capability | Operability | [UQA-1](UQA-1.md) — first-time user records a transaction without help; ≥ 85 % completion | (M, M) | open |
 
-`Status` ∈ `open` / `in design` / `partially` / `addressed` / `retired`.
+`Status` ∈ `open` / `in design` / `partially` / `addressed` / `at risk` / `retired`.
 
 ## Reading the tree
 
@@ -32,7 +33,8 @@ leaf is architecturally significant — marked `★`.
   service and the managed data tier.
 - No quality attribute or refinement is left without a leaf scenario; if one were, that would be
   a prompt to check for an unrecorded ASR, not automatically a defect.
-- Nothing is `addressed` yet; SQA-1 and UC-1 are `in design` after ADD iteration 1.
+- Nothing is `addressed` yet. ADD iteration 1 put SQA-1 in design; the ATAM then found
+  risks against SQA-1 (R-1, R-2) and AQA-1 (R-3, R-4), so both leaves are `at risk`.
 
 ## Analysis targets
 

@@ -35,7 +35,9 @@ sensitivity points, tradeoff points, risk themes.
 - **Technical constraints**: 
 - **External systems**: 
 - **Overview** (context → containers → key components; key flows; deployment): 
-- Diagrams (```mermaid block + image line): ![…](diagrams/….png) — visually verified: y/n
+- **Diagrams**: [container diagram](<path>) · [deployment diagram](<path>)
+  <!-- Link the diagrams the architect presented, with paths that resolve from this file
+       (usually ../diagrams/ or ../add/diagrams/). Never a bare backtick path. -->
 
 ## Step 4 — Identify architectural approaches
 
@@ -60,7 +62,7 @@ leaves get the most analysis. The `★` and `(H,M)` leaves are what Step 6 analy
 
 ## Step 6 — Analyse architectural approaches (Phase 1 scenarios)
 
-### <ATTR>QA-id — <one-line scenario> (Imp, Diff)
+### <ATTR>QA-<n> — <one-line scenario> (V, R)
 - **Attribute / refinement**: <ISO 25010 characteristic / refinement>
 - **Approaches invoked**: AA-1, AA-2
 - **Analysis questions & answers**:
@@ -83,9 +85,11 @@ leaves get the most analysis. The `★` and `(H,M)` leaves are what Step 6 analy
 
 Ranked: P-3 (8) > P-1 (5) > … · Agreement with utility tree: <notes>
 
-## Step 8 — Analyse architectural approaches (Phase 2 scenarios — Full ATAM only)
+## Step 8 — Analyse architectural approaches (Phase 2 scenarios — Full ATAM only; omit in Lightweight mode)
 
-<repeat the Step 6 analysis structure for the top Phase 2 scenarios not already covered>
+### P-<n> — <one-line scenario> (optional; one per Phase 2 scenario not already covered)
+
+<the Step 6 analysis structure: attribute, approaches invoked, questions and answers, findings>
 
 ## Step 9 — Results
 
@@ -112,6 +116,13 @@ Ranked: P-3 (8) > P-1 (5) > … · Agreement with utility tree: <notes>
 | Theme | Risks | Business driver(s) endangered | Recommendation |
 |-------|-------|------------------------------|----------------|
 | RT-1 | R-1, R-4, R-7 | BG-3 | ADD iteration targeting availability of the cache tier |
+
+### CBAM — ranked remediation backlog (optional)
+<!-- When the risks call for choosing between fixes: each candidate's added utility, cost and
+     schedule, ranked by return on investment (${CLAUDE_PLUGIN_ROOT}/references/atam-method.md, CBAM). -->
+
+| Rank | Fix | Utility gained | Cost | ROI |
+|------|-----|----------------|------|-----|
 
 ### Recommendations / next steps
 - <targeted ADD iterations, spikes, monitoring, doc updates>

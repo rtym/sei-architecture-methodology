@@ -37,7 +37,7 @@ Recorded in the stakeholder register [`../drivers/stakeholders.md`](../drivers/s
 | ST-5 | Design partner | End-user representative | ease of first use |
 
 ### Expected outputs
-Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six-part) scenarios.
+Raw scenarios first, then consolidated, prioritised and refined (six-part) scenarios.
 
 ## Step 2 — Business / mission drivers
 
@@ -143,7 +143,7 @@ Dissent / notes: none — the S-7/S-1 merge was agreed since both concern the sa
 
 ![CS-1 six-part scenario](diagrams/scenario-CS-1.png)
 
-Source: [`diagrams/scenario-CS-1.puml`](diagrams/scenario-CS-1.puml) · rendered + visually verified.
+Source: [`diagrams/scenario-CS-1.puml`](diagrams/scenario-CS-1.puml).
 
 - **Questions**: Where is tenant scoping enforced — one place or many? Is the audit log tamper-evident?
 - **Issues / assumptions**: assumes all data access goes through the API (no direct DB clients).
@@ -165,7 +165,7 @@ Source: [`diagrams/scenario-CS-1.puml`](diagrams/scenario-CS-1.puml) · rendered
 
 ![CS-5 six-part scenario](diagrams/scenario-CS-5.png)
 
-Source: [`diagrams/scenario-CS-5.puml`](diagrams/scenario-CS-5.puml) · rendered + visually verified.
+Source: [`diagrams/scenario-CS-5.puml`](diagrams/scenario-CS-5.puml).
 
 - **Questions**: Does the form need progressive disclosure? Are categories pre-seeded?
 - **Issues / assumptions**: usability test to be run on a clickable prototype before build.
@@ -178,7 +178,7 @@ summary of the workshop's quality attributes and is handed to `/drivers` as the 
 ATAM step 5 reuses it.
 
 `(V, R)` = **business value** (from the vote ranking + business-goal weight) and **technical
-risk** (the architect's estimate), each `H`/`M`/`L`. `★` = architecturally significant `(H, H)`.
+risk** (the architect's estimate), each `H`/`M`/`L`. `★` = architecturally significant `(H, H)`. `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 | Quality attribute (ISO/IEC 25010) | Refinement (concern) | Leaf scenario (ID — from CS-n — one line) | Priority (V, R) | Status |
 |-----------------------------------|----------------------|------------------------------------------|:---------------:|:------:|

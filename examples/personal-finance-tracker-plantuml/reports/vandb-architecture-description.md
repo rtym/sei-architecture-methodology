@@ -2,7 +2,7 @@
 
 _Views-and-Beyond architecture description_
 
-> Generated 2026-11-01 · 10 source file(s)
+> Generated 2026-11-07 · 10 source file(s)
 
 ## Contents
 
@@ -149,7 +149,7 @@ no native app at launch (`CON-1`).
 
 ![System context — Personal Finance Tracker](../docs/diagrams/system-overview-01.png)
 
-Source: [`diagrams/system-overview-01.puml`](../docs/diagrams/system-overview-01.puml) · rendered + visually verified.
+Source: [`diagrams/system-overview-01.puml`](../docs/diagrams/system-overview-01.puml).
 
 ## Primary functional requirements (use cases)
 
@@ -163,7 +163,7 @@ See [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md) f
 
 - `SQA-1` (security / confidentiality) — cross-user access rejected and logged; 0 successful reads.
 - `AQA-1` (reliability / availability) — survive a single-AZ failure, recover < 60 s, ≥ 99.5 %/mo.
-- `PQA-1` (performance / time behaviour) — dashboard interactive < 1.5 s at p95, 500 concurrent users.
+- `PQA-1` (performance / time behaviour) — dashboard interactive < 1.5 s at p95 (the 95th percentile) with 500 concurrent users.
 - `MQA-1` (maintainability / modifiability) — add a report type in ≤ 1 person-day, 0 regressions.
 
 ---
@@ -185,14 +185,11 @@ See [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md) f
 
 ![View: Module decomposition](../docs/diagrams/view-module-decomposition-01.png)
 
-Source: [`diagrams/view-module-decomposition-01.puml`](../docs/diagrams/view-module-decomposition-01.puml)
-· rendered + visually verified.
+Source: [`diagrams/view-module-decomposition-01.puml`](../docs/diagrams/view-module-decomposition-01.puml).
 
 > The **allowed-to-use** relation is shown between layers. `platform` is a cross-cutting utility
 > used by every layer above it; those edges are omitted to keep the primary presentation legible
 > (§2.2 lists them). Domain modules must not use one another.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
 
 Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
@@ -276,9 +273,7 @@ process are outside it; the worker reuses the `imports` and `persistence` module
 
 ![View: Runtime (C&C)](../docs/diagrams/view-cnc-runtime-01.png)
 
-Source: [`diagrams/view-cnc-runtime-01.puml`](../docs/diagrams/view-cnc-runtime-01.puml) · rendered + visually verified.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
+Source: [`diagrams/view-cnc-runtime-01.puml`](../docs/diagrams/view-cnc-runtime-01.puml).
 
 Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
@@ -317,7 +312,7 @@ miss), the path that realises PQA-1 — re-rendered from the ADD `Architecture.m
 
 ![UC-2 dashboard load — cache hit / miss](../docs/diagrams/view-cnc-runtime-behaviour-uc2.png)
 
-Source: [`diagrams/view-cnc-runtime-behaviour-uc2.puml`](../docs/diagrams/view-cnc-runtime-behaviour-uc2.puml) · rendered + visually verified.
+Source: [`diagrams/view-cnc-runtime-behaviour-uc2.puml`](../docs/diagrams/view-cnc-runtime-behaviour-uc2.puml).
 
 On a cache hit the Primary Database is not touched; on a miss the API Service recomputes from
 tenant-scoped rows and repopulates the Read Cache, so staleness is bounded by the 15-minute TTL.
@@ -340,7 +335,7 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 
 - One API Service process holds the tenant guard so `SQA-1` isolation is enforced on every
   interactive path in a single auditable place ([`rationale.md`](../docs/rationale.md) ADR-2).
-- Cache-aside with a bounded TTL meets `PQA-1`'s p95 budget while keeping the cache strictly
+- Cache-aside with a bounded TTL meets `PQA-1`'s latency budget at the 95th percentile (p95) while keeping the cache strictly
   derived, so its failure never threatens `AQA-1` correctness ([`rationale.md`](../docs/rationale.md) ADR-1).
 - CSV import is pushed to a queue + worker so a large import cannot consume the request threads
   that serve interactive traffic (`PQA-2`).
@@ -364,9 +359,7 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 
 ![View: Deployment](../docs/diagrams/view-allocation-deployment-01.png)
 
-Source: [`diagrams/view-allocation-deployment-01.puml`](../docs/diagrams/view-allocation-deployment-01.puml) · rendered + visually verified.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
+Source: [`diagrams/view-allocation-deployment-01.puml`](../docs/diagrams/view-allocation-deployment-01.puml).
 
 Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
@@ -388,7 +381,7 @@ Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and 
 | API Service replica | allocated-to | Container platform (AZ-a / AZ-b) | ≥ 1 replica per AZ |
 | Import Worker | allocated-to | Container platform | scales on queue depth |
 | Primary Database | allocated-to | data tier, AZ-a (primary), AZ-b (standby) | sync or near-sync replication |
-| Redis | allocated-to | data tier, AZ-a (primary), AZ-b (replica) | async replication acceptable (derived data) |
+| Redis | allocated-to | data tier, AZ-a (primary), AZ-b (replica) | async replication acceptable for the cache (derived data) |
 
 ### 2.3 Element interfaces
 
@@ -441,9 +434,7 @@ Outside this view: the user's device/network and the email provider's infrastruc
 
 ![Security view — Personal Finance Tracker](../docs/diagrams/view-security-01.png)
 
-Source: [`diagrams/view-security-01.puml`](../docs/diagrams/view-security-01.puml) · rendered + visually verified.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
+Source: [`diagrams/view-security-01.puml`](../docs/diagrams/view-security-01.puml).
 
 Legend: [`diagrams/legend.png`](../docs/diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
@@ -479,10 +470,10 @@ The Tenant Guard's contract (four agreement points — see `references/interface
 
 ### 2.4 Element behavior
 
-Denied-access sequence: the attacker requests another user's transaction by ID → the Tenant
-Guard scopes the query to the attacker's own `user_id` → the row is not found → `403` returned →
-a denied-access event is written to the append-only audit log and an alert is raised within
-1 minute. 0 rows of another tenant's data are ever returned.
+Denied-access sequence: the attacker requests another user's transaction by ID. The Tenant
+Guard scopes the query to the attacker's own `user_id`, so the row is not found and the API
+returns `403`; a denied-access event is written to the append-only audit log and an alert is
+raised within 1 minute. No row of another tenant's data is ever returned.
 
 ## 3. Context diagram
 
@@ -569,8 +560,8 @@ The three ADRs were taken during ADD and are canonical there — [`ADR-1`](../ad
 - **Status**: accepted · 2026-09-06
 - **Drivers addressed**: `PQA-1`, `AQA-1`, `MQA-1`
 
-**Context.** The dashboard (`UC-2`) must be interactive in < 1.5 s at p95 with 500 concurrent
-users. Computing every load from the transaction store does not meet the budget.
+**Context.** The dashboard (`UC-2`) must be interactive in < 1.5 s at p95 (the 95th percentile) with 500
+concurrent users. Computing every load from the transaction store does not meet the budget.
 
 **Decision.** We will precompute per-user, per-month aggregates in a Redis cache using the
 cache-aside pattern with a 15-minute TTL; a transaction write invalidates the affected key.
@@ -583,7 +574,7 @@ not correctness (`AQA-1`); aggregate logic stays in the `reporting` module, so n
 (per-user private data — unsafe); no cache (fails `PQA-1`).
 
 **Consequences.** Dashboard data can be up to 15 minutes stale on the read path (tradeoff point
-`T-1` in the ATAM). Cache warm-up cost on cold start.
+`TP-1` in the ATAM). Cache warm-up cost on cold start.
 
 ## ADR-2: Single tenant-guard choke point
 
@@ -636,6 +627,9 @@ runbook yet (`R-4`); single-region only, no data-residency seam (`R-6`).
 
 # Directory — Personal Finance Tracker
 
+Where each element of this package is defined, what its terms and acronyms mean, and which driver
+ID prefixes it uses.
+
 ## Index — where elements are defined
 
 | Element | Defined in | Also appears in |
@@ -675,7 +669,7 @@ runbook yet (`R-4`); single-region only, no data-residency seam (`R-6`).
 ## Driver ID prefixes used here
 
 `BG-` business goal · `UC-` use case · `CON-` constraint · `AQA-` availability · `SQA-` security
-· `PQA-` performance · `MQA-` modifiability · `UQA-` usability · `RQA-` reliability(other).
+· `PQA-` performance · `MQA-` modifiability · `UQA-` usability.
 
 ---
 
@@ -691,6 +685,7 @@ Revision history of this Views-and-Beyond documentation package (not of the syst
 | Date | Change |
 |------|--------|
 | 2026-09-06 | Initial description: system overview, one view packet per viewtype (Module decomposition, C&C runtime, Allocation deployment), mapping between views, rationale + ADR-1..3, directory. |
+| 2026-11-07 | Deployment view: the browser-to-API relation is labelled as a call from the browser, and Redis is described as holding the read cache and the import stream. |
 
 ---
 

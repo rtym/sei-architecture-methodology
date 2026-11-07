@@ -7,7 +7,7 @@
 
 ## Context
 
-The dashboard (UC-2) must be interactive in < 1.5 s at p95 with 500 concurrent users (PQA-1). Aggregating transactions per request in PostgreSQL alone does not meet that budget at the low-cost tier the constraints allow (CON-3), and new report types must stay cheap to add (MQA-1).
+The dashboard (UC-2) must be interactive in < 1.5 s at p95 (the 95th percentile) with 500 concurrent users (PQA-1). Aggregating transactions per request in PostgreSQL alone does not meet that budget at the low-cost tier the constraints allow (CON-3), and new report types must stay cheap to add (MQA-1).
 
 ## Decision
 
@@ -32,4 +32,4 @@ Cache-aside keeps the database the only source of truth and needs no invalidatio
 
 ## Related
 
-[`../personal-finance-tracker-Architecture.md`](../personal-finance-tracker-Architecture.md) §9 · [`../../docs/rationale.md`](../../docs/rationale.md) · [drivers](../../drivers/README.md)
+See §9 of the [architecture document](../personal-finance-tracker-Architecture.md), the [rationale](../../docs/rationale.md) in the documentation package, and the [drivers register](../../drivers/README.md).

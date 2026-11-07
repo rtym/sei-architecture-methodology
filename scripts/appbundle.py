@@ -37,6 +37,7 @@ SKIP_FILES = {".DS_Store"}
 # Files a script loads without naming them as ${CLAUDE_PLUGIN_ROOT}/… (paths from its own folder).
 IMPLICIT_DEPS = {
     "scripts/build-report.sh": ["scripts/mdreport.py"],
+    "tests/validate.py": ["templates/"],       # the structure check reads every artifact's template
     "scripts/qawkit.py": ["references/qaw-question-guide.md", "references/qaw-facilitation-playbook.md"],
     "skills/sei-diagrams/scripts/render.sh": ["skills/sei-diagrams/assets/", "skills/sei-diagrams/scripts/setup.sh"],
     "skills/sei-diagrams/scripts/render-plantuml.sh": ["skills/sei-diagrams/assets/"],

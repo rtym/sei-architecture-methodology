@@ -155,8 +155,10 @@ scenarios from Step 7 that were not already covered.
 - **risk themes** — cluster the risks, name each theme, and map it to the business driver(s)
   (`BG-n`) it threatens,
 - recommendations (often: targeted `/add` iterations to address the top risk themes),
-- **drivers register write-back**: every scenario with ≥ 1 Risk is set to `at risk` in its
-  `architecture/drivers/…/<ID>.md` and in the drivers `README.md` matrix; a dated change-log line
+- **drivers register write-back**: every scenario with ≥ 1 Risk is set to `at risk` with
+  `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/driverstatus.py architecture/drivers <ID> "at risk" --detail
+  "ATAM R-<n>, R-<m>"`, which updates the driver file, its kind's index, the drivers `README.md`
+  matrix and the utility tree together; a dated change-log line
   naming the risk IDs is appended there and to the package index `architecture/README.md`
   (`/atam` row → done). Create the index from `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if it does
   not exist. If this evaluation ran **without** a drivers register there is nothing to write back
@@ -169,7 +171,8 @@ scenarios from Step 7 that were not already covered.
   open every artifact with one to three plain sentences saying what it covers and where to start,
   explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
   use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
-  HTML comments, never in the artifact's visible text.
+  HTML comments, never in the artifact's visible text. Keep the template's sections
+  exactly — the same headings, levels and order; `validate.py` checks them.
 
 - Every risk, non-risk, sensitivity, and tradeoff cites the element/decision and the affected
   quality attribute(s) (ISO/IEC 25010 characteristic).

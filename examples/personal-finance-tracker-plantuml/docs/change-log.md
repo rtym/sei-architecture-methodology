@@ -5,6 +5,7 @@ Revision history of this Views-and-Beyond documentation package (not of the syst
 | Date | Change |
 |------|--------|
 | 2026-09-06 | Initial description: system overview, one view packet per viewtype (Module decomposition, C&C runtime, Allocation deployment), mapping between views, rationale + ADR-1..3, directory. |
+| 2026-11-07 | Deployment view: the browser-to-API relation is labelled as a call from the browser, and Redis is described as holding the read cache and the import stream. |
 
 ---
 

@@ -1,5 +1,8 @@
 # Directory — Personal Finance Tracker
 
+Where each element of this package is defined, what its terms and acronyms mean, and which driver
+ID prefixes it uses.
+
 ## Index — where elements are defined
 
 | Element | Defined in | Also appears in |
@@ -39,7 +42,7 @@
 ## Driver ID prefixes used here
 
 `BG-` business goal · `UC-` use case · `CON-` constraint · `AQA-` availability · `SQA-` security
-· `PQA-` performance · `MQA-` modifiability · `UQA-` usability · `RQA-` reliability(other).
+· `PQA-` performance · `MQA-` modifiability · `UQA-` usability.
 
 ---
 

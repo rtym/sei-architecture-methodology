@@ -10,9 +10,7 @@
 
 ![View: Deployment](diagrams/view-allocation-deployment-01.png)
 
-Source: [`diagrams/view-allocation-deployment-01.puml`](diagrams/view-allocation-deployment-01.puml) · rendered + visually verified.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
+Source: [`diagrams/view-allocation-deployment-01.puml`](diagrams/view-allocation-deployment-01.puml).
 
 Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
@@ -34,7 +32,7 @@ Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour m
 | API Service replica | allocated-to | Container platform (AZ-a / AZ-b) | ≥ 1 replica per AZ |
 | Import Worker | allocated-to | Container platform | scales on queue depth |
 | Primary Database | allocated-to | data tier, AZ-a (primary), AZ-b (standby) | sync or near-sync replication |
-| Redis | allocated-to | data tier, AZ-a (primary), AZ-b (replica) | async replication acceptable (derived data) |
+| Redis | allocated-to | data tier, AZ-a (primary), AZ-b (replica) | async replication acceptable for the cache (derived data) |
 
 ### 2.3 Element interfaces
 

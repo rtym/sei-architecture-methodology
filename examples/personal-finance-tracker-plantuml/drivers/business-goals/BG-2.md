@@ -7,6 +7,11 @@
 - **Priority**: high
 - **Status**: open
 
+## Context
+
+Early-stage SaaS; this goal is one of the four the architecture must serve. See
+[`../README.md`](../README.md) for the full driver set and traceability.
+
 ## Business-goal scenario (7 parts)
 
 | Part | Value |
@@ -18,11 +23,6 @@
 | Goal | pass a SOC 2 Type II audit (Security + Confidentiality trust-services criteria) |
 | Goal-measure | a clean (no-exception) SOC 2 Type II report covering a ≥ 6-month observation window, delivered before the first enterprise contract is signed |
 | Pedigree & value | set by the founder; high confidence it is required; low volatility; value **high** — a blocked audit blocks the entire employer channel |
-
-## Context
-
-Early-stage SaaS; this goal is one of the four the architecture must serve. See
-[`../README.md`](../README.md) for the full driver set and traceability.
 
 ## Supported by
 

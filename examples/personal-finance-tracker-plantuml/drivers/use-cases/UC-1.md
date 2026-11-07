@@ -25,7 +25,7 @@
 
 ## Architectural significance
 
-- **Drivers exercised**: Dominates write load; sits on the p95 latency path (PQA-1); every modifiability change touches it (MQA-1); `<<include>>`s [UC-4](UC-4.md) (categorisation).
+- **Drivers exercised**: Dominates write load; sits on the latency path PQA-1 measures at the 95th percentile; every modifiability change touches it (MQA-1); `<<include>>`s [UC-4](UC-4.md) (categorisation).
 
 ## Related drivers
 
@@ -33,13 +33,12 @@
 
 ## Use case diagram
 
-Native PlantUML `usecase` notation (this is the PlantUML tree): stick-figure actors outside the
-boundary rectangle, ellipse use cases inside, dashed `<<include>>` dependency. Source:
-[`diagrams/UC-1.puml`](diagrams/UC-1.puml) · rendered + visually verified.
+Native PlantUML `usecase` notation: stick-figure actors outside the
+boundary rectangle, ellipse use cases inside, dashed `<<include>>` dependency.
 
 ![UC-1 — Record a transaction](diagrams/UC-1.png)
 
-Source: [`diagrams/UC-1.puml`](diagrams/UC-1.puml) · rendered + visually verified.
+Source: [`diagrams/UC-1.puml`](diagrams/UC-1.puml).
 
 ---
 

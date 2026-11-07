@@ -29,8 +29,8 @@
 
 ## Use case diagram
 
-Mermaid `flowchart` fallback (this is the Mermaid tree). Source:
-[`diagrams/UC-2.mmd`](diagrams/UC-2.mmd) · rendered + visually verified.
+Mermaid `flowchart` fallback. Source:
+[`diagrams/UC-2.mmd`](diagrams/UC-2.mmd).
 
 ```mermaid
 flowchart LR

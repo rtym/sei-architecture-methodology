@@ -3,11 +3,11 @@
 - **Scope**: Personal Finance Tracker
 - **Level**: user goal
 - **Primary actor**: Registered user
-- **Supporting actors**: Bank Import API
+- **Supporting actors**: none — the user uploads the file; no external system takes part
 - **Trigger**: The user uploads a CSV file
 - **Preconditions**: The user is authenticated
 - **Postconditions**: the requested change is persisted and the dashboard reflects it
-- **Priority**: high
+- **Priority**: medium
 - **Status**: open
 
 ## Main success scenario
@@ -33,26 +33,22 @@
 
 ## Use case diagram
 
-Mermaid `flowchart` fallback (this is the Mermaid tree). Source:
-[`diagrams/UC-3.mmd`](diagrams/UC-3.mmd) · rendered + visually verified.
+Mermaid `flowchart` fallback. Source:
+[`diagrams/UC-3.mmd`](diagrams/UC-3.mmd).
 
 ```mermaid
 flowchart LR
   %% Use case diagram — UC-3 Import a bank statement (CSV)
   pa(["fa:fa-user Registered user"])
-  bank["&laquo;system&raquo;<br/>Bank Import API"]
   subgraph sys["System: Personal Finance Tracker"]
     uc3("UC-3 Import a bank statement (CSV)")
     uc4("UC-4 Categorise transaction")
   end
   pa --> uc3
-  bank --> uc3
   uc3 -. include .-> uc4
   classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
   classDef artifact fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   class pa source
-  class bank external
   class uc3,uc4 artifact
 ```
 

@@ -31,7 +31,7 @@ Imported from [`../drivers/stakeholders.md`](../drivers/stakeholders.md) (create
 | ST-1 | | architect / dev / test / integrator / ops / security / product / sponsor / user rep | |
 
 ### Expected outputs
-Raw scenarios · consolidated scenarios · prioritised scenarios · refined (six-part) scenarios.
+Raw scenarios first, then consolidated, prioritised and refined (six-part) scenarios.
 
 ## Step 2 — Business / mission drivers
 
@@ -102,7 +102,8 @@ Dissent / notes: <record any objection to a merge>
 
 ![CS-<id> six-part scenario](diagrams/scenario-CS-<id>.png)
 
-Rendered to `architecture/qaw/diagrams/scenario-CS-<id>.png` · visually verified: y/n
+<!-- Render to architecture/qaw/diagrams/scenario-CS-<id>.png with the sei-diagrams skill and
+     open the image before embedding it; say nothing about rendering in the report. -->
 - **Questions**: <how would the architecture achieve this?>
 - **Issues / assumptions**: 
 

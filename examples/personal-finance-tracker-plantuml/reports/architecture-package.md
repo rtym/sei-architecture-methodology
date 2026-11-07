@@ -1,6 +1,6 @@
 # Personal Finance Tracker — Architecture Package
 
-> Generated 2026-11-01 · 2 source file(s)
+> Generated 2026-11-07 · 2 source file(s)
 
 ## Contents
 
@@ -39,7 +39,7 @@
     - [Description](#description-4)
   - [8. Interfaces and events](#8-interfaces-and-events)
     - [Interfaces](#interfaces)
-    - [`POST /transactions` — full interface spec (the four agreement points)](#post-transactions--full-interface-spec-the-four-agreement-points)
+      - [`POST /transactions` — full interface spec (the four agreement points)](#post-transactions--full-interface-spec-the-four-agreement-points)
     - [Events](#events)
   - [9. Design decisions](#9-design-decisions)
 
@@ -80,7 +80,7 @@ matters most, or the [traceability matrix](#traceability-matrix) to see how the 
 | UC-4 | Categorise transaction (`<<include>>`d by UC-1, UC-3) | Registered user | [diagram](../drivers/use-cases/diagrams/UC-4.png) | [UC-4](../drivers/use-cases/UC-4.md) |
 
 Overview use case diagram: [`use-cases/diagrams/overview-core.png`](../drivers/use-cases/diagrams/overview-core.png)
-(native PlantUML — this is the PlantUML tree).
+(native PlantUML).
 
 ### Constraints — [`constraints/`](../drivers/constraints/README.md)
 | ID | Type | Constraint (short) | Hard / negotiable | File |
@@ -116,8 +116,7 @@ Importance`, `R ≈ Difficulty`). Built from the QAW Step 9; ATAM step 5 reuses 
 
 **QA ID legend** — scenario IDs are prefixed by attribute, numbered within each prefix. Used in
 this register: AQA availability · PQA performance · SQA security · MQA modifiability ·
-UQA usability. A scenario for a new attribute gets its own prefix, recorded here (the full
-prefix table is in the plugin's quality-attribute taxonomy reference). Never the flat `QAS-`.
+UQA usability. In response measures, `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 ## Traceability matrix
 
@@ -159,7 +158,7 @@ scenario / CON traces up to ≥ 1 BG. Gaps found: **none**.
 | Date | Change |
 |------|--------|
 | 2026-09-06 | initial driver set; reviewed with founder + eng lead; utility tree imported from the QAW |
-| 2026-09-06 | ADD iterations 1–2: UC-1, UC-4, SQA-1 → in design; concerns AC-1, AC-2 recorded |
+| 2026-09-06 | ADD iterations 1–2: UC-1, UC-4, SQA-1, CON-4 → in design; concerns AC-1, AC-2 recorded |
 | 2026-09-07 | ATAM: SQA-1 (R-1, R-2) and AQA-1 (R-3, R-4) → at risk; see [ATAM report](../atam/atam-report.md) |
 
 ---
@@ -190,7 +189,7 @@ Drivers: [`../drivers/README.md`](../drivers/README.md).
 
 ![Context — Personal Finance Tracker](../add/diagrams/context.png)
 
-Source: [`diagrams/context.puml`](../add/diagrams/context.puml) · rendered + visually verified.
+Source: [`diagrams/context.puml`](../add/diagrams/context.puml).
 
 ### Description
 
@@ -200,6 +199,8 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 ## 3. Architectural drivers
 
 ### Quality Attribute Scenarios (key)
+
+`p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 | ID | QA (ISO 25010) | Stimulus | Response | Measure | Priority |
 |----|----------------|----------|----------|---------|----------|
@@ -227,13 +228,16 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 
 ![Container diagram — Personal Finance Tracker](../add/diagrams/container.png)
 
-Source: [`diagrams/container.puml`](../add/diagrams/container.puml) · rendered + visually verified.
+Source: [`diagrams/container.puml`](../add/diagrams/container.puml).
 
 ### Description
 
 The API service is the single write path and the single place tenant scoping (SQA-1) is enforced.
 The Redis read cache serves the dashboard (PQA-1); it is a performance element, not a system of
-record, so its loss degrades latency but not correctness (AQA-1).
+record, so its loss degrades latency but not correctness (AQA-1). A CSV import goes through the
+Import Queue to the Import Worker, so a 5 000-row file never holds an API request thread (PQA-1,
+PQA-2). The worker reuses the Data Access module but not yet the tenant guard: ATAM risk R-1,
+to be closed by ADD iteration 1b.
 
 ## 5. Component and module views
 
@@ -243,7 +247,7 @@ record, so its loss degrades latency but not correctness (AQA-1).
 
 ![Component diagram — API Service](../add/diagrams/component-api.png)
 
-Source: [`diagrams/component-api.puml`](../add/diagrams/component-api.puml) · rendered + visually verified.
+Source: [`diagrams/component-api.puml`](../add/diagrams/component-api.puml).
 
 #### Description
 
@@ -256,7 +260,7 @@ Every request passes through the Tenant Guard before any service runs, so cross-
 
 ![Module decomposition — Personal Finance Tracker API](../add/diagrams/module-decomposition.png)
 
-Source: [`diagrams/module-decomposition.puml`](../add/diagrams/module-decomposition.puml) · rendered + visually verified.
+Source: [`diagrams/module-decomposition.puml`](../add/diagrams/module-decomposition.puml).
 
 #### Description
 
@@ -270,7 +274,7 @@ This is the seed of the Views-and-Beyond [module decomposition view](../docs/vie
 
 ![UC-2 dashboard load — realises PQA-1](../add/diagrams/sequence-dashboard.png)
 
-Source: [`diagrams/sequence-dashboard.puml`](../add/diagrams/sequence-dashboard.puml) · rendered + visually verified.
+Source: [`diagrams/sequence-dashboard.puml`](../add/diagrams/sequence-dashboard.puml).
 
 On a cache hit the database is not touched, which is the common path and keeps p95 under the
 1.5 s budget (PQA-1). On a miss the API recomputes from tenant-scoped rows and repopulates the
@@ -282,13 +286,15 @@ cache; a stale cache is bounded by the 15-minute TTL.
 
 ![Deployment — Personal Finance Tracker](../add/diagrams/deployment.png)
 
-Source: [`diagrams/deployment.puml`](../add/diagrams/deployment.puml) · rendered + visually verified.
+Source: [`diagrams/deployment.puml`](../add/diagrams/deployment.puml).
 
 ### Description
 
 The API runs as stateless replicas spread across two AZs behind the platform load balancer, and
 the data tier uses managed primary/standby with automated failover — together these meet AQA-1
 (single-AZ failure recovers < 60 s) within the CON-3 low-cost-tier constraint.
+The Import Worker runs on the same platform and scales on queue depth. Redis holds the read
+cache and the import stream; neither is a system of record.
 
 ## 8. Interfaces and events
 
@@ -300,7 +306,7 @@ the data tier uses managed primary/standby with automated failover — together 
 | API Service | `GET /dashboard?month=` | REST / HTTPS | Monthly aggregates + recent activity (UC-2) |
 | Data Access | `query(userId, spec)` | in-process | Always injects `WHERE user_id = $userId` |
 
-### `POST /transactions` — full interface spec (the four agreement points)
+#### `POST /transactions` — full interface spec (the four agreement points)
 
 The one interface `UC-1` and `SQA-1` both run through, specified per `references/interfaces.md`:
 

@@ -17,7 +17,7 @@ Drivers: [`../drivers/README.md`](../drivers/README.md).
 
 ![Context — Personal Finance Tracker](diagrams/context.png)
 
-Source: [`diagrams/context.puml`](diagrams/context.puml) · rendered + visually verified.
+Source: [`diagrams/context.puml`](diagrams/context.puml).
 
 ### Description
 
@@ -27,6 +27,8 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 ## 3. Architectural drivers
 
 ### Quality Attribute Scenarios (key)
+
+`p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 | ID | QA (ISO 25010) | Stimulus | Response | Measure | Priority |
 |----|----------------|----------|----------|---------|----------|
@@ -54,13 +56,16 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 
 ![Container diagram — Personal Finance Tracker](diagrams/container.png)
 
-Source: [`diagrams/container.puml`](diagrams/container.puml) · rendered + visually verified.
+Source: [`diagrams/container.puml`](diagrams/container.puml).
 
 ### Description
 
 The API service is the single write path and the single place tenant scoping (SQA-1) is enforced.
 The Redis read cache serves the dashboard (PQA-1); it is a performance element, not a system of
-record, so its loss degrades latency but not correctness (AQA-1).
+record, so its loss degrades latency but not correctness (AQA-1). A CSV import goes through the
+Import Queue to the Import Worker, so a 5 000-row file never holds an API request thread (PQA-1,
+PQA-2). The worker reuses the Data Access module but not yet the tenant guard: ATAM risk R-1,
+to be closed by ADD iteration 1b.
 
 ## 5. Component and module views
 
@@ -70,7 +75,7 @@ record, so its loss degrades latency but not correctness (AQA-1).
 
 ![Component diagram — API Service](diagrams/component-api.png)
 
-Source: [`diagrams/component-api.puml`](diagrams/component-api.puml) · rendered + visually verified.
+Source: [`diagrams/component-api.puml`](diagrams/component-api.puml).
 
 #### Description
 
@@ -83,7 +88,7 @@ Every request passes through the Tenant Guard before any service runs, so cross-
 
 ![Module decomposition — Personal Finance Tracker API](diagrams/module-decomposition.png)
 
-Source: [`diagrams/module-decomposition.puml`](diagrams/module-decomposition.puml) · rendered + visually verified.
+Source: [`diagrams/module-decomposition.puml`](diagrams/module-decomposition.puml).
 
 #### Description
 
@@ -97,7 +102,7 @@ This is the seed of the Views-and-Beyond [module decomposition view](../docs/vie
 
 ![UC-2 dashboard load — realises PQA-1](diagrams/sequence-dashboard.png)
 
-Source: [`diagrams/sequence-dashboard.puml`](diagrams/sequence-dashboard.puml) · rendered + visually verified.
+Source: [`diagrams/sequence-dashboard.puml`](diagrams/sequence-dashboard.puml).
 
 On a cache hit the database is not touched, which is the common path and keeps p95 under the
 1.5 s budget (PQA-1). On a miss the API recomputes from tenant-scoped rows and repopulates the
@@ -109,13 +114,15 @@ cache; a stale cache is bounded by the 15-minute TTL.
 
 ![Deployment — Personal Finance Tracker](diagrams/deployment.png)
 
-Source: [`diagrams/deployment.puml`](diagrams/deployment.puml) · rendered + visually verified.
+Source: [`diagrams/deployment.puml`](diagrams/deployment.puml).
 
 ### Description
 
 The API runs as stateless replicas spread across two AZs behind the platform load balancer, and
 the data tier uses managed primary/standby with automated failover — together these meet AQA-1
 (single-AZ failure recovers < 60 s) within the CON-3 low-cost-tier constraint.
+The Import Worker runs on the same platform and scales on queue depth. Redis holds the read
+cache and the import stream; neither is a system of record.
 
 ## 8. Interfaces and events
 
@@ -127,7 +134,7 @@ the data tier uses managed primary/standby with automated failover — together 
 | API Service | `GET /dashboard?month=` | REST / HTTPS | Monthly aggregates + recent activity (UC-2) |
 | Data Access | `query(userId, spec)` | in-process | Always injects `WHERE user_id = $userId` |
 
-### `POST /transactions` — full interface spec (the four agreement points)
+#### `POST /transactions` — full interface spec (the four agreement points)
 
 The one interface `UC-1` and `SQA-1` both run through, specified per `references/interfaces.md`:
 

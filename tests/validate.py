@@ -150,6 +150,12 @@ def diagrams_in_markdown(text: str) -> list[str]:
 # --------------------------------------------------------------------------- #
 
 NUM_RE = re.compile(r"\d")
+# IDs carry digits too (PQA-1, BG-2, CS-3); a "has a number" check must not count them.
+ID_TOKEN_RE = re.compile(r"\b[A-Z][A-Z0-9]{0,6}-\d+\b")
+
+
+def has_measure(text: str) -> bool:
+    return bool(NUM_RE.search(ID_TOKEN_RE.sub("", text)))
 BEST_PRACTICE = True  # deep, best-practice checks on produced artifacts (not just syntax)
 
 
@@ -285,7 +291,7 @@ def check_drivers(path: Path) -> list[str]:
         or _table_rows(text, "ISO 25010")
     for r in qa_rows:
         joined = " ".join(r)
-        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not NUM_RE.search(joined):
+        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not has_measure(joined):
             errs.append(f"QA scenario row has no numeric measure: {joined[:80]!r}")
 
     # best practice: traceability has no orphans
@@ -467,6 +473,7 @@ def check_drivers_dir(root: Path) -> list[str]:
         errs.append("no quality-attributes/<ATTR>QA-*.md files")
     if not (root / "quality-attributes" / "utility-tree.md").is_file():
         errs.append("quality-attributes/utility-tree.md is missing")
+    errs += _driver_status_errors(root)
     # every id in the top README has a file and vice versa
     if idx.is_file():
         itext = idx.read_text(encoding="utf-8")
@@ -475,6 +482,59 @@ def check_drivers_dir(root: Path) -> list[str]:
             for fid in ids_in_files:
                 if fid not in itext:
                     errs.append(f"{sub}/{fid}.md exists but {fid} is not listed in the drivers README")
+    return errs
+
+
+DRIVER_ID_RE = re.compile(r"(?<![\w-])(?:BG|UC|CON|AC)-\d+(?![\w-])|(?<![\w-])[A-Z]{1,4}QA-\d+(?![\w-])")
+
+
+def _field(text: str, name: str) -> str:
+    """A driver file's `- **Name**: value`, lower-cased, without emphasis or a parenthetical note."""
+    m = re.search(r"^[ \t]*-[ \t]*\*\*" + name + r"\*\*[ \t]*:[ \t]*(.*?)[ \t]*$", text, re.MULTILINE)
+    return re.sub(r"\s*\(.*$", "", m.group(1)).strip(" `*_").lower() if m else ""
+
+
+def _driver_status_errors(root: Path) -> list[str]:
+    """Every copy of a driver's status — its kind's index, the README matrix, the utility tree —
+    and its priority in the kind's index agree with the driver file. scripts/driverstatus.py
+    writes them together; this catches a copy edited by hand."""
+    files = {f.stem: f for f in root.glob("*/*.md") if DRIVER_ID_RE.fullmatch(f.stem)}
+    facts = {k: (_field(f.read_text(encoding="utf-8"), "Status"),
+                 _field(f.read_text(encoding="utf-8"), "Priority")) for k, f in files.items()}
+    errs: list[str] = []
+    tables = [p for p in sorted(root.glob("*/README.md"))] + [root / "README.md",
+                                                             root / "quality-attributes" / "utility-tree.md"]
+    for path in tables:
+        if not path.is_file():
+            continue
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for i, ln in enumerate(lines[:-1]):
+            if not (ln.lstrip().startswith("|") and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1])):
+                continue
+            head = [c.strip().lower() for c in ln.strip().strip("|").split("|")]
+            if "status" not in head:
+                continue
+            id_col = next((j for j, h in enumerate(head) if h.startswith("leaf")), 0)
+            st_col = head.index("status")
+            pr_col = head.index("priority") if "priority" in head else -1
+            for row in lines[i + 2:]:
+                if not row.lstrip().startswith("|"):
+                    break
+                cells = [c.strip() for c in row.strip().strip("|").split("|")]
+                m = DRIVER_ID_RE.search(cells[id_col]) if len(cells) > id_col else None
+                if not m or m.group(0) not in facts:
+                    continue
+                did, (fstatus, fprio) = m.group(0), facts[m.group(0)]
+                rel = path.relative_to(root).as_posix()
+                if len(cells) > st_col:
+                    status = re.sub(r"\s*\(.*$", "", cells[st_col]).strip(" `*_").lower()
+                    if fstatus and status and status != fstatus:
+                        errs.append(f"{rel}: {did} status is '{status}' but {did}.md says '{fstatus}' "
+                                    f"(set statuses with scripts/driverstatus.py)")
+                if pr_col >= 0 and len(cells) > pr_col:
+                    prio = cells[pr_col].strip(" `*_").lower()
+                    if prio in ("high", "medium", "low") and fprio in ("high", "medium", "low") and prio != fprio:
+                        errs.append(f"{rel}: {did} priority is '{prio}' but {did}.md says '{fprio}'")
     return errs
 
 
@@ -489,7 +549,7 @@ def check_scenarios(path: Path) -> list[str]:
         errs.append(f"{n} quality attribute scenarios — expected 8–15 (min 5, max 20)")
     for r in rows:
         joined = " ".join(r)
-        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not NUM_RE.search(joined):
+        if re.search(r"[A-Z]{1,4}QA-\d+", joined) and not has_measure(joined):
             errs.append(f"scenario row has no numeric response measure: {joined[:80]!r}")
     if rows and "25010" not in text:
         errs.append("no ISO/IEC 25010 classification anywhere in the file")
@@ -848,6 +908,45 @@ def check_utility_tree(path: Path) -> list[str]:
 _LINK_RE = re.compile(r"!?\[[^\]]*\]\(\s*(<[^>]+>|[^)\s]+)")
 
 
+def headerless_tables(text: str) -> list[int]:
+    """1-based line numbers of pipe-table blocks with no separator row under the first line —
+    GitHub renders them as plain text (usually a paragraph or blank line wedged into a table)."""
+    lines = _FENCE_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text).splitlines()
+    bad, i = [], 0
+    while i < len(lines):
+        if lines[i].lstrip().startswith("|"):
+            j = i
+            while j < len(lines) and lines[j].lstrip().startswith("|"):
+                j += 1
+            if not (j > i + 1 and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1])):
+                bad.append(i + 1)
+            i = j
+        else:
+            i += 1
+    return bad
+
+
+def template_meta_errors(path: Path) -> list[str]:
+    """Self-description in a template's visible text is copied into every artifact made from it;
+    instructions to the writer belong in HTML comments."""
+    visible = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.DOTALL)
+    return [f"visible text {m!r} would be copied into every artifact — move the instruction into "
+            f"an HTML comment" for m in sorted({m.group(0).lower() for m in META_RE.finditer(_without_code(visible))})]
+
+
+def mermaid_source_drift(path: Path) -> list[str]:
+    """A ```mermaid block above an image line whose PNG has a .mmd source beside it must be that
+    source: two sources for one picture drift, and re-rendering the .mmd silently replaces it."""
+    text = path.read_text(encoding="utf-8")
+    errs = []
+    for m in re.finditer(r"```mermaid\n(.*?)```\s*\n+!\[[^\]]*\]\(([^)\s]+\.png)\)", text, re.DOTALL):
+        src = (path.parent / m.group(2)).with_suffix(".mmd")
+        if src.is_file() and src.read_text(encoding="utf-8").strip() != m.group(1).strip():
+            errs.append(f"the mermaid block above {m.group(2)} differs from {src.name} beside it — "
+                        f"keep one source (delete the .mmd, or make the block identical)")
+    return errs
+
+
 def broken_links(path: Path) -> list[str]:
     """Report relative Markdown links / images whose target file does not exist on disk."""
     errs: list[str] = []
@@ -869,6 +968,11 @@ def broken_links(path: Path) -> list[str]:
         dest = (path.parent / target).resolve()
         if not dest.exists():
             errs.append(f"broken link: {target!r} -> {dest}")
+    # a relative path written as code (`../x.png`) is a reference the reader will follow too
+    # (a code span that is a link's text is already covered by the link check above)
+    for m in re.finditer(r"(?<!\[)`(\.\.?/[^`\s]+\.(?:png|svg|md|mmd|puml))`(?!\]\()", _without_code(text)):
+        if not (path.parent / m.group(1)).exists():
+            errs.append(f"names a file that does not exist: `{m.group(1)}`")
     return errs
 
 
@@ -888,9 +992,15 @@ PLACEHOLDER_TOKENS = (
     "<YYYY-MM-DD>", "<SystemName>", "<System name>", "<name>", "<one line>", "<slug>",
     "<role>", "<short title>", "<who needs", "<goal-phrased",
     "<One or two plain sentences", "<Two or three plain sentences",
+    "<only the prefixes that actually appear", "<the (H, H) and (H, M) leaf IDs>",
 )
 
 _FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+
+# An artifact describing how it was produced is meta-commentary (writing-style.md): the reader
+# needs what the diagram shows, not that someone rendered and checked it.
+META_RE = re.compile(r"visually verified|rendered (?:\+|and) (?:visually )?verified"
+                     r"|this is the (?:mermaid|plantuml) tree", re.IGNORECASE)
 
 
 def _without_code(text: str) -> str:
@@ -910,6 +1020,11 @@ def prose_errors(path: Path) -> list[str]:
     for tok in PLACEHOLDER_TOKENS:
         if tok in prose:
             errs.append(f"unfilled template placeholder {tok!r}")
+    for m in sorted({m.group(0).lower() for m in META_RE.finditer(prose)}):
+        errs.append(f"self-description {m!r} — say what the artifact shows, not how it was made "
+                    f"(references/writing-style.md)")
+    for n in headerless_tables(text):
+        errs.append(f"line {n}: table rows without a header separator — they render as plain text")
     # duplicated '- **Key**:' bullets in the header block (before the first '## ') are
     # copy-paste bugs: one Date, one Status, one Owner …
     head = text.split("\n## ", 1)[0]
@@ -934,12 +1049,182 @@ def check_mmd(path: Path) -> list[str]:
     return check_diagram(path.read_text(encoding="utf-8"), path.name)
 
 
+# --------------------------------------------------------------------------- #
+# Template structure: every generated artifact keeps its template's headings
+# --------------------------------------------------------------------------- #
+
+# Artifact path (POSIX, matched at the end) → the template that fixes its structure. Files the
+# QAW kit writes (qawkit.py fixes their structure, test_qawkit.py pins it) and generated reports
+# have none; an example's root README is the package index plus notes on regenerating it.
+STRUCTURE_TEMPLATES: tuple[tuple[str, str], ...] = (
+    (r"/adr/ADR-\d+\.md$", "adr.md"),
+    (r"-session\.md$", "add-session.md"),
+    (r"-Architecture\.md$", "architecture-document.md"),
+    (r"/atam/atam-report\.md$", "atam-report.md"),
+    (r"/business-goals/BG-\d+\.md$", "business-goal.md"),
+    (r"/concerns/AC-\d+\.md$", "concern.md"),
+    (r"/constraints/CON-\d+\.md$", "constraint.md"),
+    (r"/use-cases/UC-\d+\.md$", "use-case.md"),
+    (r"/quality-attributes/[A-Z]{1,4}QA-\d+\.md$", "quality-attribute-scenario.md"),
+    (r"/drivers/(?:business-goals|use-cases|constraints|quality-attributes|concerns)/README\.md$", "subdir-readme.md"),
+    (r"/drivers/README\.md$", "drivers-readme.md"),
+    (r"/drivers/stakeholders\.md$", "stakeholders.md"),
+    (r"/quality-attributes/utility-tree\.md$", "utility-tree.md"),
+    (r"/quality-attributes/scenarios\.md$", "scenarios.md"),
+    (r"/qaw/qaw-report(?:-\d{4}-\d{2}-\d{2})?\.md$", "qaw-report.md"),
+    (r"/docs/view-[^/]+\.md$", "view-packet.md"),
+    (r"/docs/README\.md$", "docs-readme.md"),
+    (r"/docs/system-overview\.md$", "system-overview.md"),
+    (r"/docs/mapping-between-views\.md$", "mapping-between-views.md"),
+    (r"/docs/rationale\.md$", "rationale.md"),
+    (r"/docs/directory\.md$", "directory.md"),
+    (r"/docs/change-log\.md$", "change-log.md"),
+    (r"(?:^|/)architecture/README\.md$", "architecture-readme.md"),
+)
+_HEADING_RE = re.compile(r"^(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$", re.MULTILINE)
+_FENCES_RE = re.compile(r"^(```|~~~).*?^\1[ \t]*$", re.MULTILINE | re.DOTALL)
+
+
+def template_for(path: Path) -> Path | None:
+    posix = "/" + path.as_posix().lstrip("/")
+    for pattern, name in STRUCTURE_TEMPLATES:
+        if re.search(pattern, posix):
+            return ROOT / "templates" / name
+    return None
+
+
+def heading_list(text: str) -> list[tuple[int, str]]:
+    """(level, title) of every heading outside code fences and HTML comments."""
+    text = re.sub(r"<!--.*?-->", "", _FENCES_RE.sub("", text), flags=re.DOTALL)
+    return [(len(m.group(1)), m.group(2)) for m in _HEADING_RE.finditer(text)]
+
+
+def heading_key(title: str) -> str:
+    """What a heading says, compared loosely: link text only, no code marks or emphasis, no
+    parenthetical notes, one kind of separator, lower case."""
+    t = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", title).replace("`", "").replace("*", "")
+    t = re.sub(r"\s*\([^()]*\)", "", t)
+    t = re.sub(r"\s*(?::|—|–|\s-\s)\s*", " — ", t)
+    return re.sub(r"\s+", " ", t).strip(" .—").lower()
+
+
+def template_structure(template_text: str) -> list[dict]:
+    """The template's headings as nodes: level, title, a pattern for the artifact's heading key
+    (placeholders `<…>` and a lone `N` match anything; the artifact may add words after the
+    template's), whether it repeats (it has a placeholder) and whether it is optional (it says
+    optional / omit in)."""
+    nodes = []
+    for level, title in heading_list(template_text):
+        # a note on when to include the section is not part of its name
+        key = heading_key(re.sub(r"\s*[—–]\s*optional\b.*$", "", title, flags=re.IGNORECASE))
+        parts = re.split(r"(<[^>]+>|\bn\b)", key)
+        pattern = "".join(r"[^\n]+?" if (p.startswith("<") or p == "n") else re.escape(p) for p in parts)
+        nodes.append({"level": level, "title": title, "re": re.compile(pattern + r"[^\n]*"),
+                      "repeat": level > 1 and bool(re.search(r"<[^>]+>|\bN\b", title)),
+                      "optional": bool(re.search(r"\boptional\b|\bomit in\b", title, re.IGNORECASE)),
+                      "slot": not re.sub(r"<[^>]+>|\bn\b|[\s—]", "", key)})
+    return nodes
+
+
+def _structure_regex(nodes: list[dict]) -> re.Pattern:
+    def build(i: int, parent: int) -> tuple[str, int]:
+        out = []
+        while i < len(nodes) and nodes[i]["level"] > parent:
+            n = nodes[i]
+            sub, j = build(i + 1, n["level"])
+            group = f"(?:{n['level']}\\t{n['re'].pattern}\\n{sub})"
+            out.append(group + {(True, True): "*", (True, False): "+", (False, True): "?",
+                                (False, False): ""}[(n["repeat"], n["optional"])])
+            i = j
+        return "".join(out), i
+    return re.compile(build(0, 0)[0])
+
+
+def check_template_structures() -> list[str]:
+    """Every template governs some artifact and is itself a valid structure: the mapping names
+    only templates that exist, every template is mapped, and each template matches its own
+    heading pattern (so its optional and repeated sections are written the way the check reads
+    them)."""
+    errs: list[str] = []
+    mapped = {name for _, name in STRUCTURE_TEMPLATES}
+    for name in sorted(mapped):
+        if not (ROOT / "templates" / name).is_file():
+            errs.append(f"validate.py STRUCTURE_TEMPLATES names templates/{name}, which does not exist")
+    for t in sorted((ROOT / "templates").glob("*.md")):
+        if t.name not in mapped:
+            errs.append(f"templates/{t.name} is not mapped to the artifacts it governs (STRUCTURE_TEMPLATES)")
+        errs += [f"templates/{t.name}: {e}" for e in structure_errors(t, t)]
+    return errs
+
+
+def _ancestors(nodes: list[dict], k: int) -> list[int]:
+    out, level = [], nodes[k]["level"]
+    for j in range(k - 1, -1, -1):
+        if nodes[j]["level"] < level:
+            out.append(j)
+            level = nodes[j]["level"]
+    return out
+
+
+def structure_errors(path: Path, template: Path | None = None) -> list[str]:
+    """Headings the artifact adds, drops, moves or re-levels relative to its template. The
+    template's heading pattern decides; an in-order alignment explains a failure."""
+    template = template or template_for(path)
+    if template is None or not template.is_file():
+        return []
+    nodes = template_structure(template.read_text(encoding="utf-8"))
+    heads = heading_list(path.read_text(encoding="utf-8"))
+    if _structure_regex(nodes).fullmatch("".join(f"{lvl}\t{heading_key(t)}\n" for lvl, t in heads)):
+        return []
+    name = f"templates/{template.name}"
+
+    def fits(k: int, lvl: int, key: str) -> bool:
+        return nodes[k]["level"] == lvl and bool(nodes[k]["re"].fullmatch(key))
+
+    errs: list[str] = []
+    matched: set[int] = set()
+    mislevelled: set[int] = set()
+    t, prev = 0, None
+    for lvl, title in heads:
+        key = heading_key(title)
+        k = next((j for j in range(t, len(nodes)) if fits(j, lvl, key)), None)
+        if k is None:
+            # another round of the repeatable section we are still inside
+            k = next((r for r in range(t - 1, -1, -1) if nodes[r]["repeat"] and r in matched
+                      and all(nodes[x]["level"] > nodes[r]["level"] for x in range(r + 1, t))
+                      and fits(r, lvl, key)), None)
+        if k is None:
+            dup = next((j for j in sorted(matched) if fits(j, lvl, key) and not nodes[j]["repeat"]), None)
+            other = next((j for j in range(len(nodes)) if nodes[j]["level"] != lvl and not nodes[j]["slot"]
+                          and nodes[j]["re"].fullmatch(key)), None)
+            if dup is not None:
+                errs.append(f"section '{'#' * lvl} {title}' appears more than once; {name} has it once")
+            elif other is not None:
+                mislevelled.add(other)
+                errs.append(f"section '{'#' * lvl} {title}' is at level {lvl}; {name} has it at level "
+                            f"{nodes[other]['level']} ('{'#' * nodes[other]['level']} {nodes[other]['title']}')")
+            elif any(fits(j, lvl, key) and not nodes[j]["slot"] for j in range(len(nodes))):
+                errs.append(f"section '{'#' * lvl} {title}' comes after '{prev}'; {name} puts it before")
+            else:
+                errs.append(f"section '{'#' * lvl} {title}' is not in {name} — use the template's sections "
+                            f"and put this content under the one it belongs to")
+            continue
+        matched.add(k)
+        t, prev = k + 1, title
+    for k, n in enumerate(nodes):
+        skippable = n["optional"] or any(nodes[a]["optional"] and a not in matched for a in _ancestors(nodes, k))
+        if k not in matched and k not in mislevelled and not skippable:
+            errs.append(f"missing the template section '{'#' * n['level']} {n['title']}' ({name})")
+    return errs or [f"headings do not follow the structure of {name} (a section is at the wrong level or repeated)"]
+
+
 def validate_file(path: Path) -> list[str] | None:
     name = path.name
     parent = path.parent.name
 
     def _md(res: list[str]) -> list[str]:
-        return res + broken_links(path) + prose_errors(path)
+        return (res + broken_links(path) + prose_errors(path) + mermaid_source_drift(path)
+                + structure_errors(path))
 
     if name.endswith("-Architecture.md"):
         return _md(check_architecture(path))
@@ -1360,7 +1645,7 @@ def check_self() -> list[str]:
     BARE_PATH_RE = re.compile(
         r"(?<![/{\w-])(references|templates|assets)/[A-Za-z0-9_./-]+"
         r"|(?<![/{\w-])scripts/(?:build-report|render|render-plantuml|setup)\.sh"
-        r"|(?<![/{\w-])scripts/qawkit\.py"
+        r"|(?<![/{\w-])scripts/(?:qawkit|driverstatus)\.py"
         r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md"
         r"|(?<![/{\w-])tests/validate\.py")
     template_files = sorted((ROOT / "templates").glob("*.md"))
@@ -1378,6 +1663,7 @@ def check_self() -> list[str]:
 
     errs += check_qaw_question_guide()
     errs += check_qaw_playbook()
+    errs += check_template_structures()
     errs += check_plantuml_includes()
     errs += check_vendored_c4()
     errs += check_license()
@@ -1397,6 +1683,12 @@ def check_self() -> list[str]:
                *sorted((ROOT / "references").glob("*.md"))]:
         if BARE_QAS_RE.search(md.read_text(encoding="utf-8")):
             errs.append(f"{md.relative_to(ROOT)}: contains deprecated flat 'QAS-<n>' ID")
+
+    for md in [*cmds, *skill_files, *template_files, *reference_files]:
+        for n in headerless_tables(md.read_text(encoding="utf-8")):
+            errs.append(f"{md.relative_to(ROOT)}:{n}: table rows without a header separator")
+    for md in template_files:
+        errs += [f"{md.relative_to(ROOT)}: {e}" for e in template_meta_errors(md)]
 
     # the plugin's own prose honours the writing-style rules it imposes on artifacts
     # (writing-style.md itself is the one file allowed to name the banned phrases)

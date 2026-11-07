@@ -17,7 +17,9 @@ al., *Documenting Software Architectures*). The description is a **package of vi
 **documentation beyond views** that ties them together.
 
 Output: `architecture/docs/` (create it), one Markdown file per view + supporting docs, and a
-`README.md` roadmap. Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`. Templates in `${CLAUDE_PLUGIN_ROOT}/templates/`.
+`README.md` roadmap. Deep reference: `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`. Every file starts from its template in `${CLAUDE_PLUGIN_ROOT}/templates/` and keeps its
+sections exactly: `docs-readme.md` (for `README.md`), `system-overview.md`, `view-packet.md` (for each
+`view-<name>.md`), `mapping-between-views.md`, `rationale.md`, `directory.md`, `change-log.md`.
 Diagrams: the `sei-diagrams` skill (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/SKILL.md`).
 
 **Keep prompts short.** Numbered lists. **Draft first**, refine.
@@ -221,7 +223,8 @@ Deep guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`:
   open every artifact with one to three plain sentences saying what it covers and where to start,
   explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
   use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
-  HTML comments, never in the artifact's visible text.
+  HTML comments, never in the artifact's visible text. Keep the template's sections
+  exactly — the same headings, levels and order; `validate.py` checks them.
 
 - Never document a view whose elements/relations you cannot name concretely — draft the diagram
   first, and if it stays vague, the architecture decision is missing, not the doc.

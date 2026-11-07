@@ -193,77 +193,9 @@ template below minus the per-scenario diagram sections; each table row's ID link
 
 ## Output template
 
-```markdown
-# Quality Attribute Scenarios: <SystemName>
-
-- **Date**: <YYYY-MM-DD>
-- **Source material**: <brief / PRD / interview>
-- **Status**: draft | reviewed | baselined
-- **Mode**: standalone | register (per-scenario files in `../drivers/quality-attributes/`)
-
-## Business goals
-
-| ID | Goal | Stakeholder |
-|----|------|-------------|
-| BG-1 | <stakeholder needs outcome so that value> | <role> |
-
-## Quality attribute scenarios
-
-QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
-
-| ID | QA (ISO 25010) | Source | Stimulus | Artifact | Environment | Response | Response measure | BG | Imp | Diff |
-|----|----------------|--------|----------|----------|-------------|----------|------------------|----|-----|------|
-| PQA-1 | Performance efficiency / time behaviour | Registered user | Loads dashboard (500 concurrent) | Dashboard service | Normal operation | Renders charts + recent activity | Interactive < 1.5 s @ p95 | BG-1 | H | M |
-
-### PQA-1 — scenario diagram
-
-```mermaid
-flowchart LR
-  %% Quality attribute scenario — PQA-1 — Performance efficiency / time behaviour
-  src["<b>Source of stimulus</b><br/>Registered user"]
-  stim["<b>Stimulus</b><br/>Loads the dashboard (500 concurrent users)"]
-  subgraph env["Environment: Normal operation"]
-    art["<b>Artifact</b><br/>Dashboard service"]
-  end
-  resp["<b>Response</b><br/>Renders charts and recent activity"]
-  meas["<b>Response measure</b><br/>Interactive &lt; 1.5 s at p95"]
-  src -->|generates| stim --> art
-  art --> resp -->|measured by| meas
-  class src,stim source
-  class art artifact
-  class resp,meas response
-```
-
-![PQA-1 six-part scenario](diagrams/scenario-PQA-1.png)
-
-
-## Primary functional requirements — use cases with architectural impact
-
-| ID | Use case name | Why it shapes the architecture |
-|----|---------------|--------------------------------|
-| UC-1 | | |
-
-## Constraints
-
-| ID | Type (business / technical / regulatory) | Description |
-|----|-----------------------------------------|-------------|
-
-## Utility tree
-
-| Quality attribute | Refinement (concern) | Leaf scenario (ID — one line + measure) | Priority (V, R) | Status |
-|-------------------|----------------------|----------------------------------------|:---------------:|:------:|
-| Security | Confidentiality | SQA-1 — 0 cross-tenant reads; 100 % logged | (H, H) `★` | open |
-| Performance efficiency | Time behaviour | PQA-1 — dashboard < 1.5 s @ p95, 500 concurrent | (H, M) | open |
-
-_Reading the tree_: a refinement with no leaf → look for an unrecorded ASR; the `★` `(H,H)`
-leaves get the most attention.
-
-## Architectural drivers (prioritised)
-
-1. SQA-1 (H,H) — <one line>
-2. PQA-1 (H,M) — <one line>
-...
-```
+`${CLAUDE_PLUGIN_ROOT}/templates/scenarios.md` — copy it and keep its sections exactly. Standalone
+mode fills the `### <ATTR>QA-<n> — scenario diagram` section once per scenario; register mode
+leaves those out and fills *Scenario files and diagrams* instead.
 
 ## Rules
 
@@ -271,7 +203,8 @@ leaves get the most attention.
   open every artifact with one to three plain sentences saying what it covers and where to start,
   explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
   use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
-  HTML comments, never in the artifact's visible text.
+  HTML comments, never in the artifact's visible text. Keep the template's sections
+  exactly — the same headings, levels and order; `validate.py` checks them.
 
 - Every scenario has all six parts **and** a numeric response measure.
 - Every scenario is classified against **ISO/IEC 25010:2023** (characteristic + sub-characteristic);

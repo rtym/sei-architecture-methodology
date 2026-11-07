@@ -26,6 +26,9 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
   is not a SKILL.md field.
 - `plugin.json` and both version fields in `marketplace.json` must agree.
 - Every embedded Mermaid block obeys the ten diagram rules in `skills/sei-diagrams/SKILL.md`.
+- Every generated artifact keeps its template's headings — same sections, levels, order
+  (`validate.py` checks; a placeholder heading repeats, a heading saying *optional* may be left
+  out). A new template must be added to `STRUCTURE_TEMPLATES` in `tests/validate.py`.
 - Diagrams are embedded as `![title](diagrams/x.png)` image lines (plus the fenced block for
   Mermaid, plus a `.puml` link for PlantUML) — never a bare backtick path.
 
@@ -44,7 +47,9 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
    run, checks that `qaw-vote-sheet.md` is the ballot with votes filled in, and that the
    report's Step 7 is the tally's block. If a skill names a new plugin file, check the Claude
    app edition still builds: `python3 scripts/appbundle.py` (`tests/test_appbundle.py` runs it).
-4. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
+4. Change a driver's status in an example only with `scripts/driverstatus.py` — the register
+   keeps up to four copies, and `validate.py` fails when they disagree.
+5. Add a line to `CHANGELOG.md` under an *Unreleased* heading (create it if needed).
 
 ## Release checklist
 

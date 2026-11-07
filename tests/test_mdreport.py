@@ -108,6 +108,56 @@ def main() -> int:
         check("(../docs/sibling.md)" in rmd, "md: cross-dir link re-relativized to out_dir")
         check("(../docs/diagram.png)" in rmd, "md: cross-dir image re-relativized to out_dir")
 
+    # --- Views-and-Beyond ordering and directory expansion ---
+    names = ["zz-notes.md", "rationale.md", "view-allocation-deployment.md", "README.md",
+             "mapping-between-views.md", "view-cnc-runtime.md", "directory.md",
+             "view-module-decomposition.md", "system-overview.md", "change-log.md", "view-security.md"]
+    order = [p.name for p in mdreport._vandb_order([Path(n) for n in names])]
+    check(order == ["README.md", "system-overview.md", "view-module-decomposition.md", "view-cnc-runtime.md",
+                    "view-allocation-deployment.md", "view-security.md", "mapping-between-views.md",
+                    "rationale.md", "directory.md", "change-log.md", "zz-notes.md"],
+          "vandb: roadmap, overview, module/C&C/allocation/other views, mapping, rationale, directory, change log, rest")
+    with tempfile.TemporaryDirectory() as td:
+        d = Path(td) / "docs"
+        d.mkdir()
+        for n in ("rationale.md", "README.md", "view-cnc-x.md"):
+            (d / n).write_text(f"# {n}\n", encoding="utf-8")
+        plain = [p.name for p in mdreport._expand_inputs([d], None)]
+        check(plain == ["README.md", "rationale.md", "view-cnc-x.md"], "a directory expands to its *.md, sorted")
+        check([p.name for p in mdreport._expand_inputs([d], "vandb")] == ["README.md", "view-cnc-x.md", "rationale.md"],
+              "a directory expands in V&B order with --profile vandb")
+
+    # --- command line ---
+    import contextlib, io
+    def cli(*args):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            rc = mdreport.main([str(a) for a in args])
+        return rc, out.getvalue(), err.getvalue()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        src = root / "doc.md"
+        src.write_text("# The Doc Title\n\nBody.\n", encoding="utf-8")
+        rc, out, _ = cli(src, "--format", "both", "--out", root / "out" / "report.html")
+        check(rc == 0 and (root / "out" / "report.html").is_file() and (root / "out" / "report.md").is_file(),
+              "cli: --format both with a file --out writes .html and .md side by side")
+        check("The Doc Title" in (root / "out" / "report.html").read_text(), "cli: the title defaults to the first H1")
+        rc, _, _ = cli(src, "--format", "md", "--out", root / "dir")
+        check(rc == 0 and (root / "dir" / "doc-report.md").is_file(), "cli: a directory --out names the file after the input")
+        rc, _, _ = cli(src, "--title", "Given")
+        check(rc == 0 and "Given" in (root / "doc-report.html").read_text(), "cli: no --out writes beside the input; --title wins")
+        (root / "empty").mkdir()
+        rc, _, err = cli(root / "empty")
+        check(rc == 2 and "no input" in err, "cli: a directory with no .md exits 2")
+        rc, _, err = cli(root / "missing.md")
+        check(rc == 2 and "not a file" in err, "cli: a missing input exits 2")
+        docs = root / "docs"
+        docs.mkdir()
+        (docs / "README.md").write_text("# Roadmap\n", encoding="utf-8")
+        rc, _, _ = cli("--profile", "vandb", docs, "--out", root / "vb.html")
+        check(rc == 0 and "Views-and-Beyond architecture description" in (root / "vb.html").read_text(),
+              "cli: --profile vandb supplies the V&B subtitle")
+
     print()
     if FAILS:
         print(f"{len(FAILS)} failure(s)")

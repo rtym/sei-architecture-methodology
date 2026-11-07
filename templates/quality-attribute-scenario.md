@@ -22,11 +22,12 @@ by its own six-part scenario diagram** (below).
 | **Candidate tactics** | <the tactic categories this attribute is normally met with — see below> |
 | **Type** | general | concrete |
 
-**Candidate tactics** are a *hint, not a decision*: the tactic families from
-`${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md` that this attribute is normally achieved with, named so
-ADD Step 4 starts from a shortlist and ATAM Step 6 knows which questionnaire to walk. Name the
-*category* and the specific tactics (e.g. *Performance — manage resources*: caching, introduce
-concurrency). The architecture may end up using none of them; record what it does use in the ADR.
+<!-- Candidate tactics are a hint, not a decision: the tactic families from
+     ${CLAUDE_PLUGIN_ROOT}/references/tactics-catalog.md that this attribute is normally achieved
+     with, named so ADD Step 4 starts from a shortlist and ATAM Step 6 knows which questionnaire
+     to walk. Name the category and the specific tactics (Performance — manage resources:
+     caching, introduce concurrency). The architecture may end up using none of them; record what
+     it does use in the ADR. -->
 
 ## Six-part scenario diagram
 
@@ -52,7 +53,8 @@ flowchart LR
 
 ![<ATTR>QA-<n> six-part scenario](diagrams/scenario-<ATTR>QA-<n>.png)
 
-Rendered from the block above · visually verified: yes/no · relative path renders on GitHub / GitLab
+<!-- Render the block above to this PNG with the sei-diagrams skill and open the image before
+     embedding it. The artifact itself says nothing about how it was rendered or checked. -->
 
 <!-- If drawn in PlantUML: drop the ```mermaid block above; keep the ![]() image line and add
      `Source: [diagrams/scenario-<ATTR>QA-<n>.puml](diagrams/scenario-<ATTR>QA-<n>.puml)`.

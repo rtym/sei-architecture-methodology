@@ -20,7 +20,7 @@ footer links up to (`/drivers` creates it from `templates/architecture-readme.md
 | Architectural drivers | `/drivers` | [drivers/README.md](drivers/README.md) | done 2026-09-06 |
 | Quality attribute scenarios | `/quality-attributes` | [quality-attributes/scenarios.md](quality-attributes/scenarios.md) | done 2026-09-06 |
 | ADD 3.0 design | `/add` | [add/personal-finance-tracker-Architecture.md](add/personal-finance-tracker-Architecture.md) + [add/adr/](add/adr/ADR-1.md) | done 2026-09-06 |
-| ATAM evaluation | `/atam` | [atam/atam-report.md](atam/atam-report.md) | done 2026-09-05 |
+| ATAM evaluation | `/atam` | [atam/atam-report.md](atam/atam-report.md) | done 2026-09-07 |
 | Views and Beyond documentation | `/architecture-docs` | [docs/README.md](docs/README.md) | done 2026-09-06 |
 | Deliverable reports | `build-report.sh` | [reports/](reports/) | done 2026-09-06 |
 
@@ -29,12 +29,12 @@ footer links up to (`/drivers` creates it from `templates/architecture-readme.md
 | Date | Activity | Change |
 |------|----------|--------|
 | 2026-08-20 | `/qaw` | workshop run; refined scenarios handed off |
-| 2026-09-05 | `/atam` | evaluation of the ADD 3.0 architecture |
 | 2026-09-06 | `/drivers` | package created; initial driver set |
 | 2026-09-06 | `/quality-attributes` | register-mode scenario summary added |
 | 2026-09-06 | `/add` | architecture designed; ADR log started |
 | 2026-09-06 | `/architecture-docs` | Views-and-Beyond package written |
 | 2026-09-06 | `build-report.sh` | HTML/Markdown reports generated |
+| 2026-09-07 | `/atam` | evaluation of the ADD 3.0 architecture; SQA-1 and AQA-1 set to at risk |
 
 ## Package contents
 
@@ -43,7 +43,7 @@ footer links up to (`/drivers` creates it from `templates/architecture-readme.md
 | [`drivers/`](drivers/README.md) | `/drivers` | The drivers **directory** — [`README.md`](drivers/README.md) (ID legend, traceability matrix with no orphans, prioritised list, change log) + a `README.md` index per subdirectory + one file per driver under `business-goals/` (4), `use-cases/` (3), `constraints/` (5), `quality-attributes/` (6) |
 | [`drivers/stakeholders.md`](drivers/stakeholders.md) · [`drivers/concerns/`](drivers/concerns/README.md) | `/drivers` | The **stakeholder register** (`ST-n`, read by QAW / ATAM / V&B) and the **architectural concerns** (`AC-n`, ADD input) — the two ADD 3.0 inputs that used to be re-collected per activity |
 | [`drivers/use-cases/`](drivers/use-cases/README.md) | `/drivers` + `/sei-diagram` | Each use case with its own **proper UML use case diagram** (native PlantUML — stick-figure actors, ellipse use cases, boundary rectangle, dashed `<<include>>` / `<<extend>>`) rendered to `diagrams/UC-<n>.png`, plus an overview diagram |
-| [`drivers/quality-attributes/`](drivers/quality-attributes/README.md) | `/drivers` | Each quality attribute as a **six-part scenario** + its own six-part scenario diagram (PlantUML pattern); [`utility-tree.md`](drivers/quality-attributes/utility-tree.md) — the summary of the QA drivers **as a table** (`(V, R)` per leaf) |
+| [`drivers/quality-attributes/`](drivers/quality-attributes/README.md) | `/drivers` | Each quality attribute as a **six-part scenario** + its own six-part scenario diagram (PlantUML pattern); [`utility-tree.md`](drivers/quality-attributes/utility-tree.md) — the summary of the QA drivers **as a table** (business value and technical risk per leaf) |
 | [`qaw/qaw-report.md`](qaw/qaw-report.md) | `/qaw` | The SEI 8-step workshop + Step 9 **utility tree** (a table) built from the refined scenarios (handed to `/drivers`) |
 | [`qaw/qaw-prep.md`](qaw/qaw-prep.md) · [`qaw/qaw-agenda.md`](qaw/qaw-agenda.md) · [`qaw/qaw-vote-sheet.md`](qaw/qaw-vote-sheet.md) · [`qaw/qaw-tally.md`](qaw/qaw-tally.md) · [`qaw/qaw-summary.md`](qaw/qaw-summary.md) | `scripts/qawkit.py` | The **QAW kit**, generated from the documentation. For the next workshop, a refresh run remotely: the preparation sheet (documented answers to confirm, characteristics set aside last time with their reasons, the regulated-data questions, each participant's questions, open parked questions) and the three-session agenda. From the half-day workshop on 2026-08-20: the vote sheet as filled in, its tally (the source of the report's Step 7), and the one-page summary for the sponsor |
 | [`quality-attributes/scenarios.md`](quality-attributes/scenarios.md) | `/quality-attributes` | **Register-mode** summary — six-part table + links to the per-scenario files and diagrams in `drivers/quality-attributes/`; no duplicated copy |

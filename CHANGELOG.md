@@ -4,6 +4,86 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## 1.14.0 — 2026-11-07
+
+A review of the repository and both worked examples. It fixes the inconsistencies it found, adds
+checks so the same kinds of drift fail the tests, and holds every generated artifact to its
+template's structure.
+
+### Fixed
+- The examples' UC-3 named a "Bank Import API" supporting actor that no other artifact has; the
+  user uploads the CSV file. The actor is gone from UC-3 and both use case diagrams, and UC-3's
+  priority matches its index (medium).
+- Driver statuses that disagreed between copies: SQA-1 and AQA-1 are `at risk` (ATAM) in every
+  index and the utility tree, CON-4 is `in design` in its file, and the change log names CON-4.
+- The Import Queue and Import Worker that the ATAM, ADR-2 and the Views-and-Beyond views rely on
+  were missing from the ADD session, the ADD container and deployment diagrams, and the PlantUML
+  container view. The Mermaid example also kept a stale `diagrams/container.mmd` that differed from
+  the diagram in the document; it is removed.
+- The deployment diagrams labelled the browser's call to the API "Serves SPA to browser"; Redis is
+  no longer described as holding only derived data now that it carries the import stream.
+- The ADD session's design-concepts table was split by a paragraph and rendered as text, and its
+  iteration plan said SQA-1 was complete where the iteration's own analysis said partially.
+- The ATAM reports pointed at diagrams that do not exist (`Architecture-05.png`, and a
+  `../diagrams/` folder the PlantUML example does not have); they now link the real files.
+- "Rendered + visually verified", "visually verified: yes" and "this is the Mermaid tree" are
+  gone from the examples, and the four templates and the diagram skill that put them there now
+  keep that instruction in HTML comments. Other writer guidance in the templates moved into
+  comments too.
+- The validator's "needs a numeric measure" rules counted the digit in an ID such as `PQA-1`,
+  so they could never fire.
+- A reference table in `architectural-drivers.md` had no header separator.
+- Sections out of their template's order or level in the examples: BG-2's business-goal scenario
+  came before its context, the ATAM's recommendations came after the register write-back, and the
+  ADD architecture's interface specification sat beside *Interfaces* instead of under it. The
+  docs directory listed an ID prefix the register does not use.
+- The example ATAM was dated 2026-09-05, a day before the architecture it evaluates was designed;
+  it is 2026-09-07, as the drivers change log already said. The docs rationale cited tradeoff
+  point `T-1`, which the ATAM calls `TP-1`, and the architecture document called ATAM risk R-1
+  closed by an ADD iteration that has not run yet.
+- The ATAM template's Step 8 now says it is omitted in Lightweight mode, as Step 7 did, so a
+  Lightweight report keeps the template's structure.
+- Language in the examples: `p95` appeared in 15 files and was explained in none, and `(V, R)`
+  was unexplained in two indexes; each now explains the notation at first use. Six passages
+  written as arrow or dot chains (the ADD roadmap, the security view's denied-access sequence,
+  the ATAM's approach list and register write-back, the ADRs' related links, the QAW's expected
+  outputs) are sentences or lists. The directory, the scenario summary and the ADD session open
+  with a sentence saying what they cover, and the PlantUML scenario files' diagram caption tells
+  the reader how to read the diagram instead of how it was drawn. The three templates these
+  came from carry the same changes.
+
+### Changed
+- Templates: the ADD session's plan heading is *Iteration Plan (design backlog)*, the drivers
+  README title no longer embeds a file name, the ATAM template names Step 6 sections
+  `<ATTR>QA-<n>` and adds optional Phase 2 scenario sections and a CBAM backlog, and the
+  architecture document allows an interface specification under *Interfaces*.
+
+### Added
+- Generated artifacts keep their template's structure. `validate.py` compares each artifact's
+  headings with its template: the same sections, at the same levels, in the same order. A
+  section whose heading has a placeholder repeats; one the template marks optional may be left
+  out. A failure names the section that is missing, added, repeated, out of order or at the
+  wrong level. Every template must
+  govern some artifact and match its own structure (`--self`). The rule is in
+  `references/writing-style.md` and in every skill's writing rule.
+- Templates for the Views-and-Beyond package files that had none — `docs-readme.md`,
+  `system-overview.md`, `mapping-between-views.md`, `rationale.md`, `directory.md`,
+  `change-log.md` — and `scenarios.md`, moved out of the quality-attributes skill.
+- `scripts/driverstatus.py` sets a driver's status in the driver file, its kind's index, the
+  README matrix and the utility tree at once, or changes nothing. ADD, ATAM and `/drivers` now
+  write statuses through it.
+- Validator rules: every copy of a driver's status and priority must agree; a table must have a
+  header separator; a backticked relative path must exist; a Mermaid block must match the `.mmd`
+  beside its PNG; artifacts and template text must not describe how they were made.
+- PlantUML diagrams render at 240 dpi (`PLANTUML_DPI` to change) with the size limit raised, so
+  they are as sharp as the Mermaid renders; every PlantUML example diagram was re-rendered (same
+  layouts, 2.5 × the pixels). `tests/run.sh` fails if the default resolution drops.
+- Tests: `tests/test_driverstatus.py` (45), and `tests/test_validate.py` grows to 230 with a case
+  per rule of the architecture, session, ATAM, view-packet, mapping and drivers checkers, the
+  template-structure check, the self-check and the CLI. Line coverage of `validate.py` rises from
+  59 % to 88 %. The Claude app edition bundles every template with the validator so the structure
+  check runs in chat too.
+
 ## 1.13.0 — 2026-11-06
 
 The Quality Attribute Workshop becomes a guided, checked workshop, from a blank page or over

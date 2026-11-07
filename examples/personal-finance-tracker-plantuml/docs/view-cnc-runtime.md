@@ -10,9 +10,7 @@
 
 ![View: Runtime (C&C)](diagrams/view-cnc-runtime-01.png)
 
-Source: [`diagrams/view-cnc-runtime-01.puml`](diagrams/view-cnc-runtime-01.puml) · rendered + visually verified.
-
-_visually verified: yes · relative path renders on GitHub / GitLab_
+Source: [`diagrams/view-cnc-runtime-01.puml`](diagrams/view-cnc-runtime-01.puml).
 
 Legend: [`diagrams/legend.png`](diagrams/legend.png) — what shape and colour mean (SEI palette), shared by every view in this package.
 
@@ -51,7 +49,7 @@ miss), the path that realises PQA-1 — re-rendered from the ADD `Architecture.m
 
 ![UC-2 dashboard load — cache hit / miss](diagrams/view-cnc-runtime-behaviour-uc2.png)
 
-Source: [`diagrams/view-cnc-runtime-behaviour-uc2.puml`](diagrams/view-cnc-runtime-behaviour-uc2.puml) · rendered + visually verified.
+Source: [`diagrams/view-cnc-runtime-behaviour-uc2.puml`](diagrams/view-cnc-runtime-behaviour-uc2.puml).
 
 On a cache hit the Primary Database is not touched; on a miss the API Service recomputes from
 tenant-scoped rows and repopulates the Read Cache, so staleness is bounded by the 15-minute TTL.
@@ -74,7 +72,7 @@ Service, omitted from the primary presentation to keep it to the runtime data pa
 
 - One API Service process holds the tenant guard so `SQA-1` isolation is enforced on every
   interactive path in a single auditable place ([`rationale.md`](rationale.md) ADR-2).
-- Cache-aside with a bounded TTL meets `PQA-1`'s p95 budget while keeping the cache strictly
+- Cache-aside with a bounded TTL meets `PQA-1`'s latency budget at the 95th percentile (p95) while keeping the cache strictly
   derived, so its failure never threatens `AQA-1` correctness ([`rationale.md`](rationale.md) ADR-1).
 - CSV import is pushed to a queue + worker so a large import cannot consume the request threads
   that serve interactive traffic (`PQA-2`).

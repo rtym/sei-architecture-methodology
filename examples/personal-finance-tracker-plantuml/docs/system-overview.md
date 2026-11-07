@@ -14,7 +14,7 @@ no native app at launch (`CON-1`).
 
 ![System context — Personal Finance Tracker](diagrams/system-overview-01.png)
 
-Source: [`diagrams/system-overview-01.puml`](diagrams/system-overview-01.puml) · rendered + visually verified.
+Source: [`diagrams/system-overview-01.puml`](diagrams/system-overview-01.puml).
 
 ## Primary functional requirements (use cases)
 
@@ -28,7 +28,7 @@ See [`../quality-attributes/scenarios.md`](../quality-attributes/scenarios.md) f
 
 - `SQA-1` (security / confidentiality) — cross-user access rejected and logged; 0 successful reads.
 - `AQA-1` (reliability / availability) — survive a single-AZ failure, recover < 60 s, ≥ 99.5 %/mo.
-- `PQA-1` (performance / time behaviour) — dashboard interactive < 1.5 s at p95, 500 concurrent users.
+- `PQA-1` (performance / time behaviour) — dashboard interactive < 1.5 s at p95 (the 95th percentile) with 500 concurrent users.
 - `MQA-1` (maintainability / modifiability) — add a report type in ≤ 1 person-day, 0 regressions.
 
 ---

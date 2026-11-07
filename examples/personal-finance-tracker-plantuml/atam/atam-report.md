@@ -1,6 +1,6 @@
 # ATAM Evaluation — Personal Finance Tracker
 
-- **Date(s)**: 2026-09-05
+- **Date(s)**: 2026-09-07
 - **Evaluation team**: external reviewer (lead), scenario scribe
 - **Architect(s)**: Eng lead
 - **Architecture evaluated**: `../add/personal-finance-tracker-Architecture.md` (after ADD iteration 1–2)
@@ -39,7 +39,8 @@ Method, phases, and the seven output kinds explained.
 - **Overview**: SPA → single API (tenant guard + services + data access) → PostgreSQL, with a
   Redis read cache for dashboard aggregates and a Redis-Streams queue + worker for CSV import.
   Stateless API replicas across two AZs; managed primary/standby PostgreSQL.
-- Diagrams: `../diagrams/container.png`, `../add/diagrams/deployment.png` (visually verified: yes)
+- Diagrams: the [container diagram](../add/diagrams/container.png) and the
+  [deployment diagram](../add/diagrams/deployment.png) from the ADD architecture document.
 
 ## Step 4 — Identify architectural approaches
 
@@ -55,7 +56,7 @@ Method, phases, and the seven output kinds explained.
 
 A **table** (the same tree the drivers register carries —
 [`../drivers/quality-attributes/utility-tree.md`](../drivers/quality-attributes/utility-tree.md)).
-`(V, R)` = (business value, technical risk); `★` = architecturally significant `(H, H)`.
+`(V, R)` = (business value, technical risk); `★` = architecturally significant `(H, H)`. `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
 
 | Quality attribute (ISO/IEC 25010) | Refinement (concern) | Leaf scenario | Priority (V, R) | Status |
 |-----------------------------------|----------------------|---------------|:---------------:|:------:|
@@ -148,7 +149,11 @@ themes align; data-residency (P-3) is new and not in the tree.
 ## Step 9 — Results
 
 ### Architectural approaches
-AA-1 modular monolith · AA-2 security choke point · AA-3 cache-aside · AA-4 stateless + managed HA · AA-5 async import.
+- AA-1 modular monolith
+- AA-2 security choke point
+- AA-3 cache-aside read cache
+- AA-4 stateless replicas with a managed high-availability data tier
+- AA-5 asynchronous import through a queue and worker
 
 ### Risks
 | ID | Risk | Affected attribute | Related driver |
@@ -164,7 +169,7 @@ AA-1 modular monolith · AA-2 security choke point · AA-3 cache-aside · AA-4 s
 | ID | Non-risk | Assumption under which it holds |
 |----|----------|--------------------------------|
 | N-1 | One security choke point for interactive traffic | no code path reaches Data Access except via the guard |
-| N-2 | Cache loss = latency only | Redis holds strictly derived data |
+| N-2 | Cache loss = latency only | The Redis read cache holds strictly derived data |
 | N-3 | API tier scales out freely | sessions stay externalised |
 
 ### Sensitivity points
@@ -195,15 +200,15 @@ Turn the risk themes into a prioritised backlog by rough ROI (utility gained ÷ 
 | 2 | Game-day the managed-DB failover; write + automate a rollback runbook (RT-2) | High — proves AQA-1; removes a launch blocker | ~2 person-days | high |
 | 3 | Read-replica + repository read/write split; region seam in the data model (RT-3) | Medium — head-room for BG-1 growth and future data-residency | ~1 ADD iteration (3) | medium — defer until growth signal |
 
-### Drivers register write-back
-
-- [SQA-1](../drivers/quality-attributes/SQA-1.md) → `at risk` (R-1, R-2); [AQA-1](../drivers/quality-attributes/AQA-1.md) → `at risk` (R-3, R-4) — set in the files and in the [drivers README](../drivers/README.md) matrix.
-- Change-log line `2026-09-07 · ATAM` appended to the drivers README and the [package index](../README.md).
-
 ### Recommendations / next steps
 - Run `/add` iteration 1b for RT-1 and iteration 3 for RT-3.
 - Schedule a DB failover game-day; add a rollback runbook (RT-2).
 - Re-run this ATAM after the risk themes are addressed. A full ATAM is not needed each time — a **Lightweight Architecture Evaluation** (steps 3–8, internal team, ~half a day, no report) each ADD round or before a release keeps the registers current.
+
+### Drivers register write-back
+
+- [SQA-1](../drivers/quality-attributes/SQA-1.md) (R-1, R-2) and [AQA-1](../drivers/quality-attributes/AQA-1.md) (R-3, R-4) are set to `at risk` in their files, their index, the [drivers README](../drivers/README.md) matrix and the utility tree.
+- Change-log line `2026-09-07 · ATAM` appended to the drivers README and the [package index](../README.md).
 
 ---
 

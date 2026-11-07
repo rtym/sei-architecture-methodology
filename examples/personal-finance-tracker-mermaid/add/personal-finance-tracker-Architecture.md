@@ -45,6 +45,8 @@ by the system, keeping the SOC 2 (CON-4) surface small.
 
 ### Quality Attribute Scenarios (key)
 
+`p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
+
 | ID | QA (ISO 25010) | Stimulus | Response | Measure | Priority |
 |----|----------------|----------|----------|---------|----------|
 | SQA-1 | Security / confidentiality | Cross-user data access attempt | Rejected and logged | 0 reads; 100 % logged | (H,H) |
@@ -79,13 +81,18 @@ flowchart TB
     direction TB
     spa["Web App<br/><i>React 18 / TS PWA</i>"]
     api["API Service<br/><i>Node.js 20 / Fastify</i>"]
+    worker["Import Worker<br/><i>Node.js 20 queue consumer</i>"]
     db[("Primary Database<br/><i>PostgreSQL 15 · encrypted</i>")]
     cache[("Read Cache<br/><i>Redis 7</i>")]
+    queue[["Import Queue<br/><i>Redis Streams</i>"]]
   end
   user -->|"Uses over HTTPS (TLS 1.3)"| spa
   spa -->|"Calls REST API (JSON)"| api
   api -->|"Reads / writes tenant-scoped rows (SQL/TLS)"| db
   api -->|"Reads aggregates, invalidates on write"| cache
+  api -->|"Enqueues import jobs"| queue
+  queue -->|"Delivers jobs"| worker
+  worker -->|"Bulk-inserts transactions"| db
   api -->|"Sends verification &amp; alert email"| mail
   classDef source  fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
   classDef external fill:#F5EEE3,stroke:#B07D3B,color:#1F2933;
@@ -93,8 +100,8 @@ flowchart TB
   classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
   class user source
   class mail external
-  class spa,api internal
-  class db,cache datastore
+  class spa,api,worker internal
+  class db,cache,queue datastore
 ```
 
 ![Container diagram — Personal Finance Tracker](../diagrams/container.png)
@@ -103,7 +110,10 @@ flowchart TB
 
 The API service is the single write path and the single place tenant scoping (SQA-1) is enforced.
 The Redis read cache serves the dashboard (PQA-1); it is a performance element, not a system of
-record, so its loss degrades latency but not correctness (AQA-1).
+record, so its loss degrades latency but not correctness (AQA-1). A CSV import goes through the
+Import Queue to the Import Worker, so a 5 000-row file never holds an API request thread (PQA-1,
+PQA-2). The worker reuses the Data Access module but not yet the tenant guard: ATAM risk R-1,
+to be closed by ADD iteration 1b.
 
 ## 5. Component and module views
 
@@ -237,18 +247,21 @@ flowchart TB
     end
     subgraph run["Container platform (autoscaling, multi-AZ)"]
       api["API Service<br/><i>Node.js 20 — 2+ replicas across AZs</i>"]
+      worker["Import Worker<br/><i>Node.js 20 — 1+ replica, scales on queue depth</i>"]
     end
     subgraph data["Managed data tier (multi-AZ)"]
       db[("PostgreSQL 15<br/><i>primary + standby, automated failover</i>")]
-      cache[("Redis 7<br/><i>primary + replica</i>")]
+      cache[("Redis 7<br/><i>primary + replica — cache + import stream</i>")]
     end
   end
-  spa -->|"Serves SPA to browser"| api
+  spa -->|"Calls the API from the browser (HTTPS)"| api
   api -->|"SQL / TLS"| db
-  api -->|"RESP"| cache
+  api -->|"RESP / TLS"| cache
+  worker -->|"RESP / TLS"| cache
+  worker -->|"SQL / TLS"| db
   classDef internal fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class spa,api internal
+  class spa,api,worker internal
   class db,cache datastore
 ```
 
@@ -259,6 +272,8 @@ flowchart TB
 The API runs as stateless replicas spread across two AZs behind the platform load balancer, and
 the data tier uses managed primary/standby with automated failover — together these meet AQA-1
 (single-AZ failure recovers < 60 s) within the CON-3 low-cost-tier constraint.
+The Import Worker runs on the same platform and scales on queue depth. Redis holds the read
+cache and the import stream; neither is a system of record.
 
 ## 8. Interfaces and events
 
@@ -270,7 +285,7 @@ the data tier uses managed primary/standby with automated failover — together 
 | API Service | `GET /dashboard?month=` | REST / HTTPS | Monthly aggregates + recent activity (UC-2) |
 | Data Access | `query(userId, spec)` | in-process | Always injects `WHERE user_id = $userId` |
 
-### `POST /transactions` — full interface spec (the four agreement points)
+#### `POST /transactions` — full interface spec (the four agreement points)
 
 The one interface `UC-1` and `SQA-1` both run through, specified per `references/interfaces.md`:
 

@@ -9,13 +9,16 @@ Deployment_Node(cloud, "Managed cloud", "eu-west-1 · 2 availability zones") {
   }
   Deployment_Node(run, "Container platform", "Autoscaling, multi-AZ") {
     Container(api, "API Service", "Node.js 20", "2+ replicas across AZs, stateless")
+    Container(worker, "Import Worker", "Node.js 20", "1+ replica; scales on queue depth")
   }
   Deployment_Node(data, "Managed data tier", "Multi-AZ") {
     ContainerDb(db, "PostgreSQL 15", "Primary + standby", "Automated failover")
-    ContainerDb(cache, "Redis 7", "Primary + replica", "Derived data only")
+    ContainerDb(cache, "Redis 7", "Primary + replica", "Read cache and import stream; not a system of record")
   }
 }
-Rel(spa, api, "Serves SPA to browser", "HTTPS")
+Rel(spa, api, "Calls the API from the browser", "HTTPS")
 Rel(api, db, "Reads / writes", "SQL/TLS")
-Rel(api, cache, "Reads / invalidates", "RESP")
+Rel(api, cache, "Reads / invalidates; enqueues imports", "RESP/TLS")
+Rel(worker, cache, "Consumes import jobs", "RESP/TLS")
+Rel(worker, db, "Bulk-inserts transactions", "SQL/TLS")
 @enduml

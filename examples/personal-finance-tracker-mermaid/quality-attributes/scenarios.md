@@ -6,6 +6,10 @@
 - **QA model**: ISO/IEC 25010:2023
 - **Mode**: register — the per-scenario files and diagrams live in [`../drivers/quality-attributes/`](../drivers/quality-attributes/README.md); this file is the summary
 
+The six quality attribute scenarios that shape the architecture, with the business goals, use
+cases and constraints they trace to. Start with the scenario table; each ID links to the full
+scenario file and its diagram in the drivers register. `p95` is the 95th percentile: a measure at p95 holds for 95 % of requests.
+
 ## Business goals
 
 | ID | Goal | Stakeholder |
@@ -30,7 +34,7 @@ QA column = `ISO/IEC 25010 characteristic / sub-characteristic`.
 
 ### Scenario files and diagrams (register)
 
-| Scenario | Six-part diagram (rendered + visually verified) |
+| Scenario | Six-part diagram |
 |----------|--------------------------------------------------|
 | [PQA-1](../drivers/quality-attributes/PQA-1.md) | [scenario-PQA-1.png](../drivers/quality-attributes/diagrams/scenario-PQA-1.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-1.mmd) |
 | [PQA-2](../drivers/quality-attributes/PQA-2.md) | [scenario-PQA-2.png](../drivers/quality-attributes/diagrams/scenario-PQA-2.png) · [source](../drivers/quality-attributes/diagrams/scenario-PQA-2.mmd) |
