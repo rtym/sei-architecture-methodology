@@ -171,7 +171,8 @@ scenarios from Step 7 that were not already covered.
   open every artifact with one to three plain sentences saying what it covers and where to start,
   explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
   use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
-  HTML comments, never in the artifact's visible text.
+  HTML comments, never in the artifact's visible text. Keep the template's sections
+  exactly — the same headings, levels and order; `validate.py` checks them.
 
 - Every risk, non-risk, sensitivity, and tradeoff cites the element/decision and the affected
   quality attribute(s) (ISO/IEC 25010 characteristic).

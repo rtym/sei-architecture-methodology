@@ -292,7 +292,8 @@ Append a dated line to the top `README.md`'s change log for every run: what was 
   open every artifact with one to three plain sentences saying what it covers and where to start,
   explain notation like `(V, R)` at its first use, keep bold for labels and defined terms, and
   use no filler words (`validate.py` rejects the worst offenders). Template guidance belongs in
-  HTML comments, never in the artifact's visible text.
+  HTML comments, never in the artifact's visible text. Keep the template's sections
+  exactly — the same headings, levels and order; `validate.py` checks them.
 
 - Four driver kinds, four ID prefixes: `BG-`, `UC-`, `CON-`, `<ATTR>QA-`; plus `AC-` concerns and
   `ST-` stakeholders. IDs are sequential within their prefix and never reused or renumbered.

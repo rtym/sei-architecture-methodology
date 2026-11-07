@@ -25,7 +25,7 @@
 | ID | Concern |
 |----|---------|
 
-## Iteration Plan / design backlog
+## Iteration Plan (design backlog)
 
 Ordered by the design roadmap for the system type (greenfield mature → overall structure, then
 primary use cases, then refine for QAs; novel → prototype-led; brownfield → refine the existing

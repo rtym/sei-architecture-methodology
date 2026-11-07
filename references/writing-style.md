@@ -42,6 +42,13 @@ Shorthand is fine *after* it has been introduced, in the same file:
 
 ## Structure
 
+- **Keep the template's structure exactly.** Every artifact starts from its template in
+  `${CLAUDE_PLUGIN_ROOT}/templates/` and keeps its headings: the same sections, at the same levels,
+  in the same order. Do not rename, merge, split, drop or add sections. Content that seems not to
+  fit goes under the closest section; an empty section says why it is empty ("None — …"). A
+  section whose heading carries a placeholder (`### CS-<id> — …`, `## Iteration N — …`) repeats
+  once per item; a section the template marks optional may be left out. `validate.py` compares
+  every artifact's headings with its template and names the section that differs.
 - One idea per section; headings say what the section contains, not what activity produced it.
 - Every cross-reference is a relative Markdown link the reader can click, with link text that
   says where it goes ("the [traceability matrix](#traceability-matrix)", not "see below").
