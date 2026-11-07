@@ -85,7 +85,7 @@ leaves get the most analysis. The `★` and `(H,M)` leaves are what Step 6 analy
 
 Ranked: P-3 (8) > P-1 (5) > … · Agreement with utility tree: <notes>
 
-## Step 8 — Analyse architectural approaches (Phase 2 scenarios — Full ATAM only)
+## Step 8 — Analyse architectural approaches (Phase 2 scenarios — Full ATAM only; omit in Lightweight mode)
 
 ### P-<n> — <one-line scenario> (optional; one per Phase 2 scenario not already covered)
 
