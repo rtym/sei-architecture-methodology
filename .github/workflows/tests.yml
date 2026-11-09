@@ -35,7 +35,7 @@ jobs:
         run: python3 scripts/appbundle.py --out dist/claude-app
 
       - name: Upload the Claude app edition
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: claude-app-edition
           path: dist/claude-app/*.zip
