@@ -11,7 +11,7 @@ Contributor rules live in [`CLAUDE.md`](../CLAUDE.md); the ones a PR most often 
 - [ ] Behaviour changes update the **skill AND its template AND both worked examples** under
       `examples/` — they are the regression fixtures
 - [ ] Re-rendered every diagram whose source changed (`scripts/render-all.sh <dir>`), opened the
-      PNGs and checked them before committing
+      PNGs and checked them, then updated the baseline (`python3 tests/diagramcheck.py --update`)
 - [ ] Cross-file paths in commands / skills / templates / references are
       `${CLAUDE_PLUGIN_ROOT}`-anchored; PlantUML `!include`s are bare, assets-relative names
 - [ ] `CHANGELOG.md` has a line under an *Unreleased* heading
