@@ -65,14 +65,17 @@ syntax and the render script differ.
 
 **First measure it.** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/diagramlint.py <source or .svg> […]` renders the source to
 SVG and counts what the *Legibility* list below asks about — crossings, overlapping nodes, edges
-drawn through an unrelated node, colours outside the palette, an extreme ribbon — and names each
-one (`edge api_db × edge worker_cache`), so you know which line of the source to change. It exits
-1 while a defect remains. Report its counts; do not estimate a crossing count by eye when the
+drawn through an unrelated node, edge labels on top of a node or of each other, labels that do
+not fit their box, elements cut off at the image edge, colours outside the palette, an extreme
+ribbon — and names each one (`edge api_db × edge worker_cache`), so you know which line of the
+source to change. It exits 1 while a defect remains, and 2 for a diagram type it cannot measure
+(it measures flowchart, state, class and ER diagrams in Mermaid, and component, use case, class
+and C4 diagrams in PlantUML) — check those by eye. Report its counts; do not estimate a crossing count by eye when the
 script can count it. A crossing may stay only when no ordering removes it (two services that each
 use the same two stores always cross once in a layered layout) — say so when you keep one. For a
 sequence diagram it checks colours and shape only.
 
-**Then look at it.** The script cannot see a truncated label, a wrong arrow direction or a
+**Then look at it.** The script cannot see a misspelt label, a wrong arrow direction or a
 missing element. After the render script produces the PNG, open it with the `Read` tool and look
 at the actual image. Walk this checklist explicitly and state the result:
 
@@ -588,8 +591,9 @@ flowchart TB
   end
   user -->|"Uses (HTTPS)"| web
   web -->|"Reads / writes (SQL)"| db
-  classDef source fill:#E7E3F3,stroke:#6B5BA6; classDef internal fill:#EDF2F8,stroke:#3E6DA5;
-  classDef datastore fill:#E4F0E9,stroke:#3F7D5C;
+  classDef source    fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
+  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
+  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
   class user source
   class web internal
   class db datastore
@@ -622,8 +626,9 @@ carries the PNG and a link to it.
 - The PNG must be the one you visually verified; re-render and the file (same path) updates in place.
 - Never replace a diagram with a bare "see `diagrams/x.png`" text reference — always the `![]()`
   image line (plus, for PlantUML, the source link).
-- `${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh --embed-diagrams` base64-inlines both the fenced Mermaid blocks
-  **and** the referenced PNGs, so a report stays self-contained regardless of notation.
+- `${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh --embed-diagrams` inlines the PNG each image line names — the
+  render you verified, not a new one — so a report stays self-contained regardless of notation.
+  Only a fenced block with no image line under it is rendered while the report is built.
 
 ## Rendering
 
