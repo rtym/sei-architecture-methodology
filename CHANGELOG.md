@@ -35,8 +35,10 @@ Diagrams become regression fixtures, and the layout check that used to be done b
 - The PlantUML theme did not style use cases or sequence group frames, so use case ovals and the
   `alt` tab were drawn in PlantUML's default grey with a black border. They now use the palette;
   the seven affected example diagrams are re-rendered.
-- The Mermaid example's two deployment diagrams had an edge crossing; the stores are now stacked
-  and nothing crosses.
+- The deployment diagrams could cross two edges: the Mermaid example's always did, and the
+  PlantUML example's did under Graphviz 14 (not under 16). In both notations the two stores are
+  now stacked with a hidden layout link, so nothing crosses whichever layout engine draws them.
+- CI renders with PlantUML 1.2026.10, the version Homebrew installs.
 - The Mermaid UC-4 diagram used a note colour one digit off the palette (`#FBF7EE`).
 - `setup.sh` would write a `package.json` pinning older renderer versions than the shipped one.
 - `render.sh` split a quoted glob on spaces, so a pattern under a directory with a space in its
