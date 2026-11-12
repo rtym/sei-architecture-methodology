@@ -4,6 +4,48 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## 1.15.0 — 2026-11-12
+
+Diagrams become regression fixtures, and the layout check that used to be done by eye is counted.
+
+### Added
+- `skills/sei-diagrams/scripts/diagramlint.py` measures a rendered diagram (a `.svg`, or a
+  `.mmd` / `.puml` it renders first): edge crossings, overlapping nodes, edges drawn through a
+  node they do not connect to, colours outside the SEI palette, and an extreme ribbon shape. Each
+  defect is named (`edge api_db × edge worker_cache`). The diagram skill runs it on every render
+  before the visual check.
+- `tests/diagramcheck.py` with `tests/diagram-baseline.json`: every example PNG is recorded with
+  the source it was rendered from, its size, its element counts and its layout defects. Without a
+  renderer the suite fails on a stale render (source changed, PNG did not), a PNG changed without
+  the baseline, a low-resolution PNG, or an off-palette colour in a source or in any diagram a
+  skill teaches. With a renderer it re-renders all 52 example diagrams and fails when one shows
+  different elements or words, gains a crossing, an overlap or a run-through edge, loses the SEI
+  theme, or changes shape — so a Mermaid, PlantUML or Graphviz upgrade cannot degrade a diagram
+  unnoticed. `tests/test_diagrams.py` covers both scripts.
+- `scripts/render-all.sh` also renders Mermaid blocks that live only in a Markdown file (12 of
+  the Mermaid example's 26 diagrams), to the PNG the document shows; `--list` prints the plan.
+- The examples' Markdown reports are compared with a fresh build, and the validator rejects an
+  artifact heading with no blank line above it.
+- Layout playbook: stack two stores that two services share with an invisible link.
+
+### Fixed
+- `scripts/driverstatus.py` deleted the blank line after the `- **Status**:` bullet whenever that
+  bullet was the last one in the header, gluing the next heading to it. Both examples' CON-4 had
+  been damaged this way. It also miscounted columns in a table row holding an escaped pipe.
+- The PlantUML theme did not style use cases or sequence group frames, so use case ovals and the
+  `alt` tab were drawn in PlantUML's default grey with a black border. They now use the palette;
+  the seven affected example diagrams are re-rendered.
+- The Mermaid example's two deployment diagrams had an edge crossing; the stores are now stacked
+  and nothing crosses.
+- The Mermaid UC-4 diagram used a note colour one digit off the palette (`#FBF7EE`).
+- `setup.sh` would write a `package.json` pinning older renderer versions than the shipped one.
+- `render.sh` split a quoted glob on spaces, so a pattern under a directory with a space in its
+  name rendered nothing; a pattern that matches no file is now reported as a failure.
+
+### Verified
+- The Mermaid CLI 12.0 → 12.2 and ELK layout 1.0.1 → 1.0.2 update merged after 1.14.0 renders
+  every example diagram with the same layout as before.
+
 ## 1.14.0 — 2026-11-07
 
 A review of the repository and both worked examples. It fixes the inconsistencies it found, adds

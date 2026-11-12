@@ -27,8 +27,10 @@ Every skill:
 - keeps **traceability** — decisions and findings cite driver IDs; ADD writes an ADR per decision,
   ATAM marks scenarios `at risk`, and both write statuses back to the drivers register;
 - registers its output in `architecture/README.md`, the package index;
-- routes every diagram through `sei-diagrams`: **rendered to PNG and visually verified** (the
-  model opens the image and checks correctness + edge crossings) before it is embedded anywhere;
+- routes every diagram through `sei-diagrams`: **rendered to PNG, measured and visually
+  verified** — `diagramlint.py` counts edge crossings, overlapping nodes, edges drawn through a
+  node and off-palette colours, then the model opens the image and checks correctness — before
+  it is embedded anywhere;
 - can emit its report as **Markdown or HTML** (`scripts/build-report.sh`).
 
 ---
@@ -324,9 +326,10 @@ rationale).
 /sei-diagram
 ```
 
-Writes the source, renders it to PNG, then opens the PNG and checks it against a correctness +
-legibility checklist — reordering nodes, grouping, or switching to ELK layout until crossings are
-minimal. **Use case diagrams use PlantUML** for true UML glyphs (stick-figure actors, ellipse use
+Writes the source, renders it to PNG, counts its layout defects with
+`skills/sei-diagrams/scripts/diagramlint.py` (each crossing named by its two edges), then opens
+the PNG and checks it against a correctness + legibility checklist — reordering nodes, grouping,
+or switching to ELK layout until crossings are minimal. **Use case diagrams use PlantUML** for true UML glyphs (stick-figure actors, ellipse use
 cases, boundary rectangle, dashed `<<include>>` / `<<extend>>`):
 
 ![Use case diagram — UC-3](examples/personal-finance-tracker-plantuml/drivers/use-cases/diagrams/UC-3.png)
@@ -398,7 +401,7 @@ sei-architecture-methodology/
 │       │   └── c4/                    #   vendored C4-PlantUML 2.10.0 (MIT) + sei-c4-palette.puml (offline)
 │       │       ├── LICENSE            #     upstream MIT notice, verbatim
 │       │       └── README.md          #     provenance: upstream, pinned version, unmodified
-│       ├── scripts/                   # setup.sh, render.sh, render-plantuml.sh
+│       ├── scripts/                   # setup.sh, render.sh, render-plantuml.sh, diagramlint.py (layout check)
 │       └── package-lock.json          # pins the Mermaid renderer (npm ci in setup.sh)
 ├── references/                        # deep method notes + tactics catalog + patterns + checklist
 ├── templates/                         # blank artifact templates (one per driver kind, per report, per view)
@@ -408,7 +411,7 @@ sei-architecture-methodology/
 │   ├── qawkit.py                      # QAW kit: prep, agenda, ballot, tally, status, lint, summary
 │   ├── driverstatus.py                # sets a driver's status in every copy the register keeps
 │   ├── appbundle.py                   # builds the Claude app edition (self-contained skills, deterministic zip)
-│   └── render-all.sh                  # re-render every *.mmd / *.puml under a directory, in place
+│   └── render-all.sh                  # re-render every *.mmd / *.puml and embedded Mermaid block under a directory
 ├── examples/
 │   ├── personal-finance-tracker-mermaid/    # the full worked example, every diagram in Mermaid
 │   └── personal-finance-tracker-plantuml/   # the same example, every diagram in PlantUML / C4-PlantUML
@@ -419,6 +422,9 @@ sei-architecture-methodology/
 │   ├── test_qawkit.py                 # QAW kit unit tests + golden files for the examples' kits
 │   ├── test_appbundle.py              # Claude app edition: limits, self-containment, determinism
 │   ├── test_driverstatus.py           # driver status writer + the validator's status cross-check
+│   ├── diagramcheck.py                # diagram regression: example PNGs and fresh renders against the baseline
+│   ├── diagram-baseline.json          # the approved state of every example diagram
+│   ├── test_diagrams.py               # layout metrics, source ↔ PNG pairing, baseline checks
 │   └── run.sh                         # full suite
 ├── CHANGELOG.md                       # release notes per version
 ├── CLAUDE.md                          # contributor notes: tests, conventions, release checklist
@@ -453,7 +459,7 @@ that links up to the package index and only to sibling packages that exist.
 
 ```bash
 bash tests/run.sh            # everything
-bash tests/run.sh --quick    # skip the render smoke test
+bash tests/run.sh --quick    # skip the render smoke tests and the diagram re-render
 ```
 
 Checks: `plugin.json` parses; every shell script parses; every skill has valid front-matter and
@@ -487,6 +493,14 @@ that a backticked relative path exists, that a Mermaid block matches the `.mmd` 
 and that no artifact describes how it was made ("visually verified"). Every generated artifact
 must keep its template's structure — the same sections, levels and order — and a failure names
 the section that is missing, added or out of order.
+Since 1.15.0 the example diagrams are regression fixtures. `tests/diagram-baseline.json` records
+every example PNG with the source it was rendered from, and `tests/diagramcheck.py` fails when a
+source changed but its PNG did not, when a PNG lost resolution, or when a diagram sets a colour
+outside the palette. With a renderer installed, the suite re-renders all 52 example diagrams and
+compares each with its approved state: the same elements and words, no new edge crossing,
+overlapping node or edge drawn through a node, the SEI theme applied, the same shape. A renderer
+upgrade that degrades a diagram fails there. The examples' Markdown reports are compared with a
+fresh build, and an artifact heading glued to the line above it fails validation.
 
 Validate produced artifacts in a target project:
 
@@ -502,8 +516,8 @@ pull requests, and on manual dispatch, as three jobs:
 | Job | What it runs | Needs |
 |-----|--------------|-------|
 | `test suite (no renderer)` | `tests/run.sh --quick` — everything but the render smoke test — then builds the Claude app edition and uploads it as the `claude-app-edition` artifact | Python only; finishes in seconds |
-| `full suite (Mermaid renderer)` | `setup.sh` then the complete `tests/run.sh` | Node 20 + a headless Chromium (cached between runs) |
-| `full suite (PlantUML renderer)` | the complete `tests/run.sh`, then renders every shipped example `.puml` | PlantUML + a JRE (apt) |
+| `full suite (Mermaid renderer)` | `setup.sh` then the complete `tests/run.sh`, which re-renders every Mermaid example diagram against the baseline | Node 20 + a headless Chromium (cached between runs) |
+| `full suite (PlantUML renderer)` | the complete `tests/run.sh`, which re-renders every PlantUML example diagram against the baseline, then renders every shipped example `.puml` to PNG | PlantUML + a JRE (apt) |
 
 The split keeps feedback fast — only the Mermaid job pays the ~150 MB Chromium download — and a
 failure names which renderer broke. Because `tests/run.sh` *skips* a render step without failing
