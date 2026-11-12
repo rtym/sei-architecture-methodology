@@ -22,13 +22,33 @@ Diagrams become regression fixtures, and the layout check that used to be done b
   different elements or words, gains a crossing, an overlap or a run-through edge, loses the SEI
   theme, or changes shape — so a Mermaid, PlantUML or Graphviz upgrade cannot degrade a diagram
   unnoticed. `tests/test_diagrams.py` covers both scripts.
+- `diagramlint.py` also counts edge labels drawn on a node or on each other, node labels that do
+  not fit their box and elements cut off at the image edge. It measures Mermaid state, class and
+  ER diagrams as well as flowcharts, and exits 2 for a diagram type it cannot measure instead of
+  calling it clean.
+- The full suite renders the 28 diagram patterns the skills and templates teach; each must
+  compile and be free of defects. `tests/test_render.py` runs the render scripts on real renders
+  (block naming, `--out`, globs, failures, `render-all.sh` on embedded blocks).
 - `scripts/render-all.sh` also renders Mermaid blocks that live only in a Markdown file (12 of
   the Mermaid example's 26 diagrams), to the PNG the document shows; `--list` prints the plan.
 - The examples' Markdown reports are compared with a fresh build, and the validator rejects an
   artifact heading with no blank line above it.
 - Layout playbook: stack two stores that two services share with an invisible link.
 
+### Changed
+- `build-report.sh --embed-diagrams` inlines the PNG a diagram's image line names instead of
+  rendering the Mermaid block again. The report shows the render that was verified, builds
+  without a renderer, and is the same on every build; a block with no image line is still
+  rendered. The Mermaid example's Views-and-Beyond report no longer shows one diagram twice.
+
 ### Fixed
+- The diagram skill's *Embedding in Markdown* example did not compile (two `classDef`s on one
+  line), so a diagram copied from it failed to render.
+- `qawkit.py tally` shifted the vote columns when a scenario's text held a pipe, which the
+  ballot writes as `\|`; `status` crashed on a parked question whose due date is not a calendar
+  date; the summary said "1 workshop IDs are mapped".
+- `mdreport.py` showed an escaped pipe in a table cell as `\|`, and quotes in an image's alt
+  text broke the HTML attribute.
 - `scripts/driverstatus.py` deleted the blank line after the `- **Status**:` bullet whenever that
   bullet was the last one in the header, gluing the next heading to it. Both examples' CON-4 had
   been damaged this way. It also miscounted columns in a table row holding an escaped pipe.

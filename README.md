@@ -346,7 +346,9 @@ scripts/build-report.sh --profile vandb architecture/docs/ --format html --embed
   --title "Architecture Description — Acme Platform"
 ```
 
-`--embed-diagrams` renders every ```mermaid **and** ```plantuml block to PNG and inlines it;
+`--embed-diagrams` inlines the rendered PNG each diagram's image line names — the verified
+render, so the build needs no renderer — and renders a ```mermaid or ```plantuml block only when
+it has no image line;
 `--profile vandb` orders a `docs/` directory as roadmap → system overview → module → C&C →
 allocation views → mapping → rationale → directory. Output is one self-contained HTML file styled
 with the SEI palette, with a cover page and table of contents. Example:
@@ -425,6 +427,7 @@ sei-architecture-methodology/
 │   ├── diagramcheck.py                # diagram regression: example PNGs and fresh renders against the baseline
 │   ├── diagram-baseline.json          # the approved state of every example diagram
 │   ├── test_diagrams.py               # layout metrics, source ↔ PNG pairing, baseline checks
+│   ├── test_render.py                 # render.sh / render-plantuml.sh / render-all.sh / diagramlint.py on real renders
 │   └── run.sh                         # full suite
 ├── CHANGELOG.md                       # release notes per version
 ├── CLAUDE.md                          # contributor notes: tests, conventions, release checklist
@@ -499,8 +502,12 @@ source changed but its PNG did not, when a PNG lost resolution, or when a diagra
 outside the palette. With a renderer installed, the suite re-renders all 52 example diagrams and
 compares each with its approved state: the same elements and words, no new edge crossing,
 overlapping node or edge drawn through a node, the SEI theme applied, the same shape. A renderer
-upgrade that degrades a diagram fails there. The examples' Markdown reports are compared with a
-fresh build, and an artifact heading glued to the line above it fails validation.
+upgrade that degrades a diagram fails there. The same run renders the 28 diagram patterns the
+skills and templates teach, each of which must compile and be free of defects, and
+`tests/test_render.py` exercises the render scripts on real renders: block naming, `--out`,
+globs, failures, and `render-all.sh` on diagrams embedded in Markdown. The examples' Markdown
+reports are compared with a fresh build, their HTML twins must embed every committed PNG, and an
+artifact heading glued to the line above it fails validation.
 
 Validate produced artifacts in a target project:
 
