@@ -567,6 +567,13 @@ with tempfile.TemporaryDirectory() as td:
     norows = write(root, "y/qaw-vote-sheet.md", "| Scenario | ST-1 | Total |\n|---|---|---|\n| total | 1 | |\n")
     check("a sheet with no scenario rows is an error", raises(qawkit.build_tally, norows, out))
     check("a missing sheet is an error", raises(qawkit.build_tally, root / "none.md", out))
+    piped = write(root, "p/qaw-vote-sheet.md", SHEET.replace("CS-2 — Zone loss", "CS-2 — p95 \\| p99 latency"))
+    check("an escaped pipe in a scenario does not shift the vote columns",
+          "| CS-2 | 1 | 1 | 0 | 2 |" in qawkit.build_tally(piped, root / "p" / "t.md"))
+    check("a table cell keeps an escaped pipe as one cell, unescaped",
+          qawkit.table_cells("| A | B |\n|---|---|\n| x \\| y | z |\n", "A")[1] == [["x | y", "z"]])
+    check("a cell written by the kit reads back as it was",
+          qawkit._row("| " + qawkit._cell("a | b") + " | c |") == ["a | b", "c"])
     check("tally command exits 0", quiet_main(["tally", str(sheet), "--out", str(root / "t2.md")]) == 0)
     check("tally command over budget exits 2", quiet_main(["tally", str(over), "--out", str(root / "t3.md")]) == 2
           and not (root / "t3.md").exists())
@@ -601,6 +608,9 @@ with tempfile.TemporaryDirectory() as td:
     check("status flags an overdue parked question", "PQ-1 is open (owner ST-2, due 2026-02-01, overdue since 2026-02-01)" in s2)
     check("an answered parked question is not a gap", "PQ-2" not in s2)
     check("without a date nothing is overdue", "overdue" not in qawkit.build_status(rep))
+    typo = write(root, "q3/qaw-report.md", REPORT.replace("2026-02-01", "2026-02-31"))
+    check("a due date that is not a calendar date is reported, not a crash",
+          "due 2026-02-31, due date is not a calendar date" in qawkit.build_status(typo, "2026-03-01"))
     gapped = REPORT + ("\n## Step 4 — Architectural drivers\n\n| ID | Architectural driver | Kind | Supports |\n"
                        "|---|---|---|---|\n| AD-1 | a | QA | BG-1 |\n| AD-2 | b | QA | BG-1 |\n| AD-3 | c | QA | BG-1 |\n")
     gaps = "\n".join(qawkit.report_gaps(gapped))

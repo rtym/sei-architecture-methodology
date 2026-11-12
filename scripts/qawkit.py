@@ -66,6 +66,14 @@ def kv_bullets(text: str) -> dict[str, str]:
     return out
 
 
+CELL_SPLIT = re.compile(r"(?<!\\)\|")      # `_cell` writes a pipe inside a cell as `\|`
+
+
+def _row(line: str) -> list[str]:
+    """The cells of one pipe-table row; an escaped pipe stays inside its cell, unescaped."""
+    return [c.strip().replace("\\|", "|") for c in CELL_SPLIT.split(line.strip().strip("|"))]
+
+
 def table_cells(text: str, header_contains: str) -> tuple[list[str], list[list[str]]]:
     """Header and rows (lists of cells, padded to the header) of the first pipe table whose
     header contains `header_contains`."""
@@ -73,12 +81,12 @@ def table_cells(text: str, header_contains: str) -> tuple[list[str], list[list[s
     for i, ln in enumerate(lines):
         if ln.strip().startswith("|") and header_contains.lower() in ln.lower() \
                 and i + 1 < len(lines) and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1]):
-            head = [c.strip() for c in ln.strip().strip("|").split("|")]
+            head = _row(ln)
             rows = []
             for r in lines[i + 2:]:
                 if not r.strip().startswith("|"):
                     break
-                cells = [c.strip() for c in r.strip().strip("|").split("|")]
+                cells = _row(r)
                 cells += [""] * (len(head) - len(cells))
                 rows.append(cells)
             return head, rows
@@ -849,8 +857,12 @@ def report_gaps(text: str, today: dt.date | None = None) -> list[str]:
             continue
         due = r.get("Due", "").strip()
         late = ""
-        if today and re.fullmatch(r"\d{4}-\d{2}-\d{2}", due) and dt.date.fromisoformat(due) < today:
-            late = f", overdue since {due}"
+        if today and re.fullmatch(r"\d{4}-\d{2}-\d{2}", due):
+            try:
+                if dt.date.fromisoformat(due) < today:
+                    late = f", overdue since {due}"
+            except ValueError:
+                late = ", due date is not a calendar date"
         gaps.append(f"{r['ID']} is open (owner {r.get('Owner', '').strip() or 'none'}, due "
                     f"{due or 'not set'}{late}): {r.get('Question', '').strip()}")
     return gaps
@@ -1035,7 +1047,7 @@ def build_summary(report: Path, out: Path) -> str:
     else:
         L.append("None.")
     L += ["", "## Next step", "",
-          f"{len(handoff)} workshop IDs are mapped to register IDs in the report's hand-off table. "
+          f"{agree(len(handoff), 'workshop ID is', 'workshop IDs are')} mapped to register IDs in the report's hand-off table. "
           f"Run `/drivers` to carry them into the drivers register, then `/add` to design against them."]
     return "\n".join(L).rstrip() + "\n"
 
