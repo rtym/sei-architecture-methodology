@@ -41,6 +41,9 @@ IMPLICIT_DEPS = {
     "scripts/qawkit.py": ["references/qaw-question-guide.md", "references/qaw-facilitation-playbook.md"],
     "skills/sei-diagrams/scripts/render.sh": ["skills/sei-diagrams/assets/", "skills/sei-diagrams/scripts/setup.sh"],
     "skills/sei-diagrams/scripts/render-plantuml.sh": ["skills/sei-diagrams/assets/"],
+    "skills/sei-diagrams/scripts/diagramlint.py": ["skills/sei-diagrams/assets/",
+                                                   "skills/sei-diagrams/scripts/render.sh",
+                                                   "skills/sei-diagrams/scripts/render-plantuml.sh"],
     "skills/sei-diagrams/scripts/setup.sh": ["skills/sei-diagrams/package.json",
                                              "skills/sei-diagrams/package-lock.json"],
 }
