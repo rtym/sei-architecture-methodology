@@ -44,6 +44,11 @@ skinparam actor {
   BackgroundColor #E7E3F3
   BorderColor #6B5BA6
 }
+skinparam usecase {
+  BackgroundColor #EDF2F8
+  BorderColor #3E6DA5
+  FontColor #1F2933
+}
 skinparam class {
   BackgroundColor #EDF2F8
   BorderColor #3E6DA5
@@ -59,6 +64,10 @@ skinparam sequence {
   LifeLineBackgroundColor #DCE6F2
   BoxBackgroundColor #FBFCFE
   BoxBorderColor #9AA7B4
+  GroupBackgroundColor #F5EEE3
+  GroupBorderColor #9AA7B4
+  GroupFontColor #1F2933
+  GroupHeaderFontColor #1F2933
 }
 skinparam state {
   BackgroundColor #EDF2F8
