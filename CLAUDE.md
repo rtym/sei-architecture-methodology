@@ -31,6 +31,8 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
   out). A new template must be added to `STRUCTURE_TEMPLATES` in `tests/validate.py`.
 - A diagram sets no colour outside the SEI palette (`assets/palette.md`); `tests/diagramcheck.py`
   checks the examples' sources and every fenced diagram in a skill, template or reference.
+- Every fenced diagram in a skill, template or reference compiles and renders without a counted
+  defect (`tests/diagramcheck.py --render`); a `<placeholder>` in it is rendered as its words.
 - Diagrams are embedded as `![title](diagrams/x.png)` image lines (plus the fenced block for
   Mermaid, plus a `.puml` link for PlantUML) — never a bare backtick path.
 
