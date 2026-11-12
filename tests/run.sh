@@ -78,6 +78,14 @@ if out="$("$PY" tests/test_driverstatus.py)"; then
   ok "test_driverstatus ($(printf '%s\n' "$out" | tail -1))"
 else printf '%s\n' "$out"; bad "test_driverstatus"; fi
 
+step "4g. diagram regression — unit tests and the committed PNGs against the baseline"
+if out="$("$PY" tests/test_diagrams.py)"; then
+  ok "test_diagrams ($(printf '%s\n' "$out" | tail -1))"
+else printf '%s\n' "$out"; bad "test_diagrams"; fi
+if out="$("$PY" tests/diagramcheck.py)"; then
+  ok "diagram baseline ($(printf '%s\n' "$out" | tail -1))"
+else printf '%s\n' "$out"; bad "diagram baseline"; fi
+
 step "5. example artifacts validate"
 if [ -d examples ]; then
   # drivers/ directories get the cross-file check + every file
@@ -210,6 +218,25 @@ EOF
     ok "render-plantuml.sh fails loudly and publishes nothing on a bad !include"
   fi
   rm -rf "$tmp"
+fi
+
+step "9. diagram regression — re-render every example diagram and compare with the baseline"
+# A renderer upgrade (Mermaid CLI, PlantUML, Graphviz) must not change what a diagram shows or
+# make its layout worse: same elements and words, no new crossings, overlaps or off-palette
+# colours. Each engine is checked when its toolchain is installed.
+if [ "$QUICK" = "1" ]; then
+  skip "(skipped: --quick)"
+else
+  for engine in mermaid plantuml; do
+    out="$("$PY" tests/diagramcheck.py --render "$engine" 2>&1)"; rc=$?
+    if [ "$rc" -eq 0 ]; then
+      ok "$engine renders match the baseline ($(printf '%s\n' "$out" | grep '^re-rendered'))"
+    elif [ "$rc" -eq 2 ]; then
+      skip "(skipped: no $engine toolchain)"
+    else
+      printf '%s\n' "$out" | grep -v '^note' ; bad "$engine renders match the baseline"
+    fi
+  done
 fi
 
 flush_step
