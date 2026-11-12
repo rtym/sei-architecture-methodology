@@ -28,8 +28,8 @@ if [ ! -f package.json ]; then
   "private": true,
   "description": "Local Mermaid CLI for the sei-diagrams skill",
   "dependencies": {
-    "@mermaid-js/mermaid-cli": "^12.0.0",
-    "@mermaid-js/layout-elk": "^1.0.1"
+    "@mermaid-js/mermaid-cli": "^12.2.0",
+    "@mermaid-js/layout-elk": "^1.0.2"
   }
 }
 JSON
