@@ -235,6 +235,27 @@ with tempfile.TemporaryDirectory() as td:
                         "--format", "html", "--out", str(work / "s.html")], cwd=work, capture_output=True, text=True)
     check("the bundled report builder finds its converter", r.returncode == 0 and (work / "s.html").is_file())
 
+    # the layout check runs from the diagrams skill and from another skill's copy of it; both
+    # must find the palette beside them (without it every fill would count as off-palette)
+    svg = work / "d.svg"
+    svg.write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">'
+                   '<g class="node" id="x-flowchart-a-0" transform="translate(60,100)"><rect x="-40" y="-20" width="80" height="40" style="fill:#EDF2F8;stroke:#3E6DA5"/></g>'
+                   '<g class="node" id="x-flowchart-b-1" transform="translate(300,100)"><rect x="-40" y="-20" width="80" height="40" style="fill:#E4F0E9;stroke:#3F7D5C"/></g>'
+                   '<path class="flowchart-link" data-id="L_a_b_0" d="M100,100 L260,100"/></svg>')
+    for where in ("sei-diagrams/scripts", "attribute-driven-design/related/sei-diagrams/scripts"):
+        lint = folder / "skills" / where / "diagramlint.py"
+        r = run(str(lint), str(svg))
+        check(f"the bundled diagramlint runs from {where.split('/')[0]} and finds the bundled palette",
+              lint.is_file() and r.returncode == 0 and "2 node(s), 1 edge(s)" in r.stdout
+              and "colours outside the SEI palette: none" in r.stdout)
+        for need in ("render.sh", "render-plantuml.sh"):
+            check(f"{where.split('/')[0]}: diagramlint has {need} beside it", (lint.parent / need).is_file())
+    svg.write_text(svg.read_text().replace("#EDF2F8", "#FF00FF"))
+    r = run(str(folder / "skills" / "sei-diagrams" / "scripts" / "diagramlint.py"), str(svg))
+    check("the bundled diagramlint reports an off-palette colour", r.returncode == 1 and "#FF00FF" in r.stdout)
+    check("the diagrams skill tells Claude to run the bundled diagramlint",
+          "${CLAUDE_SKILL_DIR}/scripts/diagramlint.py" in (folder / "skills" / "sei-diagrams" / "SKILL.md").read_text())
+
     with zipfile.ZipFile(archive) as z:
         names = z.namelist()
         check("the zip holds the plugin folder as its single top-level entry",

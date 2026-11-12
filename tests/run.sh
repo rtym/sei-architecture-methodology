@@ -220,6 +220,18 @@ EOF
   rm -rf "$tmp"
 fi
 
+step "8b. render script behaviour — render.sh, render-plantuml.sh, render-all.sh, diagramlint.py"
+if [ "$QUICK" = "1" ]; then
+  skip "(skipped: --quick)"
+else
+  out="$("$PY" tests/test_render.py)"; rc=$?
+  last="$(printf '%s\n' "$out" | tail -1)"
+  case "$last" in
+    *"no renderer installed"*) skip "(skipped: no renderer installed)" ;;
+    *) if [ "$rc" -eq 0 ]; then ok "test_render ($last)"; else printf '%s\n' "$out"; bad "test_render"; fi ;;
+  esac
+fi
+
 step "9. diagram regression — re-render every example diagram and compare with the baseline"
 # A renderer upgrade (Mermaid CLI, PlantUML, Graphviz) must not change what a diagram shows or
 # make its layout worse: same elements and words, no new crossings, overlaps or off-palette
