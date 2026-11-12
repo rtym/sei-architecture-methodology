@@ -21,4 +21,6 @@ Rel(api, db, "Reads / writes", "SQL/TLS")
 Rel(api, redis, "Cache + enqueue", "RESP/TLS")
 Rel(worker, redis, "Consume jobs", "RESP/TLS")
 Rel(worker, db, "Bulk insert", "SQL/TLS")
+' hidden layout link: stacks the two stores, so each service reaches both without a crossing
+Lay_D(db, redis)
 @enduml

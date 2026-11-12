@@ -389,6 +389,12 @@ with tempfile.TemporaryDirectory() as td:
               dc.render_errors([refs["ctx.png"]], base, {pkey: fresh(colours=["#f1f1f1"], style_colours=[])})))
     check("a PlantUML render needs no stylesheet colours",
           dc.render_errors([refs["ctx.png"]], base, {pkey: fresh(style_colours=[])}) == [])
+    seq = copy.deepcopy(base)
+    seq[key].update(participants=4, messages=7)
+    check("a renderer that does not tag sequence participants is not a structure change",
+          dc.render_errors(only, seq, {key: fresh()}) == [])
+    check("a sequence diagram that lost a message still fails",
+          any("messages = 6" in e for e in dc.render_errors(only, seq, {key: fresh(participants=4, messages=6)})))
     check("the same shape within tolerance passes", dc.render_errors(only, base, {key: fresh(aspect=4800 / 900 * 1.2)}) == [])
     check("a render that changed shape fails",
           any("changed shape" in e for e in dc.render_errors(only, base, {key: fresh(aspect=1.0)})))

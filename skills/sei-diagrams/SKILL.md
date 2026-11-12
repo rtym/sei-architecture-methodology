@@ -536,7 +536,9 @@ are dashed `<<…>>` dependencies, and there are no avoidable crossings — iter
   to on one side so its fan-in doesn't cross the middle.
 - **Stack two stores that two services share.** Two services that each use the same two stores
   always cross once when the stores sit side by side. An invisible link between the stores
-  (`db ~~~ cache`) puts one below the other, and each service then reaches both without a crossing.
+  (Mermaid `db ~~~ cache`, C4-PlantUML `Lay_D(db, cache)`) puts one below the other, and each
+  service then reaches both without a crossing — on every Graphviz version, not only the one
+  that happened to find that layout by itself.
 - **Prefer a hub over a mesh.** If N components all talk to each other, introduce a connector
   (event bus, gateway) — it's both truer to the architecture and far cleaner.
 - **≤ 10 nodes, ≤ ~15 edges.** Past that, split by concern into multiple diagrams and add a

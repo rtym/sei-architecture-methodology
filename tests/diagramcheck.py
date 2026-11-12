@@ -254,7 +254,12 @@ def render_errors(diagrams: list[Diagram], baseline: dict, results: dict) -> lis
             continue
         if b is None:
             continue                                    # the static check reports it
+        # PlantUML before 1.2026.10 does not tag a sequence diagram's participants and messages
+        # in its SVG; the words it shows still have to match.
+        untagged = b["participants"] and not got["participants"] and not got["nodes"]
         for k in STRUCTURE:
+            if untagged and k in ("participants", "messages"):
+                continue
             if got[k] != b[k]:
                 errs.append(f"{d.key}: a fresh render has {k} = {got[k]}, the approved one {b[k]}")
         for k, label in DEFECTS:
