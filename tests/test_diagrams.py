@@ -215,6 +215,64 @@ check("an extreme ribbon is a defect", dl.report("r.svg", ribbon, "plantuml")[1]
 tall = dl.measure(PLANTUML.replace('viewBox="0 0 600 300"', 'viewBox="0 0 300 3000"').replace("#F1F1F1", "#EDF2F8").replace("#181818", "#3E6DA5"))
 check("a tall ribbon is a defect too", dl.report("t.svg", tall, "plantuml")[1])
 
+# ----- text defects: labels on top of things, labels that do not fit, clipping -----
+check("a label mostly hidden by a box is covered", dl.cover_pairs([(0, 0, 10, 10)], [(5, 0, 50, 10)]) == [(0, 0)])
+check("a label that only touches a box is not covered", dl.cover_pairs([(0, 0, 10, 10)], [(9.5, 0, 50, 10)]) == [])
+check("two labels on top of each other are one pair",
+      dl.cover_pairs([(0, 0, 10, 10), (2, 2, 12, 12)], [(0, 0, 10, 10), (2, 2, 12, 12)], same=True) == [(0, 1)])
+check("a label is not compared with itself", dl.cover_pairs([(0, 0, 10, 10)], [(0, 0, 10, 10)], same=True) == [])
+
+LABEL = '''<g class="edgeLabel" transform="translate({x}, {y})"><g class="label" transform="translate(-30, -10)">
+  <foreignObject width="60" height="20"><div xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"><p>{text}</p></span></div></foreignObject></g></g>'''
+def with_labels(*labels):
+    return MERMAID.replace('<g class="nodes">', "".join(LABEL.format(x=x, y=y, text=s) for x, y, s in labels) + '<g class="nodes">')
+
+lm = dl.measure(with_labels((180, 80, "Reads rows")))
+check("an edge label in the open is counted and clean", lm["edge_labels"] == 1 and lm["label_overlaps"] == 0)
+lm = dl.measure(with_labels((30, 40, "Reads rows")))
+check("an edge label drawn on a node is a defect, named by its text",
+      lm["label_overlaps"] == 1 and lm["details"]["label_overlaps"][0].startswith('label "Reads rows"  covers node'))
+lm = dl.measure(with_labels((180, 80, "SQL"), (190, 84, "RESP")))
+check("two edge labels on top of each other are a defect",
+      lm["label_overlaps"] == 1 and 'label "SQL"  covers  label "RESP"' in lm["details"]["label_overlaps"][0])
+check("an edge without a label (zero-size box) is not a label",
+      dl.measure(with_labels((180, 80, "x")).replace('width="60" height="20"', 'width="0" height="0"'))["edge_labels"] == 0)
+wide = MERMAID.replace("<foreignObject>", '<foreignObject x="-80" y="-10" width="160" height="20">', 2)
+om = dl.measure(wide)
+check("a node label wider than its box overflows", om["overflow"] == 1 and "label does not fit its box" in om["details"]["overflow"][0])
+fits = MERMAID.replace("<foreignObject>", '<foreignObject x="-25" y="-10" width="50" height="20">', 2)
+check("a node label inside its box does not overflow", dl.measure(fits)["overflow"] == 0)
+cm = dl.measure(MERMAID.replace('transform="translate(330, 120)"', 'transform="translate(395, 120)"'))
+check("a node past the image edge is clipped", cm["clipped"] == 1 and "reaches past the image edge" in cm["details"]["clipped"][0])
+check("nodes inside the viewBox are not clipped", m["clipped"] == 0 and m["overflow"] == 0 and m["label_overlaps"] == 0)
+check("a viewBox that does not start at 0 is honoured",
+      dl.measure(MERMAID.replace('viewBox="0 0 400 200"', 'viewBox="-50 -20 450 220"'))["clipped"] == 0)
+
+pm = dl.measure(PLANTUML.replace('<text x="60" y="80" fill="#1F2933">Service</text>',
+                                 '<text x="60" y="80" font-size="14" textLength="140" fill="#1F2933">Service</text>'))
+check("PlantUML text longer than its rectangle overflows", pm["overflow"] == 1)
+pm = dl.measure(PLANTUML.replace('<text x="60" y="80" fill="#1F2933">Service</text>',
+                                 '<text x="60" y="80" font-size="14" textLength="40" fill="#1F2933">Service</text>'))
+check("PlantUML text inside its rectangle is fine", pm["overflow"] == 0)
+ACTOR = PLANTUML.replace('<g class="entity"><ellipse cx="450" cy="90" rx="60" ry="30"',
+                         '<g class="entity" data-qualified-name="user"><ellipse cx="450" cy="90" rx="10" ry="10"') \
+                .replace('<text x="420" y="90" fill="#1F2933">UC-1</text>',
+                         '<text x="400" y="130" font-size="14" textLength="110" fill="#1F2933">Registered user</text>')
+check("an actor's name below its figure is not an overflow", dl.measure(ACTOR)["overflow"] == 0)
+pm = dl.measure(PLANTUML.replace('<text x="200" y="80" fill="#1F2933">Uses</text>',
+                                 '<text x="40" y="95" font-size="14" textLength="60" fill="#1F2933">Uses</text>'))
+check("a PlantUML link label on an entity is a defect", pm["label_overlaps"] == 1 and pm["edge_labels"] == 1)
+
+for cls, kind in (("transition", "state"), ("relation", "class"), ("relationshipLine", "ER")):
+    other = MERMAID.replace("edge-thickness-normal flowchart-link", f"edge-thickness-normal edge-pattern-solid {cls}")
+    check(f"a Mermaid {kind} diagram's edges are measured", dl.measure(other)["edges"] == 2 and dl.measure(other)["crossings"] == 1)
+
+EMPTY = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><g class="section"><rect x="0" y="0" width="50" height="20"/></g></svg>'
+check("an SVG with nothing recognisable is not measured", not dl.measured(dl.measure(EMPTY)) and dl.measured(m) and dl.measured(s))
+lines, bad = dl.report("gantt.svg", dl.measure(EMPTY), "mermaid")
+check("an unsupported diagram is reported as not measured, never as OK",
+      not bad and "NOT measured" in lines[-1] and not any(ln.strip() == "OK" for ln in lines))
+
 # --------------------------------------------------------------------------- #
 # Palette
 # --------------------------------------------------------------------------- #
@@ -422,8 +480,46 @@ with tempfile.TemporaryDirectory() as td:
     broken = Path(td) / "broken.svg"
     broken.write_text("<svg><g></svg>")
     check("malformed SVG exits 2, not a traceback", lint(str(broken))[0] == 2 and "not well-formed" in lint(str(broken))[2])
+    gantt = Path(td) / "gantt.svg"
+    gantt.write_text(EMPTY)
+    rc, out, _ = lint(str(gantt))
+    check("an unsupported diagram type exits 2 and says so", rc == 2 and "NOT measured" in out)
+    check("a defect outranks an unsupported file in the exit code", lint(str(gantt), str(svg))[0] == 1)
     check("no arguments exits 2 with the usage", lint()[0] == 2 and "diagramlint.py FILE" in lint()[1])
     check("--help exits 0", lint("--help")[0] == 0)
+
+# ----- the patterns a skill teaches -----
+with tempfile.TemporaryDirectory() as td:
+    tpl = Path(td) / "templates" / "t.md"
+    tpl.parent.mkdir(parents=True)
+    tpl.write_text("# T\n\n```mermaid\nflowchart LR\n  a[\"<SystemName><br/><i>tech</i>\"] --> b\n```\n\n"
+                   "```plantuml\n@startuml\nA ..> B : <<include>>\n@enduml\n```\n\n```bash\necho no\n```\n")
+    for sub in ("skills", "references", "commands"):
+        (Path(td) / sub).mkdir()
+    found = dc.taught(Path(td))
+    check("every fenced diagram is a taught pattern; other fences are not", [d.engine for d in found] == ["mermaid", "plantuml"])
+    check("a pattern is named by its file and line", found[0].ref.endswith("templates/t.md:3") and found[1].ref.endswith(":8"))
+    check("a <placeholder> becomes plain words; <br/>, <i> and <<stereotypes>> stay",
+          'a["SystemName<br/><i>tech</i>"]' in found[0].source and "<<include>>" in found[1].source)
+    ok_m = {**metrics, "details": {k: [] for k, _ in dl.DEFECTS}, "nodes": 2, "participants": 0, "colours": []}
+    k0 = found[0].key
+    check("a clean pattern passes", dc.pattern_errors(found[:1], {k0: ok_m}) == [])
+    check("a pattern that does not compile fails", dc.pattern_errors(found[:1], {k0: "t.md:3: render failed"}) == ["t.md:3: render failed"])
+    bad_m = {**ok_m, "crossings": 1, "details": {**ok_m["details"], "crossings": ["edge a_b  ×  edge c_d"]}}
+    check("a pattern with a crossing fails and names it",
+          any("1 edge crossing(s): edge a_b" in e for e in dc.pattern_errors(found[:1], {k0: bad_m})))
+    check("a pattern with an off-palette colour fails",
+          any("outside the SEI palette: #ABCDEF" in e for e in dc.pattern_errors(found[:1], {k0: {**ok_m, "colours": ["#ABCDEF"]}})))
+    check("a pattern that renders nothing measurable fails",
+          any("nothing diagramlint.py can measure" in e for e in dc.pattern_errors(found[:1], {k0: {**ok_m, "nodes": 0}})))
+    c4 = dc.Diagram(tpl, "mermaid", "C4Context\n  Person(u, \"User\")\n", "t.md:1")
+    check("Mermaid's native C4 sketch is exempt from the palette only",
+          dc.pattern_errors([c4], {c4.key: {**ok_m, "colours": ["#08427B"]}}) == []
+          and dc.pattern_errors([c4], {c4.key: {**bad_m, "colours": ["#08427B"]}}) != [])
+patterns = dc.taught()
+check("the plugin teaches patterns in both notations",
+      sum(d.engine == "mermaid" for d in patterns) >= 15 and sum(d.engine == "plantuml" for d in patterns) >= 4)
+check("every taught pattern has a distinct reference", len({d.ref for d in patterns}) == len(patterns))
 
 check("an unknown option exits 2", run(["--bogus"])[0] == 2)
 check("an unknown engine exits 2", run(["--render", "graphviz"])[0] == 2)

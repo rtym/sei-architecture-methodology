@@ -17,6 +17,8 @@ render), when a PNG changed without the baseline being updated, or when a PNG lo
 The render check needs the toolchain. It fails when a fresh render shows different elements or
 words than the approved one, has more crossings, overlaps or run-through edges, uses a colour
 outside the SEI palette, or changes shape. A renderer upgrade that degrades a diagram fails here.
+It also renders every diagram pattern a skill, template or reference teaches: each must compile
+and be free of the same defects, because a pattern is what Claude copies into a project.
 
 After changing a diagram on purpose: re-render it, open the PNG, then run `--update`.
 
@@ -178,6 +180,48 @@ def render_all(diagrams: list[Diagram], workers: int = 4) -> dict[str, dict | st
             return dict(pool.map(one, enumerate(diagrams)))
 
 
+PLACEHOLDER_RE = re.compile(r"<(?!/?(?:br|i|b)\b)(?!<)([A-Za-z][^<>\n]*)>(?!>)")
+
+
+def taught(root: Path = ROOT) -> list[Diagram]:
+    """Every fenced diagram in a skill, template, reference or command — the patterns Claude
+    copies into a project. A template's `<placeholder>` is replaced by its own words so the
+    pattern compiles; the PNG path is only a label."""
+    out = []
+    for sub in ("skills", "templates", "references", "commands"):
+        for md in sorted((root / sub).rglob("*.md")):
+            if "node_modules" in md.parts:
+                continue
+            text = md.read_text(encoding="utf-8")
+            for m in FENCE_RE.finditer(text):
+                line = text[:m.start()].count("\n") + 1
+                engine = "mermaid" if m.group(1) == "mermaid" else "plantuml"
+                out.append(Diagram(md.with_name(f"{md.name}:{line}"), engine,
+                                   PLACEHOLDER_RE.sub(lambda x: x.group(1), m.group(2)), f"{_rel(md)}:{line}"))
+    return out
+
+
+def pattern_errors(patterns: list[Diagram], results: dict) -> list[str]:
+    """A taught pattern must compile and be free of every counted defect."""
+    errs = []
+    for d in patterns:
+        got = results[d.key]
+        if isinstance(got, str):
+            errs.append(got)
+            continue
+        if not lint.measured(got):
+            errs.append(f"{d.ref}: the pattern renders nothing diagramlint.py can measure")
+        for k, label in DEFECTS:
+            if got[k]:
+                errs.append(f"{d.ref}: the pattern renders with {got[k]} {label}: {'; '.join(got['details'][k])}")
+        # Mermaid's native C4 diagrams ignore the theme; the skill shows them as chat sketches only
+        native_c4 = d.source.lstrip().startswith("C4")
+        extra = [] if native_c4 else off_palette(got, d.engine)
+        if extra:
+            errs.append(f"{d.ref}: the pattern renders colour(s) outside the SEI palette: {', '.join(extra)}")
+    return errs
+
+
 def have_toolchain(engine: str) -> bool:
     if engine == "mermaid":
         return (ROOT / "skills/sei-diagrams/node_modules/.bin/mmdc").is_file() or bool(shutil.which("mmdc"))
@@ -315,7 +359,9 @@ def main(argv: list[str] | None = None) -> int:
         if engines:
             todo = [d for d in diagrams if d.engine in engines]
             errs += render_errors(todo, baseline, render_all(todo))
-            print(f"re-rendered {len(todo)} {' + '.join(engines)} diagram(s)")
+            patterns = [d for d in taught() if d.engine in engines]
+            errs += pattern_errors(patterns, render_all(patterns))
+            print(f"re-rendered {len(todo)} {' + '.join(engines)} diagram(s) and {len(patterns)} taught pattern(s)")
     for note in accepted_defects(baseline):
         print(f"note  {note} (accepted in the baseline)")
     for e in errs:

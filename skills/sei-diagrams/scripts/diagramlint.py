@@ -9,15 +9,20 @@ For each diagram it prints the elements it found and four defects, each named so
   crossings     pairs of edges that cross away from a node they share
   overlaps      pairs of nodes whose boxes overlap
   run-through   edges drawn across a node they do not connect to
+  label cover   edge labels drawn on top of a node or of another edge label
+  overflow      node labels wider or taller than their box
+  clipped       nodes or labels that reach past the image edge
   off-palette   colours on shapes that the SEI palette does not define
 
-and warns when the image is an extreme ribbon (longer side over 8× the shorter). The counts are
-exact for Mermaid flowcharts and PlantUML component / use case / C4 diagrams; a sequence diagram
-has no graph layout, so only its colours and shape are checked. The check does not replace
-opening the PNG — it cannot tell a truncated label or a wrong arrow — it makes the crossing count
-a number instead of an impression.
+and warns when the image is an extreme ribbon (longer side over 8× the shorter). It measures
+Mermaid flowchart, state, class and ER diagrams and PlantUML component / use case / class / C4
+diagrams. A sequence diagram has no graph layout, so only its colours and shape are checked. For
+any other diagram type it says the layout was not measured and exits 2, instead of reporting a
+clean result it did not check. The check does not replace opening the PNG — it cannot tell a
+wrong arrow or a missing element — it makes the counts numbers instead of impressions.
 
-Exit codes: 0 no defects, 1 defects found, 2 usage error, missing file or missing renderer.
+Exit codes: 0 no defects, 1 defects found, 2 usage error, missing file, missing renderer or a
+diagram type whose layout it cannot measure.
 """
 from __future__ import annotations
 
@@ -46,7 +51,10 @@ MERMAID_THEME_MARKS = {"#EDF2F8", "#3E6DA5", "#6B7A8D"}
 MERMAID_INERT = {"#EAEAEA", "#666666", "#999999"}
 MAX_ASPECT = 8.0            # longer side / shorter side; beyond this the diagram is a ribbon
 DEFECTS = (("crossings", "edge crossing(s)"), ("overlaps", "overlapping node pair(s)"),
-           ("run_through", "edge(s) drawn through an unrelated node"))
+           ("run_through", "edge(s) drawn through an unrelated node"),
+           ("label_overlaps", "edge label(s) on top of a node or another label"),
+           ("overflow", "label(s) wider or taller than their box"),
+           ("clipped", "element(s) cut off at the image edge"))
 
 
 def sha(text: str | bytes) -> str:
@@ -161,7 +169,8 @@ def _shape_points(el: ET.Element) -> list[tuple[float, float]]:
 
 
 NODE_CLASSES = {"node", "entity"}                       # Mermaid flowchart, PlantUML
-EDGE_PATH_CLASSES = {"flowchart-link"}                  # Mermaid: the class sits on the <path>
+# Mermaid: the class sits on the <path> — flowchart, state, class and ER diagrams
+EDGE_PATH_CLASSES = {"flowchart-link", "transition", "relation", "relationshipLine"}
 EDGE_GROUP_CLASSES = {"link"}                           # PlantUML: a <g> holding path + arrowhead
 PARTICIPANT_CLASSES = {"actor-top", "participant-head"}  # sequence diagrams
 MESSAGE_CLASSES = {"messageLine0", "messageLine1", "message"}
@@ -176,6 +185,9 @@ def measure(svg: str) -> dict:
     node_names: list[str] = []
     edge_names: list[str] = []
     counts = {"clusters": 0, "participants": 0, "messages": 0}
+    labels: list[tuple[float, float, float, float]] = []     # edge-label boxes
+    label_names: list[str] = []
+    overflow: list[str] = []
     words: list[str] = []
     colours: set[str] = set()
 
@@ -198,6 +210,34 @@ def measure(svg: str) -> dict:
         xs, ys = [p[0] for p in pts], [p[1] for p in pts]
         return (min(xs), min(ys), max(xs), max(ys))
 
+    def text_boxes(el: ET.Element, tx: float, ty: float) -> list[tuple[float, float, float, float]]:
+        """Boxes of the text drawn under `el`: Mermaid HTML labels (foreignObject) and SVG <text>
+        that states its length (PlantUML)."""
+        out = []
+        dx, dy = _translate(el)
+        tx, ty = tx + dx, ty + dy
+        tag = _tag(el)
+        if tag == "foreignObject":
+            w, h = _f(el, "width"), _f(el, "height")
+            if w > 0 and h > 0:
+                x, y = _f(el, "x") + tx, _f(el, "y") + ty
+                out.append((x, y, x + w, y + h))
+            return out
+        if tag == "text" and el.get("textLength"):
+            x, y, w, size = _f(el, "x") + tx, _f(el, "y") + ty, _f(el, "textLength"), _f(el, "font-size") or 14.0
+            out.append((x, y - 0.8 * size, x + w, y + 0.2 * size))
+            return out
+        for c in el:
+            out.extend(text_boxes(c, tx, ty))
+        return out
+
+    def union(boxes):
+        return (min(b[0] for b in boxes), min(b[1] for b in boxes),
+                max(b[2] for b in boxes), max(b[3] for b in boxes)) if boxes else None
+
+    def said(el: ET.Element) -> str:
+        return " ".join(" ".join(el.itertext()).split())[:40] or "?"
+
     def walk(el: ET.Element, tx: float, ty: float, in_node: bool) -> None:
         tag, cls = _tag(el), _classes(el)
         if tag in ("style", "defs", "marker", "title", "desc"):
@@ -214,6 +254,13 @@ def measure(svg: str) -> dict:
             if box:
                 nodes.append(box)
                 node_names.append(_node_name(el))
+                # a label must fit its box; only boxes are checked (an actor's name sits below it)
+                boxed = any(_tag(e) == "rect" for e in el.iter()) or "data-qualified-name" not in el.attrib
+                text = union([b for c in el for b in text_boxes(c, tx, ty)])
+                slack = 0.04 * max(box[2] - box[0], box[3] - box[1]) + 2
+                if boxed and text and (text[0] < box[0] - slack or text[2] > box[2] + slack
+                                       or text[1] < box[1] - slack or text[3] > box[3] + slack):
+                    overflow.append(f"{_node_name(el)}  label does not fit its box")
             in_node = True
         elif tag == "path" and cls & EDGE_PATH_CLASSES:
             pts = [(x + tx, y + ty) for x, y in path_points(el.get("d", ""))]
@@ -228,6 +275,15 @@ def measure(svg: str) -> dict:
                         edges.append(pts)
                         edge_names.append(_edge_name(c))
                     break
+            box = union([b for c in el for b in text_boxes(c, tx, ty)])
+            if box:
+                labels.append(box)
+                label_names.append(f'label "{said(el)}"')
+        elif tag == "g" and "edgeLabel" in cls:
+            box = union([b for c in el for b in text_boxes(c, tx, ty)])
+            if box:
+                labels.append(box)
+                label_names.append(f'label "{said(el)}"')
         if cls & {"cluster"}:
             counts["clusters"] += 1
         if cls & PARTICIPANT_CLASSES:
@@ -240,20 +296,34 @@ def measure(svg: str) -> dict:
                 words.extend(c.tail.split())
 
     walk(root, 0.0, 0.0, False)
-    box = re.findall(_NUM, root.get("viewBox", ""))
-    width, height = (float(box[2]), float(box[3])) if len(box) == 4 else (0.0, 0.0)
+    box = [float(n) for n in re.findall(_NUM, root.get("viewBox", ""))]
+    width, height = (box[2], box[3]) if len(box) == 4 else (0.0, 0.0)
     near = 0.02 * math.hypot(width, height) if width and height else 10.0
     style = " ".join(e.text or "" for e in root.iter() if _tag(e) == "style")
     crossed = crossing_pairs(edges, near)
     overlapped = overlap_pairs(nodes)
     through = run_through_pairs(edges, nodes, near)
+    covered = [f"{label_names[i]}  covers node  {node_names[j]}" for i, j in cover_pairs(labels, nodes)] + \
+              [f"{label_names[i]}  covers  {label_names[j]}" for i, j in cover_pairs(labels, labels, same=True)]
+    clipped = []
+    if len(box) == 4:
+        edge = 0.01 * max(width, height)
+        for name, (x0, y0, x1, y1) in [*zip(node_names, nodes), *zip(label_names, labels)]:
+            if x0 < box[0] - edge or y0 < box[1] - edge or x1 > box[0] + width + edge or y1 > box[1] + height + edge:
+                clipped.append(f"{name}  reaches past the image edge")
     return {
-        "nodes": len(nodes), "edges": len(edges), **counts,
+        "nodes": len(nodes), "edges": len(edges), "edge_labels": len(labels), **counts,
         "words": len(words), "words_sha": sha(" ".join(sorted(words))),
         "crossings": len(crossed),
         "overlaps": len(overlapped),
         "run_through": len(through),
+        "label_overlaps": len(covered),
+        "overflow": len(overflow),
+        "clipped": len(clipped),
         "details": {
+            "label_overlaps": covered,
+            "overflow": overflow,
+            "clipped": clipped,
             "crossings": [f"{edge_names[i]}  ×  {edge_names[j]}" for i, j in crossed],
             "overlaps": [f"{node_names[i]}  overlaps  {node_names[j]}" for i, j in overlapped],
             "run_through": [f"{edge_names[i]}  crosses node  {node_names[j]}" for i, j in through],
@@ -307,6 +377,23 @@ def overlaps(nodes) -> int:
 
 def run_through(edges, nodes, near: float) -> int:
     return len(run_through_pairs(edges, nodes, near))
+
+
+def cover_pairs(labels, boxes, same: bool = False) -> list[tuple[int, int]]:
+    """(label, box) pairs where the box hides more than 15 % of the label. With `same`, the boxes
+    are the labels themselves and each pair is reported once."""
+    pairs = []
+    for i, a in enumerate(labels):
+        area = (a[2] - a[0]) * (a[3] - a[1])
+        for j, b in enumerate(boxes):
+            if same and j <= i:
+                continue
+            w = min(a[2], b[2]) - max(a[0], b[0])
+            h = min(a[3], b[3]) - max(a[1], b[1])
+            small = min(area, (b[2] - b[0]) * (b[3] - b[1])) if same else area
+            if w > 0 and h > 0 and small > 0 and w * h > 0.15 * small:
+                pairs.append((i, j))
+    return pairs
 
 
 def crossing_pairs(edges: list[list[tuple[float, float]]], near: float) -> list[tuple[int, int]]:
@@ -438,9 +525,17 @@ def render_svg(source: Path, work: Path) -> str:
     return svgs[0].read_text(encoding="utf-8")
 
 
+def measured(m: dict) -> bool:
+    """False when the SVG holds nothing this script recognises (an unsupported diagram type)."""
+    return bool(m["nodes"] or m["participants"])
+
+
 def report(name: str, m: dict, engine: str) -> tuple[list[str], bool]:
     """The lines to print for one diagram, and whether it has a defect."""
     lines = [name]
+    if not measured(m):
+        return lines + ["  layout NOT measured: no nodes found — this diagram type is not supported; "
+                        "check it by eye"], False
     if m["participants"]:
         lines.append(f"  sequence diagram: {m['participants']} participant(s), {m['messages']} message(s)")
     else:
@@ -471,7 +566,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args or args[0] in ("-h", "--help"):
         print(__doc__.strip())
         return 0 if args else 2
-    bad = False
+    bad = unsupported = False
     with tempfile.TemporaryDirectory() as td:
         for n, arg in enumerate(args):
             path = Path(arg)
@@ -497,7 +592,8 @@ def main(argv: list[str] | None = None) -> int:
             lines, defect = report(arg, m, engine_of(svg))
             print("\n".join(lines))
             bad = bad or defect
-    return 1 if bad else 0
+            unsupported = unsupported or not measured(m)
+    return 1 if bad else 2 if unsupported else 0
 
 
 if __name__ == "__main__":
