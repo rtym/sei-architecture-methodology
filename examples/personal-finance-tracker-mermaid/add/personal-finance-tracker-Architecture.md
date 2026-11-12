@@ -259,6 +259,8 @@ flowchart TB
   api -->|"RESP / TLS"| cache
   worker -->|"RESP / TLS"| cache
   worker -->|"SQL / TLS"| db
+  %% invisible link (~~~): stacks the two stores, so each service reaches both without a crossing
+  db ~~~ cache
   classDef internal fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
   class spa,api,worker internal

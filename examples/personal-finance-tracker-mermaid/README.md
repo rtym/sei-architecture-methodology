@@ -57,15 +57,13 @@ bash skills/sei-diagrams/scripts/setup.sh          # one-time (Mermaid renderer)
 
 EX=examples/personal-finance-tracker-mermaid
 
-# every standalone .mmd in the tree (drivers, QAW, docs legend), rendered beside its source
+# every diagram in the tree, rendered to the PNG its document shows: the standalone .mmd files
+# (drivers, QAW, docs legend) beside their source, and the Mermaid blocks embedded in the ADD
+# architecture and the docs views (a `%% name:` names the PNG; other blocks are numbered)
 bash scripts/render-all.sh $EX
 
-# ADD architecture views (each block carries a `%% name:` so the PNGs are context.png, container.png, …)
-bash skills/sei-diagrams/scripts/render.sh --out $EX/diagrams \
-  $EX/add/personal-finance-tracker-Architecture.md
-
-# docs view diagrams (blocks named with `%% name:` keep their file name; others are numbered)
-for f in $EX/docs/*.md; do bash skills/sei-diagrams/scripts/render.sh --out $EX/docs/diagrams "$f"; done
+# check the layout of every standalone source: crossings, overlaps, palette
+python3 skills/sei-diagrams/scripts/diagramlint.py $(find $EX -name '*.mmd')
 
 # combined report
 scripts/build-report.sh \

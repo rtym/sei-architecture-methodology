@@ -158,6 +158,34 @@ def main() -> int:
         check(rc == 0 and "Views-and-Beyond architecture description" in (root / "vb.html").read_text(),
               "cli: --profile vandb supplies the V&B subtitle")
 
+    # The examples' committed Markdown reports are what a fresh build gives (the HTML twins embed
+    # the same content), so a source edited without regenerating the reports fails here.
+    import re
+    import shutil
+    for ex in sorted((ROOT / "examples").iterdir()):
+        if not (ex / "reports").is_dir():
+            continue
+        with tempfile.TemporaryDirectory() as td:
+            work = Path(td) / ex.name
+            shutil.copytree(ex, work, ignore=shutil.ignore_patterns("reports", "*.png", "*.html"))
+            builds = (
+                ("architecture-package.md", "Personal Finance Tracker — Architecture Package",
+                 [work / "drivers" / "README.md", *sorted((work / "add").glob("*-Architecture.md"))]),
+                ("vandb-architecture-description.md", "Architecture Description — Personal Finance Tracker",
+                 ["--profile", "vandb", work / "docs"]),
+            )
+            for name, title, inputs in builds:
+                rc, _, _ = cli(*inputs, "--format", "md", "--title", title, "--out", work / "reports" / name)
+                fresh = (work / "reports" / name).read_text(encoding="utf-8") if rc == 0 else ""
+                dated = re.compile(r"^> Generated \d{4}-\d{2}-\d{2}", re.MULTILINE)
+                same = dated.sub("> Generated", fresh) == dated.sub("> Generated", (ex / "reports" / name).read_text(encoding="utf-8"))
+                check(rc == 0 and same, f"example report {ex.name}/reports/{name} matches a fresh build "
+                                        "(regenerate it with the commands in the example README)")
+            for name, _, _ in builds:
+                html = (ex / "reports" / name).with_suffix(".html")
+                check(html.is_file() and "<img" in html.read_text(encoding="utf-8"),
+                      f"example report {ex.name}/reports/{html.name} exists with its diagrams embedded")
+
     print()
     if FAILS:
         print(f"{len(FAILS)} failure(s)")

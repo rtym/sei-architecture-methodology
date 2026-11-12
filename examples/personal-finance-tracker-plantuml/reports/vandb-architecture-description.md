@@ -2,7 +2,7 @@
 
 _Views-and-Beyond architecture description_
 
-> Generated 2026-11-07 · 10 source file(s)
+> Generated 2026-11-12 · 10 source file(s)
 
 ## Contents
 
