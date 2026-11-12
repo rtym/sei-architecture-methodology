@@ -86,6 +86,21 @@ check("the ID can be looked up in another column (utility-tree leaves)",
 check("an ID in another column is ignored when looking in the first",
       driverstatus.set_table_status(leaf, "SQA-1", "at risk")[1] is False)
 
+escaped = ("| ID | Note | Status |\n|----|------|--------|\n| UC-1 | a \\| b | open |\n")
+check("an escaped pipe inside a cell does not shift the Status column",
+      driverstatus.set_table_status(escaped, "UC-1", "addressed")[0]
+      == "| ID | Note | Status |\n|----|------|--------|\n| UC-1 | a \\| b | addressed |\n")
+two = TABLE + "\n| ID | Status |\n|---|---|\n| UC-1 | open |\n"
+check("every table that lists the driver is updated", driverstatus.set_table_status(two, "UC-1", "retired")[0].count("| retired |") == 2)
+check("a status with a detail replaces the whole old value",
+      driverstatus.STATUS_LINE.sub(lambda m: m.group(1) + "open", "- **Status**: at risk (ATAM R-1, R-2)\n") == "- **Status**: open\n")
+check("setting a status keeps the blank line that follows the bullet",
+      driverstatus.STATUS_LINE.sub(lambda m: m.group(1) + "addressed", "- **Status**: open  \n\n## Next\n")
+      == "- **Status**: addressed\n\n## Next\n")
+check("a longer ID with the same prefix is not matched (UC-1 vs UC-12, SQA-1 vs PSQA-1)",
+      driverstatus.set_table_status("| ID | Status |\n|---|---|\n| UC-12 | open |\n| PSQA-1 | open |\n", "UC-1", "retired")[1] is False
+      and driverstatus.set_table_status("| ID | Status |\n|---|---|\n| PSQA-1 | open |\n", "SQA-1", "retired")[1] is False)
+
 # --------------------------------------------------------------------------- #
 # Against a copy of the worked example's register
 # --------------------------------------------------------------------------- #
@@ -101,6 +116,11 @@ with tempfile.TemporaryDirectory() as td:
     check("plan writes nothing", "addressed" not in (d / "quality-attributes/PQA-1.md").read_text())
     rc, out, _ = run([str(d), "PQA-1", "addressed", "--detail", "ADD iteration 2 load test"])
     check("the CLI writes and exits 0", rc == 0 and out.count("updated") == 4)
+    old = (EXAMPLE / "quality-attributes/PQA-1.md").read_text().splitlines()
+    new = (d / "quality-attributes/PQA-1.md").read_text().splitlines()
+    check("only the Status line of the driver file changes",
+          len(old) == len(new) and [i for i, (a, b) in enumerate(zip(old, new)) if a != b]
+          == [i for i, ln in enumerate(old) if ln.startswith("- **Status**")])
     check("the driver file carries the detail",
           "- **Status**: addressed (ADD iteration 2 load test)" in (d / "quality-attributes/PQA-1.md").read_text())
     check("the index tables carry the bare status",
@@ -120,6 +140,10 @@ with tempfile.TemporaryDirectory() as td:
     check("a business goal lands in its file and its index; the matrix does not list goals",
           rc == 0 and out.count("updated") == 2
           and "- **Status**: retired" in (d / "business-goals/BG-3.md").read_text() and status_errors(d) == [])
+    for rel in ("use-cases/UC-2.md", "business-goals/BG-3.md", "constraints/CON-2.md"):
+        check(f"the blank line after the Status bullet survives in {rel}",
+              len((d / rel).read_text().splitlines()) == len((EXAMPLE / rel).read_text().splitlines())
+              and (d / rel).read_text().count("\n\n") == (EXAMPLE / rel).read_text().count("\n\n"))
     rc, out, _ = run([str(d), "AC-1", "addressed"])
     check("a concern is set in its file and its index", rc == 0 and out.count("updated") == 2)
 

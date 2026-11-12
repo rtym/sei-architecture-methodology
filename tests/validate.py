@@ -926,6 +926,17 @@ def headerless_tables(text: str) -> list[int]:
     return bad
 
 
+def crowded_headings(text: str) -> list[int]:
+    """1-based line numbers of headings with text on the line directly above — a section glued to
+    the end of the previous one (what a careless find-and-replace on a header bullet leaves).
+    A heading directly under its parent heading is fine."""
+    lines = re.sub(r"<!--.*?-->", lambda m: "\n" * m.group(0).count("\n"),
+                   _FENCE_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text), flags=re.DOTALL).splitlines()
+    return [i + 1 for i in range(1, len(lines))
+            if re.match(r"^#{1,6} \S", lines[i]) and lines[i - 1].strip()
+            and not re.match(r"^#{1,6} \S", lines[i - 1])]
+
+
 def template_meta_errors(path: Path) -> list[str]:
     """Self-description in a template's visible text is copied into every artifact made from it;
     instructions to the writer belong in HTML comments."""
@@ -1025,6 +1036,8 @@ def prose_errors(path: Path) -> list[str]:
                     f"(references/writing-style.md)")
     for n in headerless_tables(text):
         errs.append(f"line {n}: table rows without a header separator — they render as plain text")
+    for n in crowded_headings(text):
+        errs.append(f"line {n}: heading has no blank line above it")
     # duplicated '- **Key**:' bullets in the header block (before the first '## ') are
     # copy-paste bugs: one Date, one Status, one Owner …
     head = text.split("\n## ", 1)[0]

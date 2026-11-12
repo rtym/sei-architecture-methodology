@@ -666,6 +666,13 @@ check("a report that never says its raw scenarios are kept verbatim is flagged",
 # Generic artifact rules added in the example review
 # --------------------------------------------------------------------------- #
 
+check("a heading after a blank line is fine", validate.crowded_headings("# T\n\n- **Status**: open\n\n## Next\n") == [])
+check("a heading glued to the bullet above it is caught",
+      validate.crowded_headings("# T\n\n- **Status**: open\n## Next\n") == [4])
+check("a heading directly under its parent heading is fine", validate.crowded_headings("# T\n## Sub\n### Deeper\n") == [])
+check("a '#' line inside a code fence is not a heading", validate.crowded_headings("text\n```bash\necho\n# comment\n```\n") == [])
+check("a '#' line inside an HTML comment is not a heading", validate.crowded_headings("text\n<!-- note\n# not a heading\n-->\n") == [])
+check("a hashtag without a space is not a heading", validate.crowded_headings("text\n#tag\n") == [])
 check("a table with its separator renders", validate.headerless_tables("| a | b |\n|---|---|\n| 1 | 2 |\n") == [])
 check("a header line with no separator is flagged at its line",
       validate.headerless_tables("x\n\n| a | b |\n\ny\n") == [3])
