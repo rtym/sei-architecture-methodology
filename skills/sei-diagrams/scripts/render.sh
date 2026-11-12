@@ -170,7 +170,13 @@ echo "render: theme=$(basename "$THEME") format=$FORMAT size=$SIZE scale=$SCALE 
 for t in "${TARGETS[@]}"; do
   # allow unquoted globs passed as a single quoted string
   if [[ "$t" == *"*"* ]]; then
-    for g in $t; do process "$g"; done
+    # compgen expands the pattern without word-splitting, so a directory name with a space works
+    matched=0
+    while IFS= read -r g; do matched=1; process "$g"; done < <(compgen -G "$t")
+    if [ "$matched" -eq 0 ]; then
+      echo "  skip $t (no file matches)" >&2
+      failed=$((failed + 1))
+    fi
   else
     process "$t"
   fi
