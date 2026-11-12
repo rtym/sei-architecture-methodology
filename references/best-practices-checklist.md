@@ -12,8 +12,9 @@ runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated 
 - [ ] Every ID follows the scheme: `BG-`, `UC-`, `CON-`, `<ATTR>QA-` (never flat `QAS-`).
 - [ ] IDs are sequential within their prefix and never reused or renumbered.
 - [ ] Every claim, decision, risk, or analysis row cites ≥ 1 driver ID.
-- [ ] Every diagram: rendered to PNG, opened with `Read`, and visually verified — correctness
-      and minimal edge crossings — before being embedded.
+- [ ] Every diagram: rendered to PNG, measured with `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/diagramlint.py`
+      (crossings, overlaps, edges through a node, palette), opened with `Read`, and visually
+      verified — correctness and minimal edge crossings — before being embedded.
 - [ ] No TODO / `<placeholder>` / empty table left in a "finished" artifact.
 
 ## "Good architecture" rules of thumb (apply to any design or review — see `architecture-fundamentals.md`)

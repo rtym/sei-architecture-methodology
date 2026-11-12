@@ -19,6 +19,7 @@ one curated palette. Then render them to PNG.
 - Rendered output: `architecture/diagrams/*.png`.
 - Theme + palette: `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/mermaid-theme.json`, `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/palette.md`, `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/plantuml-theme.puml`.
 - Renderers: `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh` (Mermaid), `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh` (PlantUML), `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/setup.sh`.
+- Layout check: `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/diagramlint.py` — counts edge crossings, overlapping nodes, edges drawn through a node, and off-palette colours in a render.
 
 ## Notation
 
@@ -53,15 +54,27 @@ syntax and the render script differ.
    - Mermaid: `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/diagrams/<name>.mmd`
      (first run: `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/setup.sh`).
    - PlantUML: `bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh architecture/diagrams/<name>.puml`.
-5. **Visually cross-verify** — mandatory, same for both notations. `Read` the generated PNG and
-   check it against the verification checklist below. If it fails, fix the source and go back to
+5. **Measure, then visually cross-verify** — mandatory, same for both notations. Run
+   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/diagramlint.py architecture/diagrams/<name>.mmd` (or `.puml`) for the counted
+   defects, then `Read` the generated PNG and
+   check it against the verification checklist below. If either fails, fix the source and go back to
    step 4. Only a PNG that passes may be embedded in a document or handed to the user.
 6. Report the PNG path. Re-render **and re-verify** whenever the source changes.
 
 ## Visual verification (mandatory after every render)
 
-After `render.sh` produces the PNG, open it with the `Read` tool and look at the actual image.
-Walk this checklist explicitly and state the result:
+**First measure it.** `python3 ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/diagramlint.py <source or .svg> […]` renders the source to
+SVG and counts what the *Legibility* list below asks about — crossings, overlapping nodes, edges
+drawn through an unrelated node, colours outside the palette, an extreme ribbon — and names each
+one (`edge api_db × edge worker_cache`), so you know which line of the source to change. It exits
+1 while a defect remains. Report its counts; do not estimate a crossing count by eye when the
+script can count it. A crossing may stay only when no ordering removes it (two services that each
+use the same two stores always cross once in a layered layout) — say so when you keep one. For a
+sequence diagram it checks colours and shape only.
+
+**Then look at it.** The script cannot see a truncated label, a wrong arrow direction or a
+missing element. After the render script produces the PNG, open it with the `Read` tool and look
+at the actual image. Walk this checklist explicitly and state the result:
 
 **Correctness**
 - Every element and relationship from the source is present in the image, none invented.
@@ -521,6 +534,9 @@ are dashed `<<…>>` dependencies, and there are no avoidable crossings — iter
 - **Group with subgraphs / `Boundary`.** Related nodes in the same box localise their edges.
 - **Route shared dependencies to an edge.** Put a cache / bus / auth service that everything talks
   to on one side so its fan-in doesn't cross the middle.
+- **Stack two stores that two services share.** Two services that each use the same two stores
+  always cross once when the stores sit side by side. An invisible link between the stores
+  (`db ~~~ cache`) puts one below the other, and each service then reaches both without a crossing.
 - **Prefer a hub over a mesh.** If N components all talk to each other, introduce a connector
   (event bus, gateway) — it's both truer to the architecture and far cleaner.
 - **≤ 10 nodes, ≤ ~15 edges.** Past that, split by concern into multiple diagrams and add a
@@ -540,9 +556,10 @@ When one or more diagrams are added or changed in a session:
 3. After each, one sentence: what changed and why.
 4. Every sequence diagram gets a plain-English description paragraph immediately below it.
 5. Wait for the user's OK on the source.
-6. Render to PNG and **`Read` the PNG** — run the Visual verification checklist and report each
-   result briefly (`correctness: ok`, `crossings: 1 avoidable → reordered nodes, re-rendered`).
-   Iterate source → render → `Read` until it passes.
+6. Render to PNG, run `diagramlint.py` on the source and **`Read` the PNG** — run the Visual
+   verification checklist and report each result briefly (`correctness: ok`, `crossings: 1
+   avoidable → reordered nodes, re-rendered`). Iterate source → render → measure → `Read` until
+   it passes.
 7. Only then embed it in the target document — see **Embedding in Markdown** below.
 
 ## Embedding in Markdown (GitHub / GitLab friendly)
@@ -621,6 +638,11 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh --out architect
 bash ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render.sh architecture/add/foo-Architecture.md
 ```
 
+```bash
+# count crossings, overlaps, run-through edges and off-palette colours (source or rendered .svg)
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/diagramlint.py architecture/diagrams/context.mmd architecture/diagrams/UC-1.puml
+```
+
 `render.sh` applies `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/mermaid-theme.json` (palette + `themeCSS`), renders at scale 3 (crisp
 PNG), white background, width 1600. Output PNG sits next to the source unless `--out` is given.
 It also extracts and renders every ```mermaid block from a `.md` file. **Name each block** with a
@@ -645,6 +667,8 @@ architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the s
 - **Always render to PNG and `Read` the PNG** to visually cross-verify it — correctness and
   minimal crossings — before embedding it in a document or presenting it as done. A diagram that
   has not been looked at as a rendered image is not finished.
+- Count, do not guess: run `diagramlint.py` on every render and fix what it names before the
+  visual check.
 - Iterate: if verification fails, change the source per the Layout playbook, re-render, re-`Read`.
 - Apply all ten rules and the layout playbook to every diagram — including quick ones.
 - Colour is semantic and comes only from the theme + the `classDef` lines in `${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/assets/classdefs.md`;
