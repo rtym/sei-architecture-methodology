@@ -12,8 +12,9 @@ Options:
   --title "TEXT"            report title (default: first H1 of first input)
   --subtitle "TEXT"        cover subtitle
   --toc / --no-toc          table of contents                    (default: --toc)
-  --embed-diagrams          render ```mermaid blocks to PNG (via sei-diagrams/render.sh)
-                            and embed them as base64 <img>       (html only)
+  --embed-diagrams          embed each diagram as a base64 <img>: the rendered PNG its image
+                            line names, or a fresh render (via sei-diagrams/render.sh) when
+                            there is none                        (html only)
   --standalone              full HTML document with embedded CSS  (default on for html)
 
 HTML uses the SEI diagram palette. The Markdown subset covered is what the SEI
@@ -93,6 +94,11 @@ nav.toc li.h4 {{ padding-left: 3.4em; font-size: .88rem; color: {PALETTE['muted'
 # Inline markdown
 # --------------------------------------------------------------------------- #
 
+def _attr(value: str) -> str:
+    """Text for a double-quoted HTML attribute (the text is already escaped for &, < and >)."""
+    return value.replace('"', "&quot;")
+
+
 def inline(text: str) -> str:
     """Convert inline markdown to HTML. Order matters."""
     out = []
@@ -108,10 +114,10 @@ def inline(text: str) -> str:
     text = html.escape(text, quote=False)
     # images ![alt](src)
     text = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)",
-                  lambda m: f'<img alt="{m.group(1)}" src="{m.group(2)}">', text)
+                  lambda m: f'<img alt="{_attr(m.group(1))}" src="{_attr(m.group(2))}">', text)
     # links [text](url)
     text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)",
-                  lambda m: f'<a href="{m.group(2)}">{m.group(1)}</a>', text)
+                  lambda m: f'<a href="{_attr(m.group(2))}">{m.group(1)}</a>', text)
     # bold then italic
     text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(r"(?<!\*)\*(?!\s)([^*]+?)\*(?!\*)", r"<em>\1</em>", text)
@@ -149,8 +155,12 @@ class Renderer:
         html_parts: list[str] = []
         i = 0
         n = len(lines)
+        shown: set[int] = set()     # image lines already embedded with the diagram above them
         while i < n:
             line = lines[i]
+            if i in shown:
+                i += 1
+                continue
 
             # fenced code / mermaid
             m = re.match(r"^(\s*)(`{3,}|~{3,})\s*([\w+-]*)\s*$", line)
@@ -165,17 +175,24 @@ class Renderer:
                 i += 1  # closing fence
                 code = "\n".join(buf)
                 if lang in ("mermaid", "plantuml", "puml", "uml"):
-                    html_parts.append(self._mermaid(code) if lang == "mermaid"
-                                      else self._plantuml(code))
-                    # when embedding, a bare "![...](...)" line right after the fenced
-                    # diagram is the same picture — drop it so it isn't shown twice
-                    # (and so its relative <img src> can't 404 in a standalone report).
+                    # When embedding, the "![...](...)" line that follows the fenced diagram
+                    # (only blank lines or a "> note" in between) is the same picture, already
+                    # rendered and checked. Embed that file — the report then shows the approved render,
+                    # needs no renderer and is the same on every build — and do not show the
+                    # line a second time. Only a diagram with no rendered file is rendered here.
+                    rendered = None
                     if self.embed:
                         j = i
-                        while j < n and not lines[j].strip():
+                        while j < n and (not lines[j].strip() or lines[j].lstrip().startswith(">")):
                             j += 1
-                        if j < n and re.match(r"^\s*!\[[^\]]*\]\([^)]+\)\s*$", lines[j]):
-                            i = j + 1
+                        im = re.match(r"^\s*!\[[^\]]*\]\(([^)\s]+)\)\s*$", lines[j]) if j < n else None
+                        if im:
+                            shown.add(j)
+                            target = self.source_dir / im.group(1)
+                            if target.suffix.lower() in _IMAGE_TYPES and target.is_file():
+                                rendered = target
+                    html_parts.append(self._mermaid(code, rendered) if lang == "mermaid"
+                                      else self._plantuml(code, rendered))
                 else:
                     cls = f' class="language-{lang}"' if lang else ""
                     html_parts.append(f"<pre><code{cls}>{html.escape(code, quote=False)}</code></pre>")
@@ -266,7 +283,8 @@ class Renderer:
             row = row[1:]
         if row.endswith("|"):
             row = row[:-1]
-        return [c.strip() for c in re.split(r"(?<!\\)\|", row)]
+        # an escaped pipe belongs to its cell and is shown as a plain pipe
+        return [c.strip().replace("\\|", "|") for c in re.split(r"(?<!\\)\|", row)]
 
     @staticmethod
     def _align(delim: str) -> str:
@@ -350,7 +368,18 @@ def _emit_list(items) -> str:
 
 
 # add mermaid rendering as a method (kept out of class body for readability)
-def _mermaid(self: Renderer, code: str) -> str:
+_IMAGE_TYPES = {".png": "image/png", ".svg": "image/svg+xml"}
+
+
+def _figure(idx: int, title: str, image: Path) -> str:
+    data = base64.b64encode(image.read_bytes()).decode("ascii")
+    cap = f"<figcaption>Diagram {idx}{' — ' + html.escape(title) if title else ''}</figcaption>"
+    return (f'<figure class="diagram">'
+            f'<img alt="{html.escape(title) or f"diagram {idx}"}" '
+            f'src="data:{_IMAGE_TYPES[image.suffix.lower()]};base64,{data}">{cap}</figure>')
+
+
+def _mermaid(self: Renderer, code: str, rendered: Path | None = None) -> str:
     self._mermaid_n += 1
     idx = self._mermaid_n
     title = ""
@@ -363,6 +392,8 @@ def _mermaid(self: Renderer, code: str) -> str:
                 f"<figcaption>Diagram {idx}"
                 f"{' — ' + html.escape(title) if title else ''} "
                 f"(source shown; run with --embed-diagrams to render)</figcaption></figure>")
+    if rendered is not None:
+        return _figure(idx, title, rendered)
     render_sh = (Path(__file__).resolve().parent.parent
                  / "skills" / "sei-diagrams" / "scripts" / "render.sh")
     try:
@@ -386,7 +417,7 @@ def _mermaid(self: Renderer, code: str) -> str:
 Renderer._mermaid = _mermaid
 
 
-def _plantuml(self: Renderer, code: str) -> str:
+def _plantuml(self: Renderer, code: str, rendered: Path | None = None) -> str:
     """Render a fenced ```plantuml block to PNG via render-plantuml.sh and inline it."""
     self._mermaid_n += 1
     idx = self._mermaid_n
@@ -400,6 +431,8 @@ def _plantuml(self: Renderer, code: str) -> str:
                 f"<figcaption>Diagram {idx}"
                 f"{' — ' + html.escape(title) if title else ''} "
                 f"(source shown; run with --embed-diagrams to render)</figcaption></figure>")
+    if rendered is not None:
+        return _figure(idx, title, rendered)
     root = Path(__file__).resolve().parent.parent
     assets = root / "skills" / "sei-diagrams" / "assets"
     render_sh = root / "skills" / "sei-diagrams" / "scripts" / "render-plantuml.sh"

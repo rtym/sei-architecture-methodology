@@ -174,8 +174,8 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/build-report.sh --profile vandb architecture/docs/
   --out architecture/reports/architecture-description.html
 ```
 
-`--embed-diagrams` renders every ```mermaid block to PNG (via the `sei-diagrams` renderer) and
-inlines it; the output is one self-contained HTML file styled with the SEI palette, with a cover
+`--embed-diagrams` inlines the verified PNG that each diagram's image line names (a block with no
+image line is rendered through the `sei-diagrams` renderer); the output is one self-contained HTML file styled with the SEI palette, with a cover
 page and a table of contents that follows the V&B section order.
 
 ## Procedure
