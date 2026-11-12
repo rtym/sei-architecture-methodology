@@ -2,7 +2,7 @@
 
 _Views-and-Beyond architecture description_
 
-> Generated 2026-11-07 · 10 source file(s)
+> Generated 2026-11-12 · 10 source file(s)
 
 ## Contents
 
@@ -469,6 +469,8 @@ flowchart TB
   api -->|"RESP / TLS"| redis
   worker -->|"RESP / TLS"| redis
   worker -->|"SQL / TLS"| db
+  %% invisible link (~~~): stacks the two stores, so each service reaches both without a crossing
+  db ~~~ redis
   classDef internal fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
   classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
   class spa,api,worker internal
