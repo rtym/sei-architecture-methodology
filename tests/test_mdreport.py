@@ -158,6 +158,58 @@ def main() -> int:
         check(rc == 0 and "Views-and-Beyond architecture description" in (root / "vb.html").read_text(),
               "cli: --profile vandb supplies the V&B subtitle")
 
+    # --- edge cases found in review ---
+    r = mdreport.Renderer(False, Path("."))
+    check("p95 | p99</td>" in r.render("| A | B |\n|---|---|\n| p95 \\| p99 | x |\n"),
+          "table: an escaped pipe stays in its cell and is shown as a plain pipe")
+    check('alt="The &quot;big&quot; view"' in r.render('![The "big" view](x.png)'),
+          "image: quotes in the alt text do not break the attribute")
+    check("&lt;SystemName&gt;" in r.render("Use <SystemName> here"), "prose: angle brackets are escaped")
+    check("<em>" not in r.render("snake_case_name and file_name.md"), "prose: underscores inside words are not emphasis")
+    check(r.render("5 * 3 * 2") == "<p>5 * 3 * 2</p>", "prose: spaced asterisks are not emphasis")
+    check('href="https://example.com/a_b">https://example.com/a_b</a>)' in r.render("see (https://example.com/a_b)"),
+          "prose: a bare URL is linked without the closing bracket")
+    check(r.render("```\n<b>x</b>\n```") == "<pre><code>&lt;b&gt;x&lt;/b&gt;</code></pre>", "code: HTML in a fence is escaped")
+    check("<td></td><td>x</td>" in r.render("| A | B |\n|---|---|\n|  | x |\n"), "table: an empty cell keeps its column")
+
+    # --- embedding: the approved render, not a fresh one ---
+    import base64
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "diagrams").mkdir()
+        png = b"\x89PNG\r\n\x1a\n" + b"approved-render-bytes"
+        (root / "diagrams" / "ctx.png").write_bytes(png)
+        (root / "diagrams" / "other.png").write_bytes(b"\x89PNG\r\n\x1a\nother")
+        b64 = base64.b64encode(png).decode()
+        block = "```mermaid\nflowchart LR\n  %% Context diagram\n  a --> b\n```\n"
+        doc = root / "doc.md"
+
+        def built(body: str, *flags) -> str:
+            doc.write_text("# Doc\n\n" + body, encoding="utf-8")
+            rc, _, _ = cli(doc, "--format", "html", "--out", root / "out.html", *flags)
+            return (root / "out.html").read_text(encoding="utf-8") if rc == 0 else ""
+
+        page = built(block + "\n![Context](diagrams/ctx.png)\n", "--embed-diagrams")
+        check(page.count(b64) == 1 and page.count("<img") == 1,
+              "embed: a diagram block shows the rendered PNG its image line names, once")
+        check("Diagram 1 — Context diagram" in page, "embed: the figure keeps the diagram's caption")
+        page = built(block + "\n> A note about the diagram.\n\n![Context](diagrams/ctx.png)\n", "--embed-diagrams")
+        check(page.count(b64) == 1 and page.count("<img") == 1 and "A note about the diagram" in page,
+              "embed: a note between the block and its image keeps one picture and the note")
+        page = built("![Context](diagrams/ctx.png)\n\nSource: [`ctx.puml`](diagrams/ctx.puml).\n", "--embed-diagrams")
+        check(page.count(b64) == 1, "embed: an image line without a block (PlantUML style) is inlined")
+        page = built(block + "\nA paragraph of prose.\n\n![Other](diagrams/other.png)\n", "--embed-diagrams")
+        check(base64.b64encode(b"\x89PNG\r\n\x1a\nother").decode() in page and "A paragraph of prose" in page,
+              "embed: an image after a paragraph is its own picture, not the diagram's render")
+        page = built("```plantuml\n@startuml x\ntitle Seq\nA -> B\n@enduml\n```\n\n![Seq](diagrams/ctx.png)\n", "--embed-diagrams")
+        check(page.count(b64) == 1 and "Diagram 1 — Seq" in page, "embed: a PlantUML block uses its rendered PNG too")
+        page = built(block + "\n![Context](diagrams/ctx.png)\n")
+        check(b64 not in page and "language-mermaid" in page and 'src="diagrams/ctx.png"' in page,
+              "no embed: the source block and a relative image link stay as they are")
+        one = built(block + "\n![Context](diagrams/ctx.png)\n", "--embed-diagrams")
+        two = built(block + "\n![Context](diagrams/ctx.png)\n", "--embed-diagrams")
+        check(one == two and one, "embed: the same sources give the same HTML")
+
     # The examples' committed Markdown reports are what a fresh build gives (the HTML twins embed
     # the same content), so a source edited without regenerating the reports fails here.
     import re
@@ -183,8 +235,14 @@ def main() -> int:
                                         "(regenerate it with the commands in the example README)")
             for name, _, _ in builds:
                 html = (ex / "reports" / name).with_suffix(".html")
-                check(html.is_file() and "<img" in html.read_text(encoding="utf-8"),
-                      f"example report {ex.name}/reports/{html.name} exists with its diagrams embedded")
+                page = html.read_text(encoding="utf-8") if html.is_file() else ""
+                images = sorted(set(re.findall(r"!\[[^\]]*\]\(([^)\s]+\.png)\)",
+                                               (ex / "reports" / name).read_text(encoding="utf-8"))))
+                stale = [i for i in images
+                         if base64.b64encode((ex / "reports" / i).read_bytes()).decode() not in page]
+                check(images and not stale and page.count("<img") == len(images),
+                      f"example report {ex.name}/reports/{html.name} embeds every committed diagram PNG, "
+                      f"each once (rebuild it after re-rendering: {', '.join(stale) or '-'})")
 
     print()
     if FAILS:
