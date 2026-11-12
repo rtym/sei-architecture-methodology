@@ -6,6 +6,7 @@
 - **Nature**: hard
 - **Priority**: high
 - **Status**: in design
+
 ## Rationale
 
 Required by the SOC 2 audit scope ([BG-2](../business-goals/BG-2.md)); non-negotiable.

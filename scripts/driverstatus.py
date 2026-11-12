@@ -26,7 +26,8 @@ from pathlib import Path
 STATUSES = ("open", "in design", "partially", "addressed", "at risk", "retired")
 KINDS = (("BG", "business-goals"), ("UC", "use-cases"), ("CON", "constraints"),
          ("AC", "concerns"), ("QA", "quality-attributes"))
-STATUS_LINE = re.compile(r"^(\s*-\s*\*\*Status\*\*\s*:\s*)(.*?)\s*$", re.MULTILINE)
+CELL_SPLIT = re.compile(r"(?<!\\)\|")      # a cell may hold an escaped pipe (`\|`); do not split there
+STATUS_LINE = re.compile(r"^([ \t]*-[ \t]*\*\*Status\*\*[ \t]*:[ \t]*)(.*?)[ \t]*$", re.MULTILINE)
 
 
 class StatusError(Exception):
@@ -53,11 +54,11 @@ def set_table_status(text: str, driver_id: str, status: str, id_column: int = 0)
         ln = lines[i]
         sep = lines[i + 1] if i + 1 < len(lines) else ""
         if ln.lstrip().startswith("|") and re.match(r"^\s*\|[\s:|-]+\|\s*$", sep):
-            head = [c.strip().lower() for c in ln.strip().strip("|").split("|")]
+            head = [c.strip().lower() for c in CELL_SPLIT.split(ln.strip().strip("|"))]
             col = head.index("status") if "status" in head else -1
             j = i + 2
             while j < len(lines) and lines[j].lstrip().startswith("|"):
-                cells = lines[j].strip().strip("|").split("|")
+                cells = CELL_SPLIT.split(lines[j].strip().strip("|"))
                 if col >= 0 and len(cells) > max(col, id_column) and \
                         re.search(rf"(?<![\w-]){re.escape(driver_id)}(?![\w-])", cells[id_column]):
                     cells[col] = f" {status} "
