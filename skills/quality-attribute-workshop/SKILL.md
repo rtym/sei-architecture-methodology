@@ -175,9 +175,10 @@ per stakeholder concern, present them as the round-robin output, and let the use
 
 ### Step 6 — Scenario consolidation
 Merge scenarios that are near-duplicates or clearly the same concern. Ask the group to agree on
-each merge; never merge unilaterally over an objection. Record which `S-` IDs folded into which.
-The consolidated list keeps its original IDs (with a note), or is renumbered `CS-1…` — pick one
-and be consistent.
+each merge; never merge unilaterally over an objection. Number the consolidated list `CS-1…` and
+record in *Merged from* which `S-` IDs folded into each — a scenario that merged with nothing
+still gets a `CS-` ID. The vote sheet, the refinement, the hand-off table and `qawkit.py` all
+read `CS-` IDs.
 
 ### Step 7 — Scenario prioritisation (voting)
 Each stakeholder gets a vote budget = **30 % of the consolidated scenario count, rounded up**
