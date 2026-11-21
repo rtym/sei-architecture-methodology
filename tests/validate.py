@@ -11,7 +11,9 @@ Modes
         *-session.md          -> header fields, status, driver coverage in the iteration plan
         drivers.md            -> four driver kinds, attribute-prefixed QA IDs, traceability present
         *.mmd / any *.md      -> mermaid diagram rules on every diagram / fenced ```mermaid block
-  python tests/validate.py                   with no args: --self, then every architecture/**/*.md
+  python tests/validate.py <dir>             every *.md / *.mmd under it, plus the cross-file check of
+                                             each drivers register in it
+  python tests/validate.py                   with no args: --self, then the architecture/ directory
 
 Exit code 0 if everything passes, 1 otherwise. Standard library only.
 """
@@ -21,6 +23,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -969,11 +972,13 @@ def broken_links(path: Path) -> list[str]:
         text = path.read_text(encoding="utf-8")
     except Exception:
         return errs
-    for m in _LINK_RE.finditer(text):
+    # a link shown as an example — in a code fence or a code span — is not a link the reader follows
+    linked = re.sub(r"`[^`\n]+`", "", _FENCES_RE.sub("", text))
+    for m in _LINK_RE.finditer(linked):
         target = m.group(1).strip().lstrip("<").rstrip(">")
         if not target or target.startswith(("http://", "https://", "mailto:", "#", "data:")):
             continue
-        target = target.split("#", 1)[0].split("?", 1)[0]
+        target = unquote(target.split("#", 1)[0].split("?", 1)[0])
         if not target:
             continue
         dest = (path.parent / target).resolve()
@@ -1244,7 +1249,9 @@ def validate_file(path: Path) -> list[str] | None:
     # an earlier workshop kept beside the current one; its dated name must not read as an ADD session
     if re.match(r"qaw-report-\d{4}-\d{2}-\d{2}\.md$", name):
         return _md(check_qaw(path))
-    if name.endswith("-session.md") or re.search(r"-\d{4}-\d{2}-\d{2}\.md$", name):
+    # a session named by its date is a session only where ADD keeps them; dated notes elsewhere
+    # (a review, an archived report) are ordinary Markdown
+    if name.endswith("-session.md") or (parent == "add" and re.search(r"-\d{4}-\d{2}-\d{2}\.md$", name)):
         return _md(check_session(path))
     if name == "drivers.md":
         return _md(check_drivers(path))
@@ -1762,6 +1769,24 @@ def check_self() -> list[str]:
 
 # --------------------------------------------------------------------------- #
 
+DRIVER_KIND_DIRS = ("business-goals", "use-cases", "constraints", "quality-attributes", "concerns")
+
+
+def drivers_dirs(p: Path) -> list[Path]:
+    """The drivers registers a directory argument covers: the directory itself, and any register
+    below it — `validate.py architecture` must run the cross-file check on architecture/drivers."""
+    def is_register(d: Path, given: bool) -> bool:
+        indexed = (d / "README.md").is_file() or (d / "index.md").is_file()
+        if d.name == "drivers":
+            return given or any((d / k).is_dir() for k in DRIVER_KIND_DIRS)
+        return indexed and (d / "use-cases").is_dir()
+
+    found = [p] if is_register(p, True) else []
+    found += [d for d in sorted(p.rglob("*")) if d.is_dir() and "node_modules" not in d.parts
+              and is_register(d, False)]
+    return found
+
+
 def main(argv: list[str]) -> int:
     do_self = "--self" in argv or not [a for a in argv if not a.startswith("-")]
     raw = [Path(a) for a in argv if not a.startswith("-")]
@@ -1784,11 +1809,10 @@ def main(argv: list[str]) -> int:
     files: list[Path] = []
     for p in raw:
         if p.is_dir():
-            if p.name == "drivers" or (((p / "README.md").is_file() or (p / "index.md").is_file())
-                                       and (p / "use-cases").is_dir()):
-                errs = check_drivers_dir(p)
+            for d in drivers_dirs(p):
+                errs = check_drivers_dir(d)
                 tag = "PASS" if not errs else "FAIL"
-                print(f"{tag}  {p}/ (drivers directory — cross-file)")
+                print(f"{tag}  {d}/ (drivers directory — cross-file)")
                 for e in errs:
                     print(f"      ✗ {e}")
                 total += len(errs)

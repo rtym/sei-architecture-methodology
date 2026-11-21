@@ -509,10 +509,12 @@ globs, failures, and `render-all.sh` on diagrams embedded in Markdown. The examp
 reports are compared with a fresh build, their HTML twins must embed every committed PNG, and an
 artifact heading glued to the line above it fails validation.
 
-Validate produced artifacts in a target project:
+Validate produced artifacts in a target project. Give it the directory: it checks every file
+below it and runs the cross-file check on the drivers register (a status that differs between a
+driver file and an index table).
 
 ```bash
-python path/to/sei-architecture-methodology/tests/validate.py architecture/**/*.md
+python3 path/to/sei-architecture-methodology/tests/validate.py architecture/
 ```
 
 ### Continuous integration
