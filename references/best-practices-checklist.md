@@ -1,7 +1,7 @@
 # Reference — Best-practices quality gate
 
 Every skill runs this checklist against its own output **before declaring the activity done**, and
-runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated subset). Report each item as
+runs `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated subset). Report each item as
 `ok` / `fix: …`. Fix, re-check, repeat.
 
 ---
@@ -113,7 +113,7 @@ runs `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py <artifact>` (the automated 
 
 - [ ] Business drivers, architecture presentation, and architectural approaches (`AA-n`) recorded.
 - [ ] Utility tree present **as a table**; each leaf row carries a `(V, R)` pair (business
-      value, technical risk); the `★` (H,H)/(H,M) leaves are analysed.
+      value, technical risk); the `★` (H, H) leaves and the (H, M) leaves are analysed.
 - [ ] Every analysed scenario names the approaches invoked and the analysis questions asked.
 - [ ] Risks, non-risks, sensitivity points, tradeoff points each populated (or explicitly "none found").
 - [ ] Every **non-risk** records the assumption under which it holds.

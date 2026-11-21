@@ -83,7 +83,8 @@ at the actual image. Walk this checklist explicitly and state the result:
 - Every element and relationship from the source is present in the image, none invented.
 - Labels are the intended text, not truncated or overlapping their box.
 - Arrow directions match the intended flow; response/return arrows are dashed where they should be.
-- The `title` is visible; the legend (if any) is readable.
+- The title is visible where the notation draws one (a PlantUML or sequence-diagram `title`; a
+  flowchart's title is a `%%` comment and is not drawn); the legend (if any) is readable.
 - C4: boundaries drawn around the right elements; datastores render as the datastore shape.
 - Sequence: participant order matches call order; activation bars and `autonumber` present as intended.
 - Use case: actors outside the system boundary, use cases inside, `<<include>>` / `<<extend>>` dashed.
@@ -96,7 +97,7 @@ at the actual image. Walk this checklist explicitly and state the result:
 - Text is large enough to read at 100 %; nothing clipped at the image edge.
 - Aspect ratio is reasonable (not an extreme ribbon); if it is, split the diagram.
 
-**If it fails**: adjust the `.mmd` source (see the Layout playbook), re-render, and `Read` the new
+**If it fails**: adjust the source (see the Layout playbook), re-render, and `Read` the new
 PNG again. Iterate until both sections pass. Note in the conversation what you changed and why.
 Never present or embed a diagram you have not looked at as a rendered image.
 
@@ -158,9 +159,10 @@ Both satisfy the principles above — pick per the user's notation choice:
   (`${CLAUDE_PLUGIN_ROOT}/skills/sei-diagrams/scripts/render-plantuml.sh` explains how to install it). Use when the user wants canonical
   C4 notation.
 
-The worked example ships in **both notations** — `examples/personal-finance-tracker-mermaid/`
-(every diagram Mermaid) and `examples/personal-finance-tracker-plantuml/` (every diagram
-PlantUML / C4-PlantUML) — as a side-by-side reference.
+The plugin's repository has the same worked example in **both notations**, as a side-by-side
+reference: <https://github.com/rtym/sei-architecture-methodology/tree/main/examples> —
+`personal-finance-tracker-mermaid` (every diagram Mermaid) and `personal-finance-tracker-plantuml`
+(every diagram PlantUML / C4-PlantUML).
 
 ### Structural diagram — house style (context / container / component / deployment)
 
@@ -688,8 +690,8 @@ architecture/diagrams/model.puml`. Requires a Java runtime — if missing, the s
   ```mermaid fenced block **plus** a `![title](diagrams/<name>.png)` image line; PlantUML = the
   image line **plus** a link to the `.puml` source (no pasted `@startuml` block).
 - Re-render **and re-verify** the PNG whenever the source changes; never hand-edit a PNG.
-- `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py` checks every `.mmd` file and every fenced mermaid block against the
-  rules — run it and fix reported issues.
+- `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/` checks every `.mmd` file and every fenced
+  mermaid block under `architecture/` against the rules — run it and fix reported issues.
 
 ## Appendix — native Mermaid C4 syntax (inline sketches only)
 

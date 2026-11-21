@@ -120,7 +120,7 @@ model) from `${CLAUDE_PLUGIN_ROOT}/references/interfaces.md`. Reference §8 of t
 <This view's scope boundary and what sits outside it.>
 
 ## 4. Variability guide
-<Points of built-in variation (config, plug-ins, feature flags, product-line options) and how to exercise them. Omit the section only if there is genuinely none.>
+<Points of built-in variation (config, plug-ins, feature flags, product-line options) and how to exercise them. Keep the section; write "None." when there is no variation.>
 
 ## 5. Rationale
 <Why the structure is this way; alternatives considered and rejected; how it serves the drivers (cite <ATTR>QA- / UC- / CON- IDs).>
@@ -191,7 +191,7 @@ page and a table of contents that follows the V&B section order.
 5. Write `README.md` last, once the view set is stable; end it with a Navigation footer. Update
    the `/architecture-docs` row and change log of the package index `architecture/README.md`,
    creating it from `${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md` if it does not exist.
-6. Run `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` and fix any reported issues, including
+6. Run `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` and fix any reported issues, including
    broken relative links.
 
 ## Notation, combining views, behaviour
@@ -240,7 +240,7 @@ Deep guidance in `${CLAUDE_PLUGIN_ROOT}/references/views-and-beyond.md`:
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/docs/*.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

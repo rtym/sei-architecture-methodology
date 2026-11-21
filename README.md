@@ -502,7 +502,7 @@ source changed but its PNG did not, when a PNG lost resolution, or when a diagra
 outside the palette. With a renderer installed, the suite re-renders all 52 example diagrams and
 compares each with its approved state: the same elements and words, no new edge crossing,
 overlapping node or edge drawn through a node, the SEI theme applied, the same shape. A renderer
-upgrade that degrades a diagram fails there. The same run renders the 28 diagram patterns the
+upgrade that degrades a diagram fails there. The same run renders the 24 diagram patterns the
 skills and templates teach, each of which must compile and be free of defects, and
 `tests/test_render.py` exercises the render scripts on real renders: block naming, `--out`,
 globs, failures, and `render-all.sh` on diagrams embedded in Markdown. The examples' Markdown
