@@ -484,6 +484,18 @@ check("an archived QAW report with a QAW defect is still caught",
 check("a dated ADD session file is still validated as a session",
       any("**Purpose**" in e for e in
           run_checker(validate.validate_file, "architecture/add/acme-2026-08-20.md", "# Acme\n")))
+check("a dated file outside add/ is ordinary Markdown, not an ADD session",
+      run_checker(validate.validate_file, "architecture/notes/review-2026-08-20.md", "# Review notes\n\nText.\n") == []
+      and not any("**Purpose**" in e for e in run_checker(
+          validate.validate_file, "architecture/atam/atam-report-2026-08-20.md", "# ATAM\n")))
+check("a link shown inside a code fence or a code span is not checked",
+      run_checker(validate.broken_links, "notes.md",
+                  "# N\n\n```markdown\n![t](diagrams/x.png)\n```\n\n~~~\n[a](gone.md)\n~~~\n\nWrite `[UC-1](use-cases/UC-1.md)`.\n") == [])
+check("a broken link outside code is still reported, also when its text is a code span",
+      len(run_checker(validate.broken_links, "notes.md", "# N\n\n[`x.puml`](diagrams/x.puml) and [a](gone.md).\n")) == 2)
+check("%20 in a link target is a space",
+      run_checker(validate.broken_links, "notes.md", "# N\n\n[doc](my%20file.md)\n", {"my file.md": "x"}) == []
+      and len(run_checker(validate.broken_links, "notes.md", "# N\n\n[doc](no%20file.md)\n")) == 1)
 
 # --------------------------------------------------------------------------- #
 # QAW question guide coverage (self-check)
@@ -882,6 +894,21 @@ with tempfile.TemporaryDirectory() as td:
     check("the CLI exits 1 on an invalid file", cli(str(bad)) == 1)
     check("the CLI exits 1 on a missing path", cli(str(root / "missing.md")) == 1)
     check("the CLI validates a drivers directory and the files in it", cli(str(EX / "drivers")) == 0)
+    import shutil
+    pkg = root / "architecture"
+    shutil.copytree(EX / "drivers", pkg / "drivers")
+    write(root, "architecture/README.md", "# Architecture package\n")
+    check("a directory argument finds the drivers register below it",
+          validate.drivers_dirs(pkg) == [pkg / "drivers"] and validate.drivers_dirs(pkg / "drivers") == [pkg / "drivers"])
+    check("a source folder that happens to be called drivers is not a register",
+          validate.drivers_dirs(Path(write(root, "src/drivers/usb.md", "x")).parent.parent) == [])
+    uc = pkg / "drivers" / "use-cases" / "UC-1.md"
+    uc.write_text(re.sub(r"(?m)^- \*\*Status\*\*: .*$", "- **Status**: retired", uc.read_text(), count=1))
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        rc = validate.main([str(pkg)])
+    check("validating the package directory runs the drivers cross-file check",
+          rc == 1 and "UC-1 status is" in out.getvalue())
     check("the CLI skips a file it does not recognise", cli(str(write(root, "notes.txt", "x"))) == 0)
     check("the CLI runs the self-check", cli("--self") == 0)
 
