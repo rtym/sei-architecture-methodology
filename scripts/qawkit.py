@@ -510,6 +510,9 @@ def build_ballot(report: Path, out: Path) -> str:
     scenarios = report_consolidated(text)
     if not people:
         raise KitError("no ST-<n> participants in the report's Step 1 table")
+    if not scenarios and table(section(text, r"consolidation"), "Consolidated"):
+        raise KitError("Step 6's table has rows but no CS-<n> in its Consolidated ID column; number "
+                       "the consolidated scenarios CS-1, CS-2, … and keep the S- IDs in Merged from")
     budget = vote_budget(len(scenarios))
     L = [f"# QAW vote sheet — {system}", "",
          f"- **Workshop report**: {_link(str(report), out, 'qaw-report.md')}",
@@ -950,9 +953,14 @@ def lint_report(text: str, guide_text: str) -> list[tuple[str, str, str]]:
             findings.append((sid, f"source of stimulus {source!r} names no role or system",
                              parts_q.get("Source of stimulus", "")))
         measure = kv.get("Response measure", "")
-        if _filled(measure) and not re.search(r"\d", ID_RE.sub("", measure)):
+        numeric = bool(re.search(r"\d", ID_RE.sub("", measure)))
+        if _filled(measure) and not numeric:
             findings.append((sid, "response measure has no number", ask_measure))
+        # A word like "scales" or "secure" in the response is vague only while no number pins it
+        # down: with a numeric measure the response may say what happens in plain words.
         for field, only_rows in (("Response measure", False), ("Response", True)):
+            if field == "Response" and numeric:
+                continue
             for word, phrase in _vague_hits(kv.get(field, ""), only_rows):
                 ask = vague_q.get(phrase.lower(), "") if phrase else ask_measure
                 findings.append((sid, f"{field.lower()} uses the vague word {word!r}", ask))

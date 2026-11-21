@@ -319,6 +319,12 @@ with tempfile.TemporaryDirectory() as td:
     check("a report with no ST-<n> participants is an error", raises(qawkit.build_ballot, no_people, out))
     no_cs = write(root, "qaw3/qaw-report.md", REPORT.replace("| CS-1 | S-1", "| X | S-1").replace("| CS-2 | S-3", "| Y | S-3"))
     check("a report with no consolidated scenarios is an error", raises(qawkit.build_ballot, no_cs, out))
+    try:
+        qawkit.build_ballot(no_cs, out)
+        said = ""
+    except qawkit.KitError as e:
+        said = str(e)
+    check("consolidated rows without CS- IDs are named as the cause", "no CS-<n>" in said and "Merged from" in said)
 check("a missing report is an error", raises(qawkit.build_ballot, Path("/nonexistent.md"), Path("/tmp/x.md")))
 
 # --------------------------------------------------------------------------- #
@@ -709,6 +715,13 @@ check("lint flags a missing business goal", any("cites no business goal" in p fo
 check("a generic vague word asks for a number",
       ("response measure uses the vague word 'reasonable'", pq_parts["Response measure"]) in by["CS-2"])
 check("a clean scenario has no findings", "CS-3" not in by)
+PLAIN = SMELLY.replace("| Response | Request is refused and logged |",
+                       "| Response | The service scales out, moves the session to a secure cookie and stays responsive |")
+check("plain words in the response are not vague once the measure is a number",
+      PLAIN != SMELLY and not any(w == "CS-3" for w, _, _ in qawkit.lint_report(PLAIN, GUIDE)))
+check("the same words are vague while the measure has no number",
+      any(w == "CS-3" and "response uses the vague word" in p for w, p, _ in qawkit.lint_report(
+          PLAIN.replace("| Response measure | 0 successful reads; alert < 1 min |", "| Response measure | No leaks |"), GUIDE)))
 check("lint flags a leaf with no measure", any("leaf has no measure" in p for p, _ in by.get("PQA-1", [])))
 check("lint flags characteristics neither covered nor set aside",
       "Compatibility" in by and "Security" not in by and "Reliability" not in by)
