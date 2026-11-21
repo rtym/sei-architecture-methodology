@@ -16,8 +16,8 @@ fi
 echo "  node:      $(node -v)"
 
 if command -v mmdc >/dev/null 2>&1; then
-  echo "  mmdc already on PATH ($(command -v mmdc)) — nothing to install."
-  echo "  (setup will still install the lockfile-pinned local copy so renders are reproducible.)"
+  echo "  mmdc is already on PATH ($(command -v mmdc)); installing the lockfile-pinned local copy"
+  echo "  as well, so renders are the same on every machine."
 fi
 
 cd "$SKILL_DIR"

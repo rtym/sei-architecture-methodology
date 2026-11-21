@@ -9,6 +9,6 @@
 #     --out architecture/reports/architecture-description.html
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PY="$(command -v python3 || command -v python)"
+PY="$(command -v python3 || command -v python || true)"
 [ -n "$PY" ] || { echo "ERROR: python 3 not found" >&2; exit 1; }
 exec "$PY" "$SCRIPT_DIR/mdreport.py" "$@"

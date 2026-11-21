@@ -89,8 +89,13 @@ if [ "${#mmd[@]}" -gt 0 ]; then
 fi
 for e in ${embedded[@]+"${embedded[@]}"}; do
   IFS=$'\t' read -r src out md <<< "$e"
-  bash "$ROOT/skills/sei-diagrams/scripts/render.sh" --out "$out" "$src" | grep -v '^render:\|^done:' || true
-  [ -s "$out/$(basename "${src%.mmd}").png" ] || fails=1
+  # the render's own exit code decides: a PNG left by an earlier run must not pass for this one
+  bash "$ROOT/skills/sei-diagrams/scripts/render.sh" --out "$out" "$src" > "$TMP_DIR/embedded.log"; rc=$?
+  grep -v '^render:\|^done:' "$TMP_DIR/embedded.log" || true
+  if [ "$rc" -ne 0 ] || [ ! -s "$out/$(basename "${src%.mmd}").png" ]; then
+    echo "  FAIL $md — block '$(basename "${src%.mmd}")' did not render; $out/$(basename "${src%.mmd}").png is not current" >&2
+    fails=1
+  fi
 done
 if [ "${#puml[@]}" -gt 0 ]; then
   bash "$ROOT/skills/sei-diagrams/scripts/render-plantuml.sh" "${puml[@]}" || fails=1
