@@ -4,6 +4,23 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## 1.15.2 — 2026-11-21
+
+Dependency update. No skill, script or template changes.
+
+### Changed
+- The Mermaid renderer's dependencies are updated within their pinned ranges (63 packages):
+  `mermaid` 12.2.0 → 12.3.0, `puppeteer` 25.11.0 → 25.18.1 (Chromium 157), `zod` 3.25.76 → 4.6.7.
+  `npm audit` reported 4 high-severity advisories before and reports none now. Run
+  `bash skills/sei-diagrams/scripts/setup.sh` once after updating to install the matching browser.
+- The vendored C4-PlantUML macros move from v2.10.0 to v2.11.0, the newest version that renders
+  clean with PlantUML 1.2026.10. Later versions make PlantUML draw a deprecation banner into
+  every diagram; `skills/sei-diagrams/assets/c4/README.md` says when to move on. A boundary's
+  type label is now lower case (`[system]`, `[container]`).
+- All 52 example diagrams were rendered again with the updated toolchain. 17 PNGs changed (14
+  Mermaid, 3 C4-PlantUML); what they show, their sizes and their layout measurements are the
+  same, and the four HTML reports embed the new files.
+
 ## 1.15.1 — 2026-11-21
 
 Fixes from a review of 1.15.0. Nothing changes how an artifact is laid out; the two examples'
