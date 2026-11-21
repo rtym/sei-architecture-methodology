@@ -171,6 +171,54 @@ def main() -> int:
           "prose: a bare URL is linked without the closing bracket")
     check(r.render("```\n<b>x</b>\n```") == "<pre><code>&lt;b&gt;x&lt;/b&gt;</code></pre>", "code: HTML in a fence is escaped")
     check("<td></td><td>x</td>" in r.render("| A | B |\n|---|---|\n|  | x |\n"), "table: an empty cell keeps its column")
+    check(r.render("[https://x.org/a](https://x.org/a)") == '<p><a href="https://x.org/a">https://x.org/a</a></p>',
+          "link: a link whose text is its URL is one anchor, not two")
+    check(r.render("See <https://x.org/a>.") == '<p>See <a href="https://x.org/a">https://x.org/a</a>.</p>',
+          "link: an angle-bracket URL is linked")
+    check(r.render("Read https://x.org/a. Then stop.") == '<p>Read <a href="https://x.org/a">https://x.org/a</a>. Then stop.</p>',
+          "link: a bare URL leaves the full stop after it outside the link")
+    check('href="https://x.org/_a_/*b*"' in r.render("[doc](https://x.org/_a_/*b*) and https://x.org/_c_/d"),
+          "link: emphasis marks inside a URL are left alone")
+    check(r.render("[**bold** text](x.md)") == '<p><a href="x.md"><strong>bold</strong> text</a></p>',
+          "link: emphasis in the link text still applies")
+
+    # --- a heading that holds a link ---
+    with tempfile.TemporaryDirectory() as td:
+        doc = Path(td) / "d.md"
+        doc.write_text("# Doc\n\n## Goals — [`goals/`](goals/README.md)\n\nText.\n", encoding="utf-8")
+        page = mdreport.to_html([doc], "Doc", "", want_toc=True, embed=False, standalone=True, out_dir=doc.parent)
+        check('<li class="h2"><a href="#goals--goals">Goals — <code>goals/</code></a></li>' in page
+              and '<h2 id="goals--goals">' in page,
+              "contents (html): a heading with a link shows its text, with no link inside the link")
+        md = mdreport.to_md([doc], "Doc", "", want_toc=True, out_dir=doc.parent)
+        check("  - [Goals — `goals/`](#goals--goals)" in md.splitlines(),
+              "contents (md): the entry is the heading's text and the anchor GitHub gives it")
+
+    # --- the caption comes from a title, never from a node label ---
+    with tempfile.TemporaryDirectory() as td:
+        doc = Path(td) / "d.md"
+        doc.write_text('# Doc\n\n```mermaid\nflowchart LR\n  %% name: ctx\n  a["Job title manager"] --> b\n```\n\n'
+                       '```mermaid\nflowchart LR\n  %% Context view\n  %% name: ctx2\n  a --> b\n```\n', encoding="utf-8")
+        page = mdreport.to_html([doc], "Doc", "", want_toc=False, embed=False, standalone=True, out_dir=doc.parent)
+        check("Diagram 1 (source shown" in page and "Diagram 2 — Context view" in page,
+              "caption: a node label and the name comment are not the diagram's title")
+
+    # --- a directory built twice gives the same report ---
+    with tempfile.TemporaryDirectory() as td:
+        d = Path(td) / "docs"
+        d.mkdir()
+        (d / "a.md").write_text("# A\n\nText.\n", encoding="utf-8")
+        (d / "b.md").write_text("# B\n\nText.\n", encoding="utf-8")
+        cli(d, "--format", "md")
+        first = (d / "a-report.md").read_text(encoding="utf-8")
+        rc, _, _ = cli(d, "--format", "md")
+        check(rc == 0 and sorted(p.name for p in d.glob("*.md")) == ["a-report.md", "a.md", "b.md"]
+              and (d / "a-report.md").read_text(encoding="utf-8") == first and "2 source file(s)" in first,
+              "cli: building a directory again does not read the earlier report as a source")
+        rc, _, _ = cli(d / "a.md", "--format", "both", "--out", Path(td) / "out" / "r.htm")
+        check(rc == 0 and (Path(td) / "out" / "r.htm").read_text(encoding="utf-8").startswith("<!doctype html>")
+              and (Path(td) / "out" / "r.md").read_text(encoding="utf-8").startswith("# A"),
+              "cli: --format both with a .htm --out writes the Markdown beside it, not over it")
 
     # --- embedding: the approved render, not a fresh one ---
     import base64

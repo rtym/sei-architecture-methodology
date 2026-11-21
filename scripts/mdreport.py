@@ -99,37 +99,60 @@ def _attr(value: str) -> str:
     return value.replace('"', "&quot;")
 
 
+def _emphasis(text: str) -> str:
+    text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"(?<!\*)\*(?!\s)([^*]+?)\*(?!\*)", r"<em>\1</em>", text)
+    return re.sub(r"(?<![A-Za-z0-9_])_([^_]+)_(?![A-Za-z0-9_])", r"<em>\1</em>", text)
+
+
+def plain_heading(text: str) -> str:
+    """A heading as the reader sees it: a link is its text, an image its alt text."""
+    text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    return re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+
+
+def heading_slug(text: str) -> str:
+    """The anchor GitHub and GitLab give a heading: from its visible text, not from link targets."""
+    return re.sub(r"[^\w\- ]", "", plain_heading(text)).strip().lower().replace(" ", "-") or "section"
+
+
 def inline(text: str) -> str:
-    """Convert inline markdown to HTML. Order matters."""
-    out = []
-    i = 0
-    # protect inline code first
+    """Convert inline markdown to HTML. Order matters: code first, then links and images, which
+    are set aside as finished pieces so that emphasis and URL linking cannot reach into them."""
     code_spans: list[str] = []
+    done: list[str] = []
 
     def stash_code(m: re.Match) -> str:
         code_spans.append(m.group(1))
         return f"\x00CODE{len(code_spans) - 1}\x00"
 
+    def keep(piece: str) -> str:
+        done.append(piece)
+        return f"\x01{len(done) - 1}\x01"
+
+    def link(url: str, label: str) -> str:
+        return keep(f'<a href="{_attr(url)}">{label}</a>')
+
     text = re.sub(r"`([^`]+)`", stash_code, text)
+    # <https://…> autolink, read before the angle brackets are escaped
+    text = re.sub(r"<(https?://[^\s<>]+)>",
+                  lambda m: link(html.escape(m.group(1), quote=False), html.escape(m.group(1), quote=False)), text)
     text = html.escape(text, quote=False)
     # images ![alt](src)
     text = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)",
-                  lambda m: f'<img alt="{_attr(m.group(1))}" src="{_attr(m.group(2))}">', text)
+                  lambda m: keep(f'<img alt="{_attr(m.group(1))}" src="{_attr(m.group(2))}">'), text)
     # links [text](url)
     text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)",
-                  lambda m: f'<a href="{_attr(m.group(2))}">{m.group(1)}</a>', text)
-    # bold then italic
-    text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
-    text = re.sub(r"(?<!\*)\*(?!\s)([^*]+?)\*(?!\*)", r"<em>\1</em>", text)
-    text = re.sub(r"(?<![A-Za-z0-9_])_([^_]+)_(?![A-Za-z0-9_])", r"<em>\1</em>", text)
-    # bare autolink
-    text = re.sub(r"(?<!\")(https?://[^\s<)]+)", r'<a href="\1">\1</a>', text)
+                  lambda m: link(m.group(2), _emphasis(m.group(1))), text)
+    # bare URL, without the punctuation that ends the sentence around it
+    text = re.sub(r"https?://[^\s<)\"]+?(?=[.,;:!?]*(?:[\s<)\"]|$))", lambda m: link(m.group(0), m.group(0)), text)
+    text = _emphasis(text)
+    text = re.sub(r"\x01(\d+)\x01", lambda m: done[int(m.group(1))], text)
 
     def restore_code(m: re.Match) -> str:
         return f"<code>{html.escape(code_spans[int(m.group(1))], quote=False)}</code>"
 
-    text = re.sub(r"\x00CODE(\d+)\x00", restore_code, text)
-    return text
+    return re.sub(r"\x00CODE(\d+)\x00", restore_code, text)
 
 
 # --------------------------------------------------------------------------- #
@@ -145,7 +168,7 @@ class Renderer:
         self._mermaid_n = 0
 
     def slug(self, text: str) -> str:
-        base = re.sub(r"[^\w\- ]", "", text).strip().lower().replace(" ", "-") or "section"
+        base = heading_slug(text)
         n = self._slugs.get(base, 0)
         self._slugs[base] = n + 1
         return base if n == 0 else f"{base}-{n}"
@@ -383,7 +406,10 @@ def _mermaid(self: Renderer, code: str, rendered: Path | None = None) -> str:
     self._mermaid_n += 1
     idx = self._mermaid_n
     title = ""
-    tm = re.search(r"title\s+(.+)", code) or re.search(r"%%\s*(.+)", code)
+    # a `title` statement or front-matter line, else the first comment that is a title (not the
+    # `%% name:` slug, not a `%%{init}%%` directive) — never a word inside a node label
+    tm = re.search(r"^[ \t]*title:?[ \t]+(.+)$", code, re.MULTILINE) \
+        or re.search(r"^[ \t]*%%(?![ \t]*name:)(?!\{)[ \t]*(.+)$", code, re.MULTILINE)
     if tm:
         title = tm.group(1).strip()
     if not self.embed:
@@ -490,7 +516,8 @@ def build_toc(headings, skip_title: str = "") -> str:
         if level > 4:
             continue
         cls = f"h{level}"
-        items.append(f'<li class="{cls}"><a href="#{slug}">{html.escape(text)}</a></li>')
+        label = re.sub(r"</?a\b[^>]*>", "", inline(text))
+        items.append(f'<li class="{cls}"><a href="#{slug}">{label}</a></li>')
     if not items:
         return ""
     return '<nav class="toc"><h2>Contents</h2><ul>' + "".join(items) + "</ul></nav>"
@@ -627,18 +654,14 @@ def to_md(inputs: list[Path], title: str, subtitle: str, want_toc: bool, out_dir
                 txt = hm.group(2).strip()
                 if lvl == 1 and txt.strip().lower() == title.strip().lower():
                     continue
-                # the heading text itself may embed a [text](url) link (some SEI
-                # driver headings do, e.g. "Business goals — [`business-goals/`](...)")
-                # — re-relativize it the same as any other link so the TOC entry
-                # doesn't carry a path relative to the wrong directory.
-                txt_toc = _MD_LINK_RE.sub(
-                    lambda m: m.group(1) + _rewrite_relative(m.group(2), p.parent, out_dir) + m.group(3),
-                    txt)
-                base = re.sub(r"[^\w\- ]", "", txt).strip().lower().replace(" ", "-") or "section"
+                # a heading may hold a link ("Business goals — [`business-goals/`](...)"): the
+                # entry shows the heading's text and points at the anchor made from that text —
+                # a link inside a link is not Markdown
+                base = heading_slug(txt)
                 n = seen.get(base, 0)
                 seen[base] = n + 1
                 slug = base if n == 0 else f"{base}-{n}"
-                heads.append(f'{"  " * (lvl - 1)}- [{txt_toc}](#{slug})')
+                heads.append(f'{"  " * (lvl - 1)}- [{plain_heading(txt)}](#{slug})')
         if heads:
             parts += ["## Contents", "", *heads, ""]
     for p in inputs:
@@ -688,11 +711,24 @@ def _vandb_order(md_files: list[Path]) -> list[Path]:
     return sorted(md_files, key=rank)
 
 
+_GENERATED = re.compile(r"^> Generated \d{4}-\d{2}-\d{2} · \d+ source file\(s\)$", re.MULTILINE)
+
+
+def _is_report(path: Path) -> bool:
+    """Was this Markdown file written by to_md? (its third line is the generated-on note)"""
+    try:
+        with path.open(encoding="utf-8") as f:
+            return bool(_GENERATED.search("".join(f.readline() for _ in range(8))))
+    except (OSError, UnicodeDecodeError):
+        return False
+
+
 def _expand_inputs(inputs: list[Path], profile: str | None) -> list[Path]:
     files: list[Path] = []
     for p in inputs:
         if p.is_dir():
-            found = sorted(f for f in p.glob("*.md"))
+            # a report built into this directory earlier is output, not a source
+            found = sorted(f for f in p.glob("*.md") if not _is_report(f))
             files += _vandb_order(found) if profile == "vandb" else found
         else:
             files.append(p)
@@ -741,8 +777,8 @@ def main(argv=None) -> int:
 
     for fmt in formats:
         if out_is_file:
-            target = base_out if base_out.suffix.lstrip(".").lower() in (fmt, "htm") \
-                else base_out.with_suffix(f".{fmt}")
+            own = (".html", ".htm") if fmt == "html" else (".md", ".markdown")
+            target = base_out if base_out.suffix.lower() in own else base_out.with_suffix(f".{fmt}")
         elif out_is_dir:
             target = base_out / f"{args.inputs[0].stem}-report.{fmt}"
         else:

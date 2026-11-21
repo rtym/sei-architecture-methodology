@@ -1,16 +1,16 @@
 # Personal Finance Tracker — Architecture Package
 
-> Generated 2026-11-12 · 2 source file(s)
+> Generated 2026-11-21 · 2 source file(s)
 
 ## Contents
 
 - [Architectural Drivers — Personal Finance Tracker](#architectural-drivers--personal-finance-tracker)
   - [Driver inventory](#driver-inventory)
-    - [Business goals — [`business-goals/`](../drivers/business-goals/README.md)](#business-goals--business-goalsbusiness-goalsreadmemd)
-    - [Use cases — [`use-cases/`](../drivers/use-cases/README.md)  (primary functional requirements)](#use-cases--use-casesuse-casesreadmemd--primary-functional-requirements)
-    - [Constraints — [`constraints/`](../drivers/constraints/README.md)](#constraints--constraintsconstraintsreadmemd)
-    - [Architectural concerns — [`concerns/`](../drivers/concerns/README.md)  (ADD input; not traced to a BG)](#architectural-concerns--concernsconcernsreadmemd--add-input-not-traced-to-a-bg)
-    - [Quality attribute scenarios — [`quality-attributes/`](../drivers/quality-attributes/README.md)](#quality-attribute-scenarios--quality-attributesquality-attributesreadmemd)
+    - [Business goals — `business-goals/`](#business-goals--business-goals)
+    - [Use cases — `use-cases/`  (primary functional requirements)](#use-cases--use-cases--primary-functional-requirements)
+    - [Constraints — `constraints/`](#constraints--constraints)
+    - [Architectural concerns — `concerns/`  (ADD input; not traced to a BG)](#architectural-concerns--concerns--add-input-not-traced-to-a-bg)
+    - [Quality attribute scenarios — `quality-attributes/`](#quality-attribute-scenarios--quality-attributes)
   - [Traceability matrix](#traceability-matrix)
   - [Prioritised driver list (input to ADD / ATAM)](#prioritised-driver-list-input-to-add--atam)
   - [Change log](#change-log)
