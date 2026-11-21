@@ -95,13 +95,16 @@ else
 fi
 
 FILES=()
+missing=0
 for t in "${TARGETS[@]}"; do
   if [ -d "$t" ]; then
     while IFS= read -r f; do FILES+=("$f"); done < <(find "$t" -maxdepth 1 -type f -name '*.puml' | sort)
   elif [ -f "$t" ]; then
     FILES+=("$t")
   else
+    # a target that is not there fails the run (as render.sh does), after the others render
     echo "skip $t (not found)" >&2
+    missing=1
   fi
 done
 [ "${#FILES[@]}" -gt 0 ] || { echo "no .puml files to render" >&2; exit 1; }
@@ -110,7 +113,7 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 echo "render-plantuml: theme=$(basename "$THEME") include=$ASSETS format=$FORMAT dpi=$DPI files=${#FILES[@]}"
-rc=0
+rc=$missing
 for f in "${FILES[@]}"; do
   dir="$(dirname "$f")"
   dest_dir="${OUT_DIR:-$dir}"

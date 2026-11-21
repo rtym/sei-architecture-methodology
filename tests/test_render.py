@@ -147,6 +147,17 @@ if "mermaid" in engines:
         check("render-all renders the .mmd and the embedded blocks to the PNGs their image lines name",
               rc == 0 and made == ["add/diagrams/arch-02.png", "add/diagrams/context.png", "drivers/diagrams/UC-1.png"])
         check("render-all reports what it rendered", "1 mermaid + 2 embedded mermaid" in out)
+        arch = tree / "add" / "arch.md"
+        good = arch.read_text()
+        arch.write_text(good.replace('a["A"] --> b["B"]', 'a["A"] --> b[[[broken', 1))
+        before = (tree / "add" / "diagrams" / "context.png").read_bytes()
+        rc, out = sh("bash", RENDER_ALL, "architecture", cwd=work)
+        check("an embedded block that no longer compiles fails render-all although its old PNG is still there",
+              rc != 0 and "FAILED" in out and "arch.md" in out
+              and (tree / "add" / "diagrams" / "context.png").read_bytes() == before)
+        arch.write_text(good)
+        rc, out = sh("bash", RENDER, "--help", cwd=work)
+        check("render.sh --help prints the usage and no code", rc == 0 and "Usage:" in out and "set -euo" not in out)
         check("a block that has a .mmd is not rendered a second time under another name",
               not (tree / "drivers" / "UC-1-01.png").exists() and not (tree / "drivers" / "diagrams" / "UC-1-01.png").exists())
 
@@ -181,6 +192,10 @@ if "plantuml" in engines:
               rc != 0 and not (d / "broken.png").exists() and (d / "other.png").is_file())
         rc, out = sh("bash", PLANTUML, "architecture/diagrams/none.puml", cwd=work)
         check("no renderable input fails", rc != 0)
+        (d / "ctx.png").unlink()
+        rc, out = sh("bash", PLANTUML, "architecture/diagrams/ctx.puml", "architecture/diagrams/typo.puml", cwd=work)
+        check("a target that does not exist fails the run, and the targets that exist still render",
+              rc != 0 and "typo.puml (not found)" in out and (d / "ctx.png").is_file())
 
         rc, out = sh(sys.executable, LINT, "architecture/diagrams/ctx.puml", "architecture/diagrams/uc.puml", cwd=work)
         check("diagramlint measures PlantUML sources", rc == 0 and out.count("  OK") == 2 and "2 node(s), 1 edge(s)" in out)

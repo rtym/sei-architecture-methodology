@@ -35,7 +35,7 @@ while [ $# -gt 0 ]; do
     --width)      SIZE="${2:?}"; shift 2 ;;   # pre-12 mermaid-cli spelling, kept as an alias
     --scale)      SCALE="${2:?}"; shift 2 ;;
     --background) BACKGROUND="${2:?}"; shift 2 ;;
-    -h|--help)    sed -n '2,20p' "$0"; exit 0 ;;
+    -h|--help)    sed -n '2,15p' "$0"; exit 0 ;;
     *)            TARGETS+=("$1"); shift ;;
   esac
 done
