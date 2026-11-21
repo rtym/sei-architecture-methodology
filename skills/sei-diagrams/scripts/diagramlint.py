@@ -4,7 +4,7 @@
   diagramlint.py FILE [FILE …]      FILE is a rendered .svg, or a .mmd / .puml source (rendered
                                     to SVG first with this skill's render scripts)
 
-For each diagram it prints the elements it found and four defects, each named so it can be fixed:
+For each diagram it prints the elements it found and these defects, each named so it can be fixed:
 
   crossings     pairs of edges that cross away from a node they share
   overlaps      pairs of nodes whose boxes overlap

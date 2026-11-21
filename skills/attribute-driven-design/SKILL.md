@@ -40,233 +40,26 @@ or a QAW report exists, offer to import its drivers instead of re-entering them.
 package index `architecture/README.md` (`${CLAUDE_PLUGIN_ROOT}/templates/architecture-readme.md`) if absent and
 update its `/add` row when the session ends.
 
-## Session file template
+## Templates
 
-```markdown
-# ADD Session: <name>
+Create the two files from their templates and keep their sections exactly — the same headings,
+levels and order (`validate.py` checks them). The templates carry the tables, the starter
+diagrams and the guidance comments; read them, do not write the files from memory.
 
-- **Date**: <YYYY-MM-DD>
-- **Purpose**: <one line>
-- **Status**: active
-- **Architecture**: `<slug>-Architecture.md`
-- **Drivers imported from**: <path or "entered here">
+- `${CLAUDE_PLUGIN_ROOT}/templates/add-session.md` → `<slug>-session.md`. Header bullets
+  (Date, Purpose, Status, Architecture, Drivers imported from), the **Drivers** tables (quality
+  attribute scenarios, use cases, constraints, architectural concerns), the **Iteration Plan
+  (design backlog)**, then one `## Iteration N — <goal>` block per iteration with a section for
+  each of Steps 2–7. Append a new block for every iteration.
+- `${CLAUDE_PLUGIN_ROOT}/templates/architecture-document.md` → `<slug>-Architecture.md`. Nine
+  numbered sections: 1 Introduction · 2 Context diagram · 3 Architectural drivers · 4 Container
+  diagram · 5 Component and module views (one `### <Container name>` per container, then
+  `### Module decomposition`) · 6 Sequence diagrams · 7 Deployment diagram · 8 Interfaces and
+  events · 9 Design decisions. Every diagram sits under a `Diagram` heading with a `Description`
+  heading after it, embedded per the `sei-diagrams` *Embedding in Markdown* rule.
 
-## Drivers
-
-### Quality Attribute Scenarios
-IDs are attribute-prefixed (`AQA-`, `SQA-`, `PQA-`, `MQA-`, … — see the `architectural-drivers` skill).
-| ID | QA (ISO 25010) | Source | Stimulus | Artifact | Environment | Response | Measure | Priority (Imp,Diff) |
-|----|----------------|--------|----------|----------|-------------|----------|---------|---------------------|
-
-### Primary functional requirements (use cases)
-| ID | Use case name | Primary actor | Architectural significance | Priority |
-|----|---------------|---------------|---------------------------|----------|
-| UC-1 | | | | |
-
-### Constraints
-| ID | Type | Description |
-|----|------|-------------|
-
-### Architectural Concerns
-| ID | Concern |
-|----|---------|
-
-## Iteration Plan
-
-| Iteration | Goal | Drivers |
-|-----------|------|---------|
-
-<!-- iterations appended below as they happen -->
-```
-
-Each iteration appends:
-
-```markdown
-## Iteration N — <goal>
-
-- **Drivers selected**: PQA-1, UC-2
-- **Element(s) refined**: <element>
-
-### Step 2 — Iteration goal
-**Goal:** <one sentence>
-
-| Driver | Importance | Difficulty |
-|--------|------------|------------|
-
-### Step 3 — Element(s) chosen
-<one line: which element and why>
-
-### Step 4 — Design concepts
-
-| Design concept | Decision (chosen/discarded) | Rationale (cite driver IDs) | Alternatives discarded |
-|----------------|-----------------------------|-----------------------------|------------------------|
-
-### Step 5 — Instantiation, responsibilities, interfaces
-
-| Instantiation decision | Responsibility |
-|------------------------|----------------|
-
-| Element | Provided interface | Required interface | Protocol |
-|---------|-------------------|-------------------|----------|
-
-### Step 6 — Views and design decisions
-<which Architecture.md sections were updated>
-
-| Decision | Rationale (cite driver IDs) | Alternatives discarded |
-|----------|-----------------------------|------------------------|
-
-### Step 7 — Analysis
-
-| Driver | Achieved? (yes/partially/no) | Notes (risks, assumptions) |
-|--------|------------------------------|----------------------------|
-
-- **Iteration goal achieved:** <yes / partially / no>
-- **Remaining drivers/concerns:** <list>
-```
-
-## Architecture.md template
-
-~~~markdown
-# Architecture: <name>
-
-- **System**: <one line>
-- **Date**: <YYYY-MM-DD>
-- **Session**: `<slug>-session.md`
-
-<!-- Every diagram below appears as BOTH a ```mermaid block AND, right after it, a
-     ![title](diagrams/<name>.png) line pointing at the verified render in ./diagrams/ .
-     The relative path renders on GitHub and GitLab. -->
-
-## 1. Introduction
-<Purpose, scope, high-level description.>
-
-## 2. Context diagram
-### Diagram
-```mermaid
-flowchart TB
-  %% Context — <name> (C4 level 1)
-  user(["User role<br/><i>how they access</i>"])
-  subgraph sys["<name>"]
-    core["<name><br/><i>the system under design</i>"]
-  end
-  user -->|"Submits requests (HTTPS)"| core
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  class user source
-  class core internal
-```
-
-![Context — <name>](diagrams/context.png)
-
-### Description
-<Plain-English explanation.>
-
-## 3. Architectural drivers
-### Quality Attribute Scenarios (key)
-| ID | QA (ISO 25010) | Stimulus | Response | Measure | Priority |
-|----|----------------|----------|----------|---------|----------|
-### Primary functional requirements — use cases (key)
-| ID | Name | Priority |
-|----|------|----------|
-### Constraints (key)
-| ID | Type | Description |
-|----|------|-------------|
-
-## 4. Container diagram
-### Diagram
-```mermaid
-flowchart TB
-  %% Container diagram — <name> (C4 level 2)
-  user(["User role<br/><i>mobile browser</i>"])
-  subgraph sys["<name>"]
-    direction TB
-    web["Web App<br/><i>tech stack</i>"]
-    api["API Service<br/><i>tech stack</i>"]
-    db[("Database<br/><i>PostgreSQL 15</i>")]
-  end
-  user -->|"Uses over HTTPS"| web
-  web -->|"Calls REST API (JSON)"| api
-  api -->|"Reads / writes (SQL/TLS)"| db
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class user source
-  class web,api internal
-  class db datastore
-```
-### Description
-<Plain-English explanation.>
-
-## 5. Component and module views
-### <Container name>
-#### Diagram
-```mermaid
-flowchart TB
-  %% Component diagram — <container name> (C4 level 3)
-  caller(["Calling container<br/><i>tech stack</i>"])
-  subgraph c["<container name>"]
-    direction TB
-    ctrl["Request Controller<br/><i>tech</i>"]
-    svc["Domain Service<br/><i>tech</i>"]
-    repo[("Repository<br/><i>tech</i>")]
-  end
-  caller -->|"HTTP request (REST)"| ctrl
-  ctrl -->|"Delegates commands"| svc
-  svc -->|"Queries / persists"| repo
-  classDef source   fill:#E7E3F3,stroke:#6B5BA6,color:#1F2933;
-  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class caller source
-  class ctrl,svc internal
-  class repo datastore
-```
-#### Description
-<Plain-English explanation.>
-
-### Module decomposition
-<Once the design introduces modules: layers / packages and their allowed-to-use relations —
-the seed of the V&B Module view. Pattern in `${CLAUDE_PLUGIN_ROOT}/templates/architecture-document.md` §5.>
-
-## 6. Sequence diagrams
-<One per key scenario. Each followed immediately by a plain-English description paragraph.>
-
-## 7. Deployment diagram
-### Diagram
-```mermaid
-flowchart TB
-  %% Deployment — <name> (production topology)
-  subgraph region["Cloud region"]
-    subgraph cluster["Container platform"]
-      api["API Service<br/><i>N replicas, multi-AZ</i>"]
-    end
-    subgraph data["Managed data tier"]
-      db[("PostgreSQL 15<br/><i>primary + standby</i>")]
-    end
-  end
-  api -->|"SQL / TLS"| db
-  classDef internal  fill:#EDF2F8,stroke:#3E6DA5,color:#1F2933;
-  classDef datastore fill:#E4F0E9,stroke:#3F7D5C,color:#1F2933;
-  class api internal
-  class db datastore
-```
-### Description
-<Plain-English explanation.>
-
-## 8. Interfaces and events
-### Interfaces
-| Component | Interface | Protocol | Description |
-|-----------|-----------|----------|-------------|
-### Events
-| Event | Publisher | Consumers | Description |
-|-------|-----------|-----------|-------------|
-
-## 9. Design decisions
-Each significant decision is an ADR in `adr/`; this table is the log.
-
-| Decision | Rationale (cite driver IDs) | Alternatives discarded | ADR |
-|----------|-----------------------------|------------------------|-----|
-<!-- records appended by Step 6; ADR column links adr/ADR-<n>.md -->
-~~~
+Quality attribute scenario IDs in both files are attribute-prefixed (`AQA-`, `SQA-`, `PQA-`,
+`MQA-`, … — see the `architectural-drivers` skill).
 
 ## Process
 
@@ -375,7 +168,8 @@ the **tactics-based questionnaire** for each attribute in play (`${CLAUDE_PLUGIN
 for every relevant tactic, is it used, where, and what is the risk if it is not? State whether
 the goal was achieved and which drivers/concerns remain. **Write back to the register**: for every
 driver analysed, run `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/driverstatus.py architecture/drivers <ID>
-<partially|addressed>` — it sets the status in the driver file, its kind's index, the `README.md`
+<partially|addressed>` (when the session entered its drivers here and there is no register, say
+so in the analysis notes and skip this) — it sets the status in the driver file, its kind's index, the `README.md`
 matrix and (for a scenario) the utility tree together, and refuses to change any of them if one
 does not list the driver. Then set `Addressed in` to this iteration in the matrix and append a
 change-log line there and in the package index `architecture/README.md`. Ask whether to run
@@ -403,13 +197,13 @@ offer to run `/architecture-docs` (Views & Beyond) and `/atam` (evaluation).
   minimised crossings. Always render in the conversation before writing to the file.
 - Every sequence diagram in `Architecture.md` is followed immediately by a plain-English description.
 - Wait for user review at the Iteration Plan step and at Steps 2, 3, 4, 5, 6, 7.
-- After the session, `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/add/*.md` must pass.
+- After the session, `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/add/*.md` must pass.
 
 ## Quality gate — cross-check the output before you're done
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/add/*.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/add/*.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

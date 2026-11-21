@@ -883,6 +883,24 @@ for ex in sorted((EX.parent).glob("personal-finance-tracker-*")):
     check(f"{ex.name}/drivers passes the cross-file check", validate.check_drivers_dir(ex / "drivers") == [])
 
 check("the plugin passes its own self-check", validate.check_self() == [])
+ROOT = validate.ROOT
+add_skill = (ROOT / "skills" / "attribute-driven-design" / "SKILL.md").read_text(encoding="utf-8")
+check("the ADD skill names its two template files and keeps no second copy of them",
+      "templates/add-session.md" in add_skill and "templates/architecture-document.md" in add_skill
+      and "# Architecture: <name>" not in add_skill and "# ADD Session: <name>" not in add_skill)
+with tempfile.TemporaryDirectory() as td:
+    docs_skill = (ROOT / "skills" / "architecture-documentation" / "SKILL.md").read_text(encoding="utf-8")
+    packet = re.search(r"```markdown\n(# View:.*?)\n```\n", docs_skill, re.DOTALL)
+    view = write(Path(td), "docs/view-x.md", packet.group(1) if packet else "")
+    check("the view packet shown in the documentation skill has the template's sections",
+          packet is not None and validate.structure_errors(view) == [])
+    for name, tpl in (("add/x-session.md", "add-session.md"), ("add/x-Architecture.md", "architecture-document.md")):
+        made = write(Path(td), name, (ROOT / "templates" / tpl).read_text(encoding="utf-8"))
+        check(f"a file started from templates/{tpl} has the structure the validator expects",
+              validate.structure_errors(made) == [])
+runtime_docs = [*ROOT.glob("skills/*/SKILL.md"), *ROOT.glob("references/*.md"), *ROOT.glob("templates/*.md"), *ROOT.glob("commands/*.md")]
+check("every command a skill shows runs python3, never a bare python",
+      not [p.name for p in runtime_docs if re.search(r"(?<![\w.])python \$\{CLAUDE_PLUGIN_ROOT\}", p.read_text(encoding="utf-8"))])
 with tempfile.TemporaryDirectory() as td:
     import contextlib, io
     root = Path(td)

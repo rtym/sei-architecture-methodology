@@ -4,16 +4,16 @@ Validator for the sei-architecture-methodology plugin and the artifacts it produ
 
 Modes
 -----
-  python tests/validate.py --self            check the plugin's own structure (skills, plugin.json,
+  python3 tests/validate.py --self           check the plugin's own structure (skills, plugin.json,
                                              commands, templates, embedded diagrams)
-  python tests/validate.py <file> [<file>…]  check produced artifacts:
+  python3 tests/validate.py <file> [<file>…] check produced artifacts:
         *-Architecture.md     -> 9 sections + mermaid rules
         *-session.md          -> header fields, status, driver coverage in the iteration plan
         drivers.md            -> four driver kinds, attribute-prefixed QA IDs, traceability present
         *.mmd / any *.md      -> mermaid diagram rules on every diagram / fenced ```mermaid block
-  python tests/validate.py <dir>             every *.md / *.mmd under it, plus the cross-file check of
+  python3 tests/validate.py <dir>            every *.md / *.mmd under it, plus the cross-file check of
                                              each drivers register in it
-  python tests/validate.py                   with no args: --self, then the architecture/ directory
+  python3 tests/validate.py                  with no args: --self, then the architecture/ directory
 
 Exit code 0 if everything passes, 1 otherwise. Standard library only.
 """
@@ -1668,12 +1668,17 @@ def check_self() -> list[str]:
         r"|(?<![/{\w-])scripts/(?:qawkit|driverstatus)\.py"
         r"|(?<![/{\w-])skills/[a-z-]+/SKILL\.md"
         r"|(?<![/{\w-])tests/validate\.py")
+    # `python` is not a command on a stock macOS or on many Linux installs; `python3` is
+    BARE_PYTHON_RE = re.compile(r"(?<![\w.])python (?=\$\{CLAUDE_PLUGIN_ROOT\})")
     template_files = sorted((ROOT / "templates").glob("*.md"))
     reference_files = sorted((ROOT / "references").glob("*.md"))
     for md in [*cmds, *skill_files, *template_files, *reference_files]:
         for m in BARE_PATH_RE.finditer(md.read_text(encoding="utf-8")):
             errs.append(f"{md.relative_to(ROOT)}: path '{m.group(0)}' is not "
                         f"anchored to ${{CLAUDE_PLUGIN_ROOT}}")
+        if BARE_PYTHON_RE.search(md.read_text(encoding="utf-8")):
+            errs.append(f"{md.relative_to(ROOT)}: a command runs 'python' — write 'python3', "
+                        f"the name that exists on every supported system")
 
     # a reference nobody can find from the index is a reference that does not exist
     ref_index = (ROOT / "references" / "README.md").read_text(encoding="utf-8")

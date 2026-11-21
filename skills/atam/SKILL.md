@@ -24,7 +24,6 @@ Ask up front which mode fits (skip the question if `/atam` was invoked with `ful
 
 - **Full ATAM** (this skill's default) — external or cross-team evaluators, two phases, a formal
   report; for high-risk, high-cost, or contentious architectures.
-- Record the choice as `**Mode**: Full ATAM | Lightweight` in the report header.
 - **Lightweight Architecture Evaluation** — the same conceptual steps (business drivers →
   approaches → utility tree → analyse the `(H,H)`/`(H,M)` scenarios → risks / sensitivity /
   tradeoff points → risk themes) run in ~half a day by the internal team, no formal report, no
@@ -35,6 +34,8 @@ Ask up front which mode fits (skip the question if `/atam` was invoked with `ful
   code-based analysis — design structure matrix + architecture anti-patterns + debt
   quantification — is in `${CLAUDE_PLUGIN_ROOT}/references/architecture-in-the-lifecycle.md` → *Architecture debt and
   hotspots*; run it alongside ATAM when maintenance cost is a concern.
+
+Record the choice as `**Mode**: Full ATAM | Lightweight` in the report header.
 
 After the evaluation, turning risk themes into a **prioritised remediation backlog** is a
 **CBAM** (cost/benefit) exercise: estimate each candidate fix's added utility, cost, and
@@ -85,7 +86,7 @@ schedule. Record in the report.
 
 ### Phase 1 — Evaluation (with the architect and a small team)
 
-**Step 1 — Present the ATAM.** State the method, phases, and the seven output kinds above.
+**Step 1 — Present the ATAM.** State the method, phases, and the eight deliverables above.
 
 **Step 2 — Present the business drivers.** Capture: system purpose, primary business goals
 (`BG-n`), major functional requirements, constraints, and the quality attributes the business
@@ -105,7 +106,7 @@ diagram): one row per leaf scenario, columns *Quality attribute (ISO/IEC 25010) 
 Leaf scenario (ID + response measure) · Priority (V, R) · Status*. `(V, R)` = business value and
 technical risk, each H/M/L (`V ≈ Importance`, `R ≈ Difficulty`); mark a `(H, H)` leaf `★`.
 Import from `scenarios.md` / QAW if available; otherwise generate a first draft from the
-business drivers and refine. The `★` **high/high** and **high/medium** leaves are what Step 6
+business drivers and refine. The `★` **(H, H)** leaves and the **(H, M)** leaves are what Step 6
 analyses. Template: `${CLAUDE_PLUGIN_ROOT}/templates/utility-tree.md`.
 
 **Step 6 — Analyse the architectural approaches.** For each high-priority utility-tree scenario:
@@ -135,7 +136,7 @@ Scenario analysis table (one per analysed scenario):
 ### Phase 2 — Evaluation (with the broader stakeholder group) — Full ATAM only
 
 In **Lightweight** mode skip Steps 7–8 entirely and say so in the report; the analysis of the
-`★` leaves in Step 6 is the whole evaluation.
+(H, H) and (H, M) leaves in Step 6 is the whole evaluation.
 
 **Step 7 — Brainstorm and prioritise scenarios.** Round-robin scenario brainstorming with the
 full stakeholder group (use-case, growth, and exploratory scenarios). Then vote-prioritise
@@ -181,7 +182,7 @@ scenarios from Step 7 that were not already covered.
   sensitivity point.
 - Every **risk theme** maps to ≥ 1 business driver.
 - The utility tree is a **table**; each leaf row carries a `(V, R)` = (business value, technical
-  risk) pair; Step 6 analyses the `★` H/H and H/M leaves.
+  risk) pair; Step 6 analyses the `★` (H, H) leaves and the (H, M) leaves.
 - The report is written incrementally, section per step.
 - ATAM **evaluates**; it does not redesign. Fixes are recommendations → hand off to `/add`.
 - Findings use `R-` / `N-` / `SP-` / `TP-` / `RT-` prefixes; the report header carries `**Mode**`.
@@ -196,7 +197,7 @@ scenarios from Step 7 that were not already covered.
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/atam/atam-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/atam/atam-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,

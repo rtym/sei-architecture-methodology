@@ -322,7 +322,7 @@ usually nobody else in the room: the user relays for the stakeholders.
 
 Do not declare the activity complete until the generated artifact passes all three:
 
-1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/qaw/qaw-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/qaw/qaw-report.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, vote arithmetic, diagram rules, and the
    deprecated-`QAS-` guard.
 2. **Scenario lint**: `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/qawkit.py lint architecture/qaw/qaw-report.md`

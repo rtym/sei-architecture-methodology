@@ -26,7 +26,8 @@ SEI method there are four kinds:
 | **Constraints** | `CON-<n>` | Non-negotiable boundaries: business, technical, regulatory | constraint statements with a rationale/source |
 | **Quality attributes** | `<ATTR>QA-<n>` | Required qualities, measurable | six-part quality attribute scenarios (detail owned by the `quality-attributes` skill) |
 
-ADD 3.0 names two further inputs, which the register also keeps so `/add` never re-collects them:
+The register also keeps the two further inputs ADD 3.0 names, and the stakeholders, so no later
+activity collects them again:
 
 | Input | ID / place | What it is |
 |-------|------------|------------|
@@ -307,8 +308,9 @@ Append a dated line to the top `README.md`'s change log for every run: what was 
 - **Every quality attribute is a six-part quality attribute scenario** with a numeric response
   measure, an ISO/IEC 25010 classification, **and its own six-part scenario diagram**, rendered
   and visually cross-verified.
-- Every driver file carries `**Status**`; every diagram is embedded as a ```mermaid /
-  ```plantuml block + a relative `![](diagrams/…​.png)` image line (renders on GitHub / GitLab).
+- Every driver file carries `**Status**`; every diagram is embedded per the `sei-diagrams`
+  *Embedding in Markdown* rule — Mermaid: the ```mermaid block + a relative
+  `![](diagrams/….png)` image line; PlantUML: the image line + a link to the `.puml` source.
 - The utility tree (`quality-attributes/utility-tree.md`) is a **table** with a `(V, R)` pair
   per leaf — never a diagram.
 - The `README.md` traceability matrix is mandatory and must have no orphan drivers — report gaps.
@@ -318,7 +320,7 @@ Append a dated line to the top `README.md`'s change log for every run: what was 
 
 Do not declare the activity complete until it passes both:
 
-1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/drivers/` (recurses the directory) —
+1. **Automated**: `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/drivers/` (recurses the directory) —
    exits 0. Checks IDs, per-file structure, six-part scenarios with numeric measures, a use case
    diagram in every `UC-*.md`, a scenario diagram in every `<ATTR>QA-*.md`, the tabular utility
    tree, `README.md` traceability with no orphans, no broken relative links, diagram rules, and

@@ -217,7 +217,7 @@ Maintain a matrix so coverage is checkable:
   either not a real goal or a missing requirement).
 - Every **UC**, **QAS**, **CON** traces up to ≥ 1 **BG** (a requirement that serves no business
   goal is scope creep — challenge it).
-- Track a `Status` per driver — `open / in design / partially / addressed / retired` — updated as
+- Track a `Status` per driver — `open / in design / partially / addressed / at risk / retired` — updated as
   ADD iterations complete and ATAM findings land.
 
 ## Prioritisation

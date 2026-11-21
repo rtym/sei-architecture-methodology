@@ -226,8 +226,10 @@ leaves those out and fills *Scenario files and diagrams* instead.
 
 Do not declare the activity complete until the generated artifact passes both:
 
-1. **Automated**: `python ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/quality-attributes/scenarios.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
+1. **Automated**: `python3 ${CLAUDE_PLUGIN_ROOT}/tests/validate.py architecture/quality-attributes/scenarios.md` — exits 0. It checks IDs, structure, six-part scenarios with numeric
    measures, traceability with no orphans, diagram rules, and the deprecated-`QAS-` guard.
+   In **register mode** also run it on `architecture/drivers/` — that is where the scenario
+   files, their diagrams and the utility tree were written.
 2. **Best-practice checklist**: walk the relevant section of
    `${CLAUDE_PLUGIN_ROOT}/references/best-practices-checklist.md` and report each item `ok` / `fix: …`. Fix,
    re-run, repeat.
