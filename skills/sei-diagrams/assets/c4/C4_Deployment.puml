@@ -2,7 +2,7 @@
 !if %variable_exists("RELATIVE_INCLUDE")
   !include ./C4_Container.puml
 !else
-  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.10.0/C4_Container.puml
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.11.0/C4_Container.puml
 !endif
 
 ' Colors
@@ -11,6 +11,11 @@
 !$NODE_FONT_COLOR ?= "#000000"
 !$NODE_BG_COLOR ?= "#FFFFFF"
 !$NODE_BORDER_COLOR ?= "#A2A2A2"
+
+' Labels
+' ##################################
+
+!$NODE_LEGEND_TEXT ?= "node"
 
 ' Styling
 ' ##################################
@@ -22,7 +27,7 @@
 !$NODE_TYPE_MAX_CHAR_WIDTH ?= 35
 !$NODE_DESCR_MAX_CHAR_WIDTH ?= 32
 
-UpdateElementStyle("node", $bgColor=$NODE_BG_COLOR, $fontColor=$NODE_FONT_COLOR, $borderColor=$NODE_BORDER_COLOR)
+UpdateElementStyle("node", $bgColor=$NODE_BG_COLOR, $fontColor=$NODE_FONT_COLOR, $borderColor=$NODE_BORDER_COLOR, $legendText="$NODE_LEGEND_TEXT")
 skinparam rectangle<<node>> {
     FontStyle normal
 }

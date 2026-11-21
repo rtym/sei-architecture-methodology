@@ -582,9 +582,9 @@ This repository redistributes one third-party component, under its own license:
 
 | Component | Version | License | Location |
 |-----------|---------|---------|----------|
-| [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML) | v2.10.0 (unmodified) | MIT — © 2018 Ricardo Niepel | [`skills/sei-diagrams/assets/c4/`](skills/sei-diagrams/assets/c4/README.md) |
+| [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML) | v2.11.0 (unmodified) | MIT — © 2018 Ricardo Niepel | [`skills/sei-diagrams/assets/c4/`](skills/sei-diagrams/assets/c4/README.md) |
 
-The five vendored `C4*.puml` files are byte-identical to the upstream `v2.10.0` tag and are
+The five vendored `C4*.puml` files are byte-identical to the upstream `v2.11.0` tag and are
 covered by [their own MIT license](skills/sei-diagrams/assets/c4/LICENSE), **not** by this
 repository's Apache-2.0 license. They are vendored rather than fetched so diagram rendering is
 offline, reproducible and version-pinned. `sei-c4-palette.puml` in that directory is this
