@@ -4,6 +4,47 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## 1.15.1 — 2026-11-21
+
+Fixes from a review of 1.15.0. Nothing changes how an artifact is laid out; the two examples'
+reports are rebuilt.
+
+### Fixed
+- `scripts/render-all.sh` exited 0 when a Mermaid block embedded in a Markdown file no longer
+  compiled, as long as an earlier PNG was still there. It now fails and names the document.
+- `validate.py architecture/` (and the no-argument form) validated every file but skipped the
+  drivers cross-file check, so a status that differed between a driver file and an index table
+  went unreported unless the `drivers/` directory itself was passed.
+- The ADD skill held its own copy of the session and Architecture templates. The copy had
+  drifted, and a document written from it failed the skill's own quality gate (no *Module
+  decomposition* diagram sections). The skill now names `templates/add-session.md` and
+  `templates/architecture-document.md`.
+- The QAW skill let the consolidated scenarios keep their `S-` IDs, which `qawkit.py ballot`,
+  `status` and `summary` cannot read. They are always numbered `CS-<n>`, and the ballot says so
+  when a consolidation table has no `CS-` ID.
+- Ten quality-gate commands ran `python`, which is not a command on a stock macOS. Every command
+  a skill shows now runs `python3`, and the self-check rejects a bare `python`.
+- The validator treated any file named `<x>-YYYY-MM-DD.md` as an ADD session; that now applies
+  only in `add/`. It no longer reports a link shown inside a code fence or a code span as
+  broken, and it reads `%20` in a link target as a space.
+- Reports (`mdreport.py`): a heading that holds a link gave a contents entry with raw Markdown
+  (HTML) or a link nested in a link pointing at an anchor that does not exist (Markdown) — five
+  entries in each example's `architecture-package` report. Also fixed: a link whose text is its
+  URL became an anchor inside an anchor, `<https://…>` was mangled, a bare URL took the
+  sentence's full stop with it, a diagram caption could be taken from a node label, building a
+  directory twice read the earlier report as a source, and `--format both --out x.htm` wrote the
+  Markdown over the HTML.
+- `render-plantuml.sh` exited 0 when one of several targets did not exist. `render.sh --help`
+  printed code after the usage text; `build-report.sh` could not reach its "python 3 not found"
+  message.
+- `qawkit.py lint` called plain words in a response ("scales out", "a secure cookie") vague
+  although the response measure was a number. It flags them only while the measure has none.
+- Skill text that contradicted itself or the validator: PlantUML embedding in the drivers
+  rules, the Variability guide ("omit" against "must be present"), the number of ATAM
+  deliverables and which utility-tree leaves Step 6 analyses, the status list in the drivers
+  reference, and the quality-attributes gate in register mode. The diagram skill links the
+  examples by URL instead of a path that does not exist in the Claude app edition.
+
 ## 1.15.0 — 2026-11-12
 
 Diagrams become regression fixtures, and the layout check that used to be done by eye is counted.
