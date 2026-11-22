@@ -15,6 +15,10 @@ claude plugin validate .     # the official manifest check
 Toolchain for the full suite: `bash skills/sei-diagrams/scripts/setup.sh` (Node 18+, installs the
 lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graphviz`.
 
+The scripts and `tests/validate.py` are standard library only and run on **Python 3.9**, the one a
+stock macOS ships: no 3.10+ syntax, and no atomic groups or possessive quantifiers in a regular
+expression (3.11+). CI runs the quick suite on 3.9.
+
 ## Conventions the self-check enforces
 
 - Every cross-file path in a command, skill, template or reference is `${CLAUDE_PLUGIN_ROOT}`-anchored

@@ -522,11 +522,12 @@ python3 path/to/sei-architecture-methodology/tests/validate.py architecture/
 ### Continuous integration
 
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml) runs on every push to `main`, on
-pull requests, and on manual dispatch, as three jobs:
+pull requests, and on manual dispatch, as four jobs:
 
 | Job | What it runs | Needs |
 |-----|--------------|-------|
 | `test suite (no renderer)` | `tests/run.sh --quick` — everything but the render smoke test — then builds the Claude app edition and uploads it as the `claude-app-edition` artifact | Python only; finishes in seconds |
+| `test suite (Python 3.9)` | `tests/run.sh --quick` on the Python a stock macOS ships, so a script that needs a newer one is noticed | Python 3.9 only |
 | `full suite (Mermaid renderer)` | `setup.sh` then the complete `tests/run.sh`, which re-renders every Mermaid example diagram against the baseline | Node 20 + a headless Chromium (cached between runs) |
 | `full suite (PlantUML renderer)` | the complete `tests/run.sh`, which re-renders every PlantUML example diagram against the baseline, then renders every shipped example `.puml` to PNG | PlantUML + a JRE (apt) |
 
