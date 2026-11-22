@@ -1144,18 +1144,49 @@ def template_structure(template_text: str) -> list[dict]:
     return nodes
 
 
-def _structure_regex(nodes: list[dict]) -> re.Pattern:
-    def build(i: int, parent: int) -> tuple[str, int]:
+def structure_matches(nodes: list[dict], heads: list[tuple[int, str]]) -> bool:
+    """Do the headings follow the template's heading pattern? The template is a tree: a heading
+    owns the deeper headings below it; a heading with a placeholder may repeat with its subtree,
+    an optional one may be absent.
+
+    This walks the tree and the headings together and remembers, for each template heading and
+    each position in the artifact, where a match can end. The work grows with headings × template
+    headings, whether the artifact matches or not. (One regular expression over all the headings
+    says the same thing, but on a mismatch it retries every way of reading every repeated section
+    — the time doubled with each one, and a report with a dozen scenarios never finished.)"""
+    keys = [(lvl, heading_key(title)) for lvl, title in heads]
+
+    def tree(i: int, parent: int) -> tuple[list[tuple[int, list]], int]:
         out = []
         while i < len(nodes) and nodes[i]["level"] > parent:
-            n = nodes[i]
-            sub, j = build(i + 1, n["level"])
-            group = f"(?:{n['level']}\\t{n['re'].pattern}\\n{sub})"
-            out.append(group + {(True, True): "*", (True, False): "+", (False, True): "?",
-                                (False, False): ""}[(n["repeat"], n["optional"])])
+            kids, j = tree(i + 1, nodes[i]["level"])
+            out.append((i, kids))
             i = j
-        return "".join(out), i
-    return re.compile(build(0, 0)[0])
+        return out, i
+
+    seen: dict[tuple[int, int], frozenset] = {}
+
+    def once(k: int, kids: list, p: int) -> frozenset:
+        """Where the artifact can stand after heading p is read as template heading k, subtree included."""
+        if (k, p) not in seen:
+            fits = p < len(keys) and nodes[k]["level"] == keys[p][0] and nodes[k]["re"].fullmatch(keys[p][1])
+            seen[(k, p)] = sequence(kids, frozenset([p + 1])) if fits else frozenset()
+        return seen[(k, p)]
+
+    def sequence(group: list, starts: frozenset) -> frozenset:
+        for k, kids in group:
+            reached: set[int] = set()
+            frontier = set(starts)
+            while frontier:
+                step = set().union(*(once(k, kids, p) for p in frontier)) - reached
+                reached |= step
+                frontier = step if nodes[k]["repeat"] else set()
+            starts = frozenset(reached | starts) if nodes[k]["optional"] else frozenset(reached)
+            if not starts:
+                break
+        return starts
+
+    return len(keys) in sequence(tree(0, 0)[0], frozenset([0]))
 
 
 def check_template_structures() -> list[str]:
@@ -1192,7 +1223,7 @@ def structure_errors(path: Path, template: Path | None = None) -> list[str]:
         return []
     nodes = template_structure(template.read_text(encoding="utf-8"))
     heads = heading_list(path.read_text(encoding="utf-8"))
-    if _structure_regex(nodes).fullmatch("".join(f"{lvl}\t{heading_key(t)}\n" for lvl, t in heads)):
+    if structure_matches(nodes, heads):
         return []
     name = f"templates/{template.name}"
 

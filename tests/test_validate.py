@@ -1050,5 +1050,125 @@ with tempfile.TemporaryDirectory() as td:
     check("a Lightweight ATAM report without Steps 7 and 8 keeps the template's structure",
           validate.structure_errors(rep) == [])
 
+# --------------------------------------------------------------------------- #
+# The structure check finishes: time does not grow with the number of repeated sections
+# --------------------------------------------------------------------------- #
+# One heading that fits no template section used to make the check retry every way of reading
+# every repeated section — the time doubled with each one, and an ATAM report with a dozen
+# scenarios never returned. The fixtures are generated here; nothing is copied from a project.
+import time
+
+LIMIT = 2.0     # seconds for one check; a healthy run takes milliseconds
+
+
+def timed(fn, *args):
+    t0 = time.perf_counter()
+    result = fn(*args)
+    return result, time.perf_counter() - t0
+
+
+def atam_report(scenarios: int, stranger: bool) -> str:
+    h = ["# ATAM Evaluation — Demo", "## Phase 0 — Partnership and preparation",
+         "## Step 1 — Present the ATAM", "## Step 2 — Present the business drivers",
+         "## Step 3 — Present the architecture", "## Step 4 — Identify architectural approaches",
+         "## Step 5 — Quality attribute utility tree", "## Step 6 — Analyse architectural approaches"]
+    h += [f"### AQA-{i} — scenario number {i} is analysed (H, H)" for i in range(1, scenarios + 1)]
+    if stranger:
+        h.append("### Cross-cutting — decision currency")
+    h += ["## Step 7 — Brainstorm and prioritise scenarios",
+          "## Step 8 — Analyse architectural approaches (Phase 2 scenarios)", "## Step 9 — Results",
+          "### Architectural approaches", "### Risks", "### Non-risks", "### Sensitivity points",
+          "### Tradeoff points", "### Risk themes", "### Recommendations / next steps",
+          "### Drivers register write-back"]
+    return "\n\ntext\n\n".join(h) + "\n\ntext\n"
+
+
+with tempfile.TemporaryDirectory() as td:
+    good = write(Path(td), "ok/atam/atam-report.md", atam_report(12, stranger=False))
+    errs, took = timed(validate.structure_errors, good)
+    check("an ATAM report with 12 scenario sections keeps the template's structure, at once", errs == [] and took < LIMIT)
+    bad = write(Path(td), "bad/atam/atam-report.md", atam_report(12, stranger=True))
+    errs, took = timed(validate.structure_errors, bad)
+    check("one heading that fits no section is named, at once, however many scenarios precede it",
+          took < LIMIT and len(errs) == 1 and "'### Cross-cutting — decision currency' is not in templates/atam-report.md" in errs[0])
+    big = write(Path(td), "big/atam/atam-report.md", atam_report(300, stranger=True))
+    errs, took = timed(validate.structure_errors, big)
+    check("300 scenario sections cost no more than a dozen", took < LIMIT and len(errs) == 1)
+    res, took = timed(validate.validate_file, bad)
+    check("the whole validator returns on that report", took < LIMIT and any("Cross-cutting" in e for e in res))
+
+
+def repeated_headings(template_text: str, times: int, stranger: bool) -> list[tuple[int, str]]:
+    """The template's own headings with placeholders filled in, every repeating section (and
+    what is below it) written `times` times, then optionally a heading no template has."""
+    nodes = validate.template_structure(template_text)
+
+    def fill(title: str, i: int) -> str:
+        return re.sub(r"<[^>]+>", f"item {i}", re.sub(r"\bN\b", str(i), title))
+
+    out: list[tuple[int, str]] = []
+    k = 0
+    while k < len(nodes):
+        end = k + 1
+        while end < len(nodes) and nodes[end]["level"] > nodes[k]["level"]:
+            end += 1
+        rounds = times if nodes[k]["repeat"] else 1
+        block = nodes[k:end] if nodes[k]["repeat"] else nodes[k:k + 1]
+        for i in range(1, rounds + 1):
+            out += [(n["level"], fill(n["title"], i)) for n in block]
+        if nodes[k]["repeat"] and stranger:
+            out.append((6, "A heading no template has"))
+        k = end if nodes[k]["repeat"] else k + 1
+    return out
+
+
+repeating = []
+for tpl in sorted((validate.ROOT / "templates").glob("*.md")):
+    text = tpl.read_text(encoding="utf-8")
+    nodes = validate.template_structure(text)
+    if not any(n["repeat"] for n in nodes):
+        continue
+    repeating.append(tpl.name)
+    ok, took_ok = timed(validate.structure_matches, nodes, repeated_headings(text, 12, stranger=False))
+    no, took_no = timed(validate.structure_matches, nodes, repeated_headings(text, 12, stranger=True))
+    check(f"templates/{tpl.name}: 12 rounds of its repeating section match, and a stray heading does not, at once",
+          ok and not no and took_ok < LIMIT and took_no < LIMIT)
+    with tempfile.TemporaryDirectory() as td:
+        doc = write(Path(td), "doc.md", "".join(f"{'#' * lvl} {title}\n\ntext\n\n"
+                                                for lvl, title in repeated_headings(text, 40, stranger=True)))
+        errs, took = timed(validate.structure_errors, doc, tpl)
+        check(f"templates/{tpl.name}: the stray heading is explained, at once, after 40 rounds",
+              took < LIMIT and any("A heading no template has" in e for e in errs))
+check("the templates with a repeating section are the six known ones",
+      repeating == ["add-session.md", "architecture-document.md", "atam-report.md", "qaw-report.md",
+                    "rationale.md", "scenarios.md"])
+
+# what the pattern means: required, optional (?), repeating (+), optional and repeating (*)
+GRAMMAR = validate.template_structure(
+    "# Doc\n\n## Fixed\n\n## Extra (optional)\n\n## Item <n>\n\n### Detail\n\n### Note <x> (optional)\n\n## End\n")
+
+
+def follows(*heads: tuple[int, str]) -> bool:
+    return validate.structure_matches(GRAMMAR, list(heads))
+
+
+check("a required section once, an optional one absent, a repeating one once",
+      follows((1, "Doc"), (2, "Fixed"), (2, "Item 1"), (3, "Detail"), (2, "End")))
+check("the optional section present, the repeating one three times, its optional repeating child any number of times",
+      follows((1, "Doc"), (2, "Fixed"), (2, "Extra"), (2, "Item 1"), (3, "Detail"), (2, "Item 2"), (3, "Detail"),
+              (3, "Note a"), (3, "Note b"), (2, "Item 3"), (3, "Detail"), (2, "End")))
+check("a repeating section must appear at least once", not follows((1, "Doc"), (2, "Fixed"), (2, "End")))
+check("a required child is required in every round",
+      not follows((1, "Doc"), (2, "Fixed"), (2, "Item 1"), (3, "Detail"), (2, "Item 2"), (2, "End")))
+check("a section out of order does not follow the pattern",
+      not follows((1, "Doc"), (2, "Item 1"), (3, "Detail"), (2, "Fixed"), (2, "End")))
+check("a non-repeating section twice does not follow the pattern",
+      not follows((1, "Doc"), (2, "Fixed"), (2, "Fixed"), (2, "Item 1"), (3, "Detail"), (2, "End")))
+check("a heading at the wrong level does not follow the pattern",
+      not follows((1, "Doc"), (2, "Fixed"), (2, "Item 1"), (4, "Detail"), (2, "End")))
+check("headings after the last template section do not follow the pattern",
+      not follows((1, "Doc"), (2, "Fixed"), (2, "Item 1"), (3, "Detail"), (2, "End"), (2, "More")))
+check("no headings at all do not follow a template that requires some", not follows())
+
 print(f"{PASSES} passed, {FAILS} failed")
 sys.exit(1 if FAILS else 0)
