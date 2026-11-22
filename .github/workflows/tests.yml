@@ -41,6 +41,22 @@ jobs:
           path: dist/claude-app/*.zip
           if-no-files-found: error
 
+  # The scripts and the validator are standard library only and must run on the Python a stock
+  # macOS ships (3.9): no 3.10+ syntax, no atomic groups or possessive quantifiers in a regular
+  # expression (3.11+). The other jobs run 3.12, so this one is what notices.
+  python39:
+    name: test suite (Python 3.9)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.9'
+
+      - name: Run test suite
+        run: bash tests/run.sh --quick
+
   # Full suite including the Mermaid render smoke test. Split out because it
   # pulls a headless Chromium (~150 MB), which is by far the slowest part.
   render:
