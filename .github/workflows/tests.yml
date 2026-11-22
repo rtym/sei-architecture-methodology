@@ -44,9 +44,10 @@ jobs:
   # The scripts and the validator are standard library only and must run on the Python a stock
   # macOS ships (3.9): no 3.10+ syntax, no atomic groups or possessive quantifiers in a regular
   # expression (3.11+). The other jobs run 3.12, so this one is what notices.
+  # Pinned to Ubuntu 24.04: setup-python has no 3.9 build for the newer ubuntu-latest image.
   python39:
     name: test suite (Python 3.9)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
