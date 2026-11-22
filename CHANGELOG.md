@@ -4,6 +4,15 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
+## Unreleased
+
+### Added
+- A listing icon, `.claude-plugin/icon.png` (1024 px square): three architecture elements — an
+  internal element, a datastore and an external system — joined into one structure, in the
+  diagram palette. `claude plugin validate` no longer warns that the plugin has no icon. The
+  Claude app zip carries the same file, the self-check rejects an icon the plugin directory
+  would not accept, and `scripts/render-icon.mjs` renders it from `icon-source.svg`.
+
 ## 1.15.2 — 2026-11-21
 
 Dependency update. No skill, script or template changes.

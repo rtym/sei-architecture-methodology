@@ -883,6 +883,22 @@ for ex in sorted((EX.parent).glob("personal-finance-tracker-*")):
     check(f"{ex.name}/drivers passes the cross-file check", validate.check_drivers_dir(ex / "drivers") == [])
 
 check("the plugin passes its own self-check", validate.check_self() == [])
+with tempfile.TemporaryDirectory() as td:
+    def png(width: int, height: int, pad: int = 0) -> Path:
+        p = Path(td) / "icon.png"
+        p.write_bytes(b"\x89PNG\r\n\x1a\n" + (13).to_bytes(4, "big") + b"IHDR"
+                      + width.to_bytes(4, "big") + height.to_bytes(4, "big") + b"\x08\x06\x00\x00\x00" + b"\x00" * pad)
+        return p
+    check("the plugin's icon is accepted", validate.icon_errors(validate.ROOT / ".claude-plugin" / "icon.png") == [])
+    check("a square 1024 px PNG is accepted", validate.icon_errors(png(1024, 1024)) == [])
+    check("an icon that is not square is rejected", any("square" in e for e in validate.icon_errors(png(1024, 512))))
+    check("an icon under 512 px or over 2048 px is rejected",
+          any("512 to 2048" in e for e in validate.icon_errors(png(256, 256)))
+          and any("512 to 2048" in e for e in validate.icon_errors(png(4096, 4096))))
+    check("an icon of 2 MB or more is rejected", any("under 2 MB" in e for e in validate.icon_errors(png(1024, 1024, 2 * 1024 * 1024))))
+    (Path(td) / "icon.png").write_text("<svg/>", encoding="utf-8")
+    check("a file that is not a PNG is rejected", any("not a PNG" in e for e in validate.icon_errors(Path(td) / "icon.png")))
+    check("a missing icon is reported", any("missing" in e for e in validate.icon_errors(Path(td) / "none.png")))
 ROOT = validate.ROOT
 add_skill = (ROOT / "skills" / "attribute-driven-design" / "SKILL.md").read_text(encoding="utf-8")
 check("the ADD skill names its two template files and keeps no second copy of them",

@@ -385,7 +385,9 @@ with the SEI palette, with a cover page and table of contents. Example:
 sei-architecture-methodology/
 ├── .claude-plugin/
 │   ├── plugin.json                    # plugin manifest (8 skills)
-│   └── marketplace.json               # one-plugin marketplace (for /plugin marketplace add)
+│   ├── marketplace.json               # one-plugin marketplace (for /plugin marketplace add)
+│   ├── icon.png                       # listing icon, 1024 px square (also in the Claude app zip)
+│   └── icon-source.svg                # its drawing; scripts/render-icon.mjs renders the PNG
 ├── commands/                          # /sei /drivers /quality-attributes /qaw /add /atam /architecture-docs /sei-diagram
 ├── .claude/
 │   └── commands -> ../commands        # symlink so the slash commands load when hacking on the plugin in place

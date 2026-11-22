@@ -1344,6 +1344,30 @@ def check_plantuml_includes() -> list[str]:
     return errs
 
 
+ICON_MIN, ICON_MAX, ICON_MAX_BYTES = 512, 2048, 2 * 1024 * 1024
+
+
+def icon_errors(path: Path) -> list[str]:
+    """The listing icon is what the plugin directory accepts: a square PNG, 512 to 2048 px on each
+    side, under 2 MB. It is taken once, when the plugin is first submitted, so a wrong file there
+    cannot be corrected later."""
+    name = f".claude-plugin/{path.name}"
+    if not path.is_file():
+        return [f"{name}: missing — the plugin has no icon in a plugin list"]
+    data = path.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        return [f"{name}: is not a PNG file"]
+    width, height = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    errs = []
+    if width != height:
+        errs.append(f"{name}: is {width}×{height} px — the icon must be square")
+    elif not ICON_MIN <= width <= ICON_MAX:
+        errs.append(f"{name}: is {width} px — the icon must be {ICON_MIN} to {ICON_MAX} px on each side")
+    if len(data) >= ICON_MAX_BYTES:
+        errs.append(f"{name}: is {len(data)} bytes — the icon must be under 2 MB")
+    return errs
+
+
 def check_license() -> list[str]:
     """The license must actually grant something, and say the same thing everywhere.
 
@@ -1692,6 +1716,7 @@ def check_self() -> list[str]:
     errs += check_plantuml_includes()
     errs += check_vendored_c4()
     errs += check_license()
+    errs += icon_errors(ROOT / ".claude-plugin" / "icon.png")
 
     # embedded diagrams in skills/templates/references must obey the rules
     for md in [*skill_files,
