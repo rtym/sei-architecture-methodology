@@ -262,6 +262,9 @@ def build(out_dir: Path, root: Path = ROOT, make_zip: bool = True) -> tuple[Path
                     "carries the files it needs, for chat and Cowork.", **app_manifest}
     files[".claude-plugin/plugin.json"] = (json.dumps(app_manifest, indent=2, ensure_ascii=False) + "\n").encode()
     files["README.md"] = readme(manifest, skills, commands).encode("utf-8")
+    icon = root / ".claude-plugin" / "icon.png"       # the listing icon, where the app looks for it
+    if icon.is_file():
+        files[".claude-plugin/icon.png"] = icon.read_bytes()
     for legal in ("LICENSE", "NOTICE"):
         if (root / legal).is_file():
             files[legal] = (root / legal).read_bytes()

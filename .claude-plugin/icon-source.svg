@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Plugin icon: three architecture elements joined into one structure, in the SEI diagram palette.
+       Top: an internal element. Bottom left: a datastore. Bottom right: an external system. -->
+  <rect width="1024" height="1024" fill="#3E6DA5"/>
+  <!-- connectors -->
+  <path d="M512 404 V512 M292 620 V512 H732 V620" fill="none" stroke="#FFFFFF" stroke-width="36"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- internal element -->
+  <rect x="332" y="176" width="360" height="228" rx="36" fill="#EDF2F8" stroke="#1F2933" stroke-width="20"/>
+  <!-- datastore -->
+  <g fill="#E4F0E9" stroke="#1F2933" stroke-width="20" stroke-linejoin="round">
+    <path d="M152 668 V812 A140 44 0 0 0 432 812 V668"/>
+    <ellipse cx="292" cy="668" rx="140" ry="44"/>
+  </g>
+  <!-- external system -->
+  <rect x="592" y="624" width="280" height="232" rx="36" fill="#F5EEE3" stroke="#1F2933" stroke-width="20"/>
+</svg>

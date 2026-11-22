@@ -75,6 +75,10 @@ lockfile-pinned Mermaid CLI + Chromium) and `brew install openjdk plantuml graph
 
 To bump the vendored C4-PlantUML, follow `skills/sei-diagrams/assets/c4/README.md`.
 
+The listing icon is `.claude-plugin/icon.png`, rendered from `.claude-plugin/icon-source.svg` with
+`node scripts/render-icon.mjs`. Keep it a square PNG of 512 to 2048 px under 2 MB (the self-check
+enforces this): the plugin directory takes the icon once, when the plugin is first submitted.
+
 ## Style
 
 - Commit messages: English, imperative mood, one change per commit.

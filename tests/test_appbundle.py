@@ -153,8 +153,10 @@ with tempfile.TemporaryDirectory() as td:
 
     check("the app edition has one folder per skill",
           sorted(p.name for p in (folder / "skills").iterdir()) == sorted(SKILLS))
-    check("the manifest is the only file in .claude-plugin",
-          [p.name for p in (folder / ".claude-plugin").iterdir()] == ["plugin.json"])
+    check(".claude-plugin holds the manifest and the plugin's icon, nothing else",
+          sorted(p.name for p in (folder / ".claude-plugin").iterdir()) == ["icon.png", "plugin.json"])
+    check("the icon is the plugin's own, byte for byte",
+          (folder / ".claude-plugin/icon.png").read_bytes() == (ROOT / ".claude-plugin/icon.png").read_bytes())
     app_manifest = json.loads((folder / ".claude-plugin/plugin.json").read_text())
     check("the manifest carries the plugin's version under its own name",
           app_manifest["name"] == appbundle.APP_NAME and app_manifest["version"] == MANIFEST["version"])
@@ -262,6 +264,7 @@ with tempfile.TemporaryDirectory() as td:
               {n.split("/")[0] for n in names} == {appbundle.APP_NAME})
         check("the zip holds .claude-plugin/plugin.json under that folder",
               f"{appbundle.APP_NAME}/.claude-plugin/plugin.json" in names)
+        check("the zip holds the icon beside the manifest", f"{appbundle.APP_NAME}/.claude-plugin/icon.png" in names)
         check("the zip lists every built file", {n.split("/", 1)[1] for n in names if not n.endswith("/")} == set(rels))
         check("zip entries carry a fixed timestamp",
               all(i.date_time == appbundle.ZIP_DATE for i in z.infolist()))
