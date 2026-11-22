@@ -4,9 +4,22 @@ All notable changes to the `sei-architecture-methodology` plugin. Versions follo
 [SemVer](https://semver.org/); the version lives in `.claude-plugin/plugin.json` and is mirrored in
 `.claude-plugin/marketplace.json` (both places) — `tests/validate.py --self` fails on drift.
 
-## Unreleased
+## 1.15.3 — 2026-11-22
+
+### Fixed
+- `tests/validate.py` could hang at 100 % CPU on an artifact with one heading its template does
+  not have, when a repeating section came before it: an ATAM report with five scenario sections
+  and one stray heading took 16 s, and one with six or more did not return. The structure check
+  read all the headings with one regular expression, which on a mismatch retried every way of
+  reading every repeated section, so the time doubled with each one. It now walks the template
+  and the headings together and remembers what it has tried: the same report with 300 sections
+  returns in milliseconds with the same message. Every template with a repeating section was
+  exposed (ATAM report, ADD session, Architecture document, QAW report, rationale, scenarios).
+  Verdicts and messages are unchanged.
 
 ### Added
+- CI runs the quick suite on Python 3.9, the version a stock macOS ships, so a script that
+  needs a newer Python is noticed.
 - A listing icon, `.claude-plugin/icon.png` (1024 px square): three architecture elements — an
   internal element, a datastore and an external system — joined into one structure, in the
   diagram palette. `claude plugin validate` no longer warns that the plugin has no icon. The
